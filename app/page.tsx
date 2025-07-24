@@ -1299,69 +1299,6 @@ export default function SkateboardCardGame() {
               </div>
             )}
 
-            {/* Players Status */}
-            <Card className="bg-black/20 border-gray-600">
-              <CardHeader>
-                <CardTitle className="text-white">Players Status</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {gameState.players.map((player) => (
-                    <div
-                      key={player.id}
-                      className={`p-4 rounded-lg border-2 ${player.isEliminated
-                        ? "bg-red-900/20 border-red-600"
-                        : player.id === currentPlayer?.id
-                          ? "bg-blue-900/30 border-blue-500"
-                          : "bg-gray-800 border-gray-600"
-                        }`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className={`font-semibold ${player.isEliminated ? "text-red-400" : "text-white"}`}>
-                          {player.name}
-                        </span>
-                        <div className="flex gap-1">
-                          {player.id === currentPlayer?.id && !player.isEliminated && (
-                            <Badge className="bg-blue-600 text-white text-xs">Current</Badge>
-                          )}
-                          {player.isEliminated && <Badge className="bg-red-600 text-white text-xs">Out</Badge>}
-                          {!player.isEliminated && player.hasAttemptedCurrentTrick && (
-                            <Badge className="bg-green-600 text-white text-xs">✓</Badge>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex gap-1">
-                        {SKATE_LETTERS.map((letter, index) => (
-                          <div
-                            key={letter}
-                            className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold ${index < player.letters.length
-                              ? "bg-red-600 border-red-500 text-white"
-                              : "bg-gray-700 border-gray-600 text-gray-400"
-                              }`}
-                          >
-                            {letter}
-                          </div>
-                        ))}
-                      </div>
-                      {player.skillCards.length > 0 && (
-                        <div className="mt-2 flex gap-1">
-                          {player.skillCards.map((card, index) => (
-                            <div
-                              key={index}
-                              className="text-xs bg-purple-600 text-white px-2 py-1 rounded flex items-center gap-1"
-                            >
-                              <span>{card.icon}</span>
-                              <span>{card.name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Game Controls */}
             <div className="text-center">
               <Button
