@@ -1251,11 +1251,11 @@ export default function SkateboardCardGame() {
                     )}
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2 justify-center">
-                      <Button onClick={missTrick} className="bg-green-600 hover:bg-green-700 flex-1 h-20" size={"lg"}>
+                    <div className="flex gap-8 justify-between px-8">
+                      <Button onClick={missTrick} className="bg-green-600 hover:bg-green-700 flex-1 h-24" size={"lg"}>
                         <CheckCircle2 className="!h-10 !w-10" />
                       </Button>
-                      <Button onClick={missTrick} className="bg-red-600/80 hover:bg-red-700/80 flex-1 h-20 " size={"lg"}>
+                      <Button onClick={missTrick} className="bg-red-600/80 hover:bg-red-700/80 flex-1 h-24 " size={"lg"}>
                         <X className="!h-10 !w-10" />
                       </Button>
                     </div>
