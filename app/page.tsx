@@ -17,6 +17,14 @@ interface Player {
   hasAttemptedCurrentTrick: boolean
 }
 
+interface Trick {
+  id: number;
+  name: string;
+  difficulty: "Beginner" | "Intermediate" | "Advanced" | "Pro";
+  points: number;
+  description: string;
+}
+
 // Add skill card interface after the Player interface
 interface SkillCard {
   id: string
@@ -27,19 +35,21 @@ interface SkillCard {
 }
 
 interface GameState {
-  players: Player[]
-  currentPlayerIndex: number
-  gameStarted: boolean
-  currentTrick: any | null
-  gamePhase: "setting" | "attempting" | "game-over"
-  winner: string | null
-  showTurnModal: boolean
-  roundNumber: number
+  players: Player[];
+  currentPlayerIndex: number;
+  gameStarted: boolean;
+  currentTrick: Trick | null;
+  gamePhase: "setting" | "attempting" | "game-over";
+  winner: string | null;
+  showTurnModal: boolean;
+  roundNumber: number;
 }
+
+
 
 const SKATE_LETTERS = ["S", "K", "A", "T", "E"]
 
-const trickCards = [
+const trickCards: Trick[] = [
   // Basic Ollies
   {
     id: 1,
@@ -47,7 +57,6 @@ const trickCards = [
     difficulty: "Beginner",
     points: 10,
     description: "The foundation of all skateboarding tricks",
-    stance: "Regular",
   },
   {
     id: 2,
@@ -55,7 +64,6 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 20,
     description: "Ollie off the nose",
-    stance: "Regular",
   },
   {
     id: 3,
@@ -63,7 +71,6 @@ const trickCards = [
     difficulty: "Beginner",
     points: 12,
     description: "Ollie while riding fakie",
-    stance: "Switch",
   },
   {
     id: 4,
@@ -71,7 +78,6 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 18,
     description: "Ollie in switch stance",
-    stance: "Switch",
   },
 
   // Shove-Its
@@ -81,7 +87,7 @@ const trickCards = [
     difficulty: "Beginner",
     points: 15,
     description: "Board spins 180° frontside",
-    stance: "Regular",
+
   },
   {
     id: 6,
@@ -89,7 +95,6 @@ const trickCards = [
     difficulty: "Beginner",
     points: 15,
     description: "Board spins 180° backside",
-    stance: "Regular",
   },
   {
     id: 7,
@@ -97,7 +102,6 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 22,
     description: "Shove-it from nollie position",
-    stance: "Regular",
   },
   {
     id: 8,
@@ -105,7 +109,6 @@ const trickCards = [
     difficulty: "Beginner",
     points: 16,
     description: "Shove-it while riding fakie",
-    stance: "Switch",
   },
   {
     id: 9,
@@ -113,7 +116,6 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 20,
     description: "Shove-it in switch stance",
-    stance: "Switch",
   },
   {
     id: 10,
@@ -121,7 +123,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 24,
     description: "Pop shove-it from nollie",
-    stance: "Regular",
+
   },
   {
     id: 11,
@@ -129,7 +131,6 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 18,
     description: "Pop shove-it while riding fakie",
-    stance: "Switch",
   },
 
   // 180s
@@ -139,7 +140,6 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 20,
     description: "180° frontside turn",
-    stance: "Regular",
   },
   {
     id: 13,
@@ -147,7 +147,6 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 20,
     description: "180° backside turn",
-    stance: "Regular",
   },
   {
     id: 14,
@@ -155,7 +154,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 35,
     description: "Frontside 180 from nollie",
-    stance: "Regular",
   },
   {
     id: 15,
@@ -163,7 +161,7 @@ const trickCards = [
     difficulty: "Advanced",
     points: 35,
     description: "Backside 180 from nollie",
-    stance: "Regular",
+
   },
   {
     id: 16,
@@ -171,7 +169,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 22,
     description: "Frontside 180 from fakie",
-    stance: "Switch",
+
   },
   {
     id: 17,
@@ -179,7 +177,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 22,
     description: "Backside 180 from fakie",
-    stance: "Switch",
+
   },
   {
     id: 18,
@@ -187,7 +185,7 @@ const trickCards = [
     difficulty: "Advanced",
     points: 30,
     description: "Frontside 180 in switch stance",
-    stance: "Switch",
+
   },
   {
     id: 19,
@@ -195,7 +193,7 @@ const trickCards = [
     difficulty: "Advanced",
     points: 30,
     description: "Backside 180 in switch stance",
-    stance: "Switch",
+
   },
   {
     id: 20,
@@ -203,7 +201,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 25,
     description: "Fakie frontside 180",
-    stance: "Switch",
+
   },
   {
     id: 21,
@@ -211,7 +209,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 25,
     description: "Fakie backside 180",
-    stance: "Switch",
+
   },
 
   // Flip Tricks
@@ -221,7 +219,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 25,
     description: "Board flips along the length axis",
-    stance: "Regular",
+
   },
   {
     id: 23,
@@ -229,7 +227,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 25,
     description: "Board flips opposite to kickflip",
-    stance: "Regular",
+
   },
   {
     id: 24,
@@ -237,7 +235,7 @@ const trickCards = [
     difficulty: "Advanced",
     points: 40,
     description: "Kickflip with frontside body rotation",
-    stance: "Regular",
+
   },
   {
     id: 25,
@@ -245,7 +243,7 @@ const trickCards = [
     difficulty: "Advanced",
     points: 40,
     description: "Kickflip with backside body rotation",
-    stance: "Regular",
+
   },
   {
     id: 26,
@@ -253,7 +251,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 45,
     description: "Kickflip from nollie position",
-    stance: "Regular",
   },
   {
     id: 27,
@@ -261,7 +258,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 42,
     description: "Kickflip while riding fakie",
-    stance: "Switch",
   },
   {
     id: 28,
@@ -269,7 +265,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 38,
     description: "Kickflip in switch stance",
-    stance: "Switch",
   },
   {
     id: 29,
@@ -277,7 +272,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 45,
     description: "Heelflip from nollie position",
-    stance: "Regular",
   },
   {
     id: 30,
@@ -285,7 +279,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 42,
     description: "Heelflip while riding fakie",
-    stance: "Switch",
   },
   {
     id: 31,
@@ -293,7 +286,7 @@ const trickCards = [
     difficulty: "Advanced",
     points: 38,
     description: "Heelflip in switch stance",
-    stance: "Switch",
+
   },
   {
     id: 32,
@@ -301,7 +294,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 30,
     description: "Shove-it combined with kickflip",
-    stance: "Regular",
+
   },
   {
     id: 33,
@@ -309,7 +302,6 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 30,
     description: "Frontside shove-it with heelflip",
-    stance: "Regular",
   },
 
   // Slides
@@ -319,7 +311,6 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 26,
     description: "Slide frontside on the middle of board",
-    stance: "Regular",
   },
   {
     id: 35,
@@ -327,7 +318,6 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 26,
     description: "Slide backside on the middle of board",
-    stance: "Regular",
   },
   {
     id: 36,
@@ -335,7 +325,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 35,
     description: "Slide on the nose frontside",
-    stance: "Regular",
   },
   {
     id: 37,
@@ -343,7 +332,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 35,
     description: "Slide on the nose backside",
-    stance: "Regular",
   },
   {
     id: 38,
@@ -351,7 +339,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 35,
     description: "Slide on the tail frontside",
-    stance: "Regular",
   },
   {
     id: 39,
@@ -359,7 +346,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 35,
     description: "Slide on the tail backside",
-    stance: "Regular",
   },
   {
     id: 40,
@@ -367,7 +353,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 38,
     description: "Lipslide approached frontside",
-    stance: "Regular",
   },
   {
     id: 41,
@@ -375,7 +360,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 38,
     description: "Lipslide approached backside",
-    stance: "Regular",
   },
   {
     id: 42,
@@ -383,7 +367,6 @@ const trickCards = [
     difficulty: "Pro",
     points: 55,
     description: "Noseblunt slide frontside",
-    stance: "Regular",
   },
   {
     id: 43,
@@ -391,7 +374,6 @@ const trickCards = [
     difficulty: "Pro",
     points: 55,
     description: "Noseblunt slide backside",
-    stance: "Regular",
   },
 
   // Grinds
@@ -401,7 +383,6 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 22,
     description: "Grind on both trucks",
-    stance: "Regular",
   },
   {
     id: 45,
@@ -409,7 +390,6 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 24,
     description: "Grind on front truck only",
-    stance: "Regular",
   },
   {
     id: 46,
@@ -417,7 +397,6 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 24,
     description: "Grind on back truck only",
-    stance: "Regular",
   },
   {
     id: 47,
@@ -425,7 +404,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 38,
     description: "Feeble grind approached frontside",
-    stance: "Regular",
   },
   {
     id: 48,
@@ -433,7 +411,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 38,
     description: "Feeble grind approached backside",
-    stance: "Regular",
   },
   {
     id: 49,
@@ -441,7 +418,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 38,
     description: "Smith grind approached frontside",
-    stance: "Regular",
   },
   {
     id: 50,
@@ -449,7 +425,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 38,
     description: "Smith grind approached backside",
-    stance: "Regular",
   },
   {
     id: 51,
@@ -457,7 +432,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 40,
     description: "Front truck over, back truck grinds",
-    stance: "Regular",
   },
   {
     id: 52,
@@ -465,7 +439,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 32,
     description: "5-0 grind approached frontside",
-    stance: "Regular",
   },
   {
     id: 53,
@@ -473,7 +446,7 @@ const trickCards = [
     difficulty: "Advanced",
     points: 32,
     description: "5-0 grind approached backside",
-    stance: "Regular",
+
   },
   {
     id: 54,
@@ -481,7 +454,7 @@ const trickCards = [
     difficulty: "Advanced",
     points: 42,
     description: "Crooked grind approached frontside",
-    stance: "Regular",
+
   },
   {
     id: 55,
@@ -489,7 +462,7 @@ const trickCards = [
     difficulty: "Advanced",
     points: 42,
     description: "Crooked grind approached backside",
-    stance: "Regular",
+
   },
   {
     id: 56,
@@ -497,7 +470,7 @@ const trickCards = [
     difficulty: "Advanced",
     points: 45,
     description: "Crooked grind with tweaked style",
-    stance: "Regular",
+
   },
   {
     id: 57,
@@ -505,7 +478,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 32,
     description: "Nosegrind approached frontside",
-    stance: "Regular",
   },
   {
     id: 58,
@@ -513,7 +485,6 @@ const trickCards = [
     difficulty: "Advanced",
     points: 32,
     description: "Nosegrind approached backside",
-    stance: "Regular",
   },
 
   // Stalls
@@ -523,7 +494,6 @@ const trickCards = [
     difficulty: "Beginner",
     points: 15,
     description: "Stall on both trucks",
-    stance: "Regular",
   },
   {
     id: 60,
@@ -531,7 +501,7 @@ const trickCards = [
     difficulty: "Beginner",
     points: 16,
     description: "Stall on the nose",
-    stance: "Regular",
+
   },
   {
     id: 61,
@@ -539,7 +509,7 @@ const trickCards = [
     difficulty: "Beginner",
     points: 16,
     description: "Stall on the tail",
-    stance: "Regular",
+
   },
   {
     id: 62,
@@ -547,7 +517,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 25,
     description: "Feeble stall approached frontside",
-    stance: "Regular",
+
   },
   {
     id: 63,
@@ -555,7 +525,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 25,
     description: "Feeble stall approached backside",
-    stance: "Regular",
+
   },
   {
     id: 64,
@@ -563,7 +533,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 25,
     description: "Smith stall approached frontside",
-    stance: "Regular",
+
   },
   {
     id: 65,
@@ -571,7 +541,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 25,
     description: "Smith stall approached backside",
-    stance: "Regular",
+
   },
   {
     id: 66,
@@ -579,7 +549,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 22,
     description: "Nose stall approached frontside",
-    stance: "Regular",
+
   },
   {
     id: 67,
@@ -587,7 +557,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 22,
     description: "Nose stall approached backside",
-    stance: "Regular",
+
   },
   {
     id: 68,
@@ -595,7 +565,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 28,
     description: "Backside axle stall",
-    stance: "Regular",
+
   },
   {
     id: 69,
@@ -603,7 +573,7 @@ const trickCards = [
     difficulty: "Advanced",
     points: 35,
     description: "Stall while grabbing backside",
-    stance: "Regular",
+
   },
 
   // Transition Tricks
@@ -613,7 +583,7 @@ const trickCards = [
     difficulty: "Beginner",
     points: 18,
     description: "Rock over coping and ride back fakie",
-    stance: "Regular",
+
   },
   {
     id: 71,
@@ -621,7 +591,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 24,
     description: "Rock over and kick turn back in",
-    stance: "Regular",
+
   },
   {
     id: 72,
@@ -629,7 +599,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 26,
     description: "Rock and roll approached frontside",
-    stance: "Regular",
+
   },
   {
     id: 73,
@@ -637,7 +607,7 @@ const trickCards = [
     difficulty: "Beginner",
     points: 12,
     description: "Drop into a ramp or bowl",
-    stance: "Regular",
+
   },
   {
     id: 74,
@@ -645,7 +615,7 @@ const trickCards = [
     difficulty: "Advanced",
     points: 45,
     description: "Air with frontside grab",
-    stance: "Regular",
+
   },
   {
     id: 75,
@@ -653,7 +623,7 @@ const trickCards = [
     difficulty: "Advanced",
     points: 45,
     description: "Air with backside grab",
-    stance: "Regular",
+
   },
 
   // Advanced Flip Tricks
@@ -663,7 +633,7 @@ const trickCards = [
     difficulty: "Advanced",
     points: 50,
     description: "Combines kickflip and 360 shuvit",
-    stance: "Regular",
+
   },
   {
     id: 77,
@@ -671,7 +641,7 @@ const trickCards = [
     difficulty: "Advanced",
     points: 45,
     description: "Frontside shuvit with kickflip",
-    stance: "Regular",
+
   },
   {
     id: 78,
@@ -679,7 +649,7 @@ const trickCards = [
     difficulty: "Advanced",
     points: 45,
     description: "Backside shuvit with heelflip",
-    stance: "Regular",
+
   },
   {
     id: 79,
@@ -687,7 +657,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 28,
     description: "Board spins 360° horizontally",
-    stance: "Regular",
+
   },
   {
     id: 80,
@@ -695,7 +665,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 30,
     description: "Board spins 360° frontside",
-    stance: "Regular",
+
   },
   {
     id: 81,
@@ -703,7 +673,7 @@ const trickCards = [
     difficulty: "Intermediate",
     points: 30,
     description: "Board spins 360° backside",
-    stance: "Regular",
+
   },
 
   // Manual Tricks
@@ -713,7 +683,7 @@ const trickCards = [
     difficulty: "Beginner",
     points: 12,
     description: "Balance on back wheels",
-    stance: "Regular",
+
   },
   {
     id: 83,
@@ -721,31 +691,23 @@ const trickCards = [
     difficulty: "Beginner",
     points: 12,
     description: "Balance on front wheels",
-    stance: "Regular",
+
   },
   {
     id: 84,
-    name: "Manual to Manual",
+    name: "Manual to Ollie",
     difficulty: "Intermediate",
     points: 25,
-    description: "Manual to nose manual",
-    stance: "Regular",
+    description: "Manual to Ollie",
+
   },
   {
-    id: 85,
-    name: "Casper Slide",
-    difficulty: "Advanced",
-    points: 40,
-    description: "Slide on the tail with board vertical",
-    stance: "Regular",
-  },
-  {
-    id: 86,
-    name: "Primo Slide",
-    difficulty: "Advanced",
-    points: 35,
-    description: "Balance on the edge of the board",
-    stance: "Regular",
+    id: 84,
+    name: "Manual to Roll-in",
+    difficulty: "Intermediate",
+    points: 25,
+    description: "Manual to Roll-in",
+
   },
 
   // Pro Level Tricks
@@ -755,7 +717,7 @@ const trickCards = [
     difficulty: "Pro",
     points: 65,
     description: "Kickflip that rotates twice",
-    stance: "Regular",
+
   },
   {
     id: 88,
@@ -763,7 +725,7 @@ const trickCards = [
     difficulty: "Pro",
     points: 65,
     description: "Heelflip that rotates twice",
-    stance: "Regular",
+
   },
   {
     id: 89,
@@ -771,15 +733,7 @@ const trickCards = [
     difficulty: "Pro",
     points: 75,
     description: "360 flip from nollie position",
-    stance: "Regular",
-  },
-  {
-    id: 90,
-    name: "Switch 360 Flip",
-    difficulty: "Pro",
-    points: 72,
-    description: "360 flip in switch stance",
-    stance: "Switch",
+
   },
   {
     id: 91,
@@ -787,7 +741,7 @@ const trickCards = [
     difficulty: "Pro",
     points: 75,
     description: "360 flip while riding fakie",
-    stance: "Switch",
+
   },
   {
     id: 92,
@@ -795,23 +749,16 @@ const trickCards = [
     difficulty: "Pro",
     points: 68,
     description: "Kickflip with full body rotation",
-    stance: "Regular",
+
   },
-  {
-    id: 93,
-    name: "Heelflip 360",
-    difficulty: "Pro",
-    points: 68,
-    description: "Heelflip with full body rotation",
-    stance: "Regular",
-  },
+
   {
     id: 94,
     name: "Frontside 360",
     difficulty: "Advanced",
     points: 40,
     description: "Full frontside rotation",
-    stance: "Regular",
+
   },
   {
     id: 95,
@@ -819,7 +766,7 @@ const trickCards = [
     difficulty: "Advanced",
     points: 40,
     description: "Full backside rotation",
-    stance: "Regular",
+
   },
 ]
 
@@ -834,12 +781,12 @@ const availableSkillCards: SkillCard[] = [
   },
 ]
 
-const difficultyColors = {
+const difficultyColors: Record<Trick["difficulty"], string> = {
   Beginner: "bg-green-500",
   Intermediate: "bg-yellow-500",
   Advanced: "bg-orange-500",
   Pro: "bg-red-500",
-}
+};
 
 export default function SkateboardCardGame() {
   const [gameState, setGameState] = useState<GameState>({
@@ -853,7 +800,6 @@ export default function SkateboardCardGame() {
     roundNumber: 1,
   })
   const [newPlayerName, setNewPlayerName] = useState("")
-  const [trickInput, setTrickInput] = useState("")
   const [usedTricks, setUsedTricks] = useState<number[]>([])
   const [isTransitioning, setIsTransitioning] = useState(false)
 
@@ -1077,10 +1023,10 @@ export default function SkateboardCardGame() {
         players: prev.players.map((p) =>
           p.id === currentPlayer.id
             ? {
-                ...p,
-                skillCards: p.skillCards.filter((card) => card.id !== cardId),
-                hasAttemptedCurrentTrick: true,
-              }
+              ...p,
+              skillCards: p.skillCards.filter((card) => card.id !== cardId),
+              hasAttemptedCurrentTrick: true,
+            }
             : p,
         ),
         showTurnModal: false,
@@ -1104,8 +1050,8 @@ export default function SkateboardCardGame() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-white mb-2">🛹 S.K.A.T.E.</h1>
-          <p className="text-gray-300">The classic skateboarding elimination game</p>
+          <h1 className="text-5xl font-bold text-white mb-2">The S.K.A.T.E. Deck</h1>
+          <p className="text-gray-300">Tricks, Flicks, and Epic Picks! 🛹</p>
         </div>
 
         {!gameState.gameStarted ? (
@@ -1231,21 +1177,21 @@ export default function SkateboardCardGame() {
             </Card>
 
             {/* Turn Modal */}
-            <Dialog open={gameState.showTurnModal && !isTransitioning} onOpenChange={() => {}}>
+            <Dialog open={gameState.showTurnModal && !isTransitioning} onOpenChange={() => { }}>
               <DialogContent
-                className={`bg-gray-900 border-gray-600 text-white max-w-md transition-all duration-300 ${
-                  isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"
-                }`}
+                className={`bg-gray-900 border-gray-600 text-white max-w-md transition-all duration-300 ${isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"
+                  }`}
               >
                 <DialogHeader>
-                  <DialogTitle className="text-center text-xl">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <Shuffle className="h-5 w-5 text-blue-400" />
-                      <span className="text-blue-400">Round {gameState.roundNumber}</span>
-                    </div>
-                    Everyone attempts: {gameState.currentTrick?.name}
-                    <br />
-                    <span className="text-lg text-yellow-400">{currentPlayer?.name}'s turn</span>
+                  <DialogTitle className="text-center">
+                    {/* <div className="text-blue-400 flex justify-start items-center gap-2">
+                      <Shuffle className="h-4 w-4 text-blue-400" /> Round {gameState.roundNumber}
+                    </div> */}
+
+                    <span className="text-2xl text-yellow-400 flex items-center justify-center gap-2">
+
+                      {currentPlayer?.name}'s Turn</span>
+
                   </DialogTitle>
                 </DialogHeader>
 
@@ -1256,14 +1202,13 @@ export default function SkateboardCardGame() {
                       <CardHeader className="text-center">
                         <CardTitle className="text-white text-2xl">{gameState.currentTrick.name}</CardTitle>
                         <Badge
-                          className={`${difficultyColors[gameState.currentTrick.difficulty]} text-white w-fit mx-auto`}
+                          className={`${difficultyColors[gameState.currentTrick?.difficulty ?? "Beginner"]} text-white w-fit mx-auto`}
                         >
-                          {gameState.currentTrick.difficulty}
+                          {gameState.currentTrick?.difficulty ?? "N/A"}
                         </Badge>
                       </CardHeader>
                       <CardContent className="text-center">
                         <p className="text-gray-300 mb-4">{gameState.currentTrick.description}</p>
-                        <div className="text-yellow-400 font-bold text-lg">{gameState.currentTrick.points} points</div>
                       </CardContent>
                     </Card>
 
@@ -1324,11 +1269,10 @@ export default function SkateboardCardGame() {
                         {SKATE_LETTERS.map((letter, index) => (
                           <div
                             key={letter}
-                            className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold ${
-                              index < (currentPlayer?.letters.length || 0)
-                                ? "bg-red-600 border-red-500 text-white"
-                                : "bg-gray-700 border-gray-600 text-gray-400"
-                            }`}
+                            className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold ${index < (currentPlayer?.letters.length || 0)
+                              ? "bg-red-600 border-red-500 text-white"
+                              : "bg-gray-700 border-gray-600 text-gray-400"
+                              }`}
                           >
                             {letter}
                           </div>
@@ -1367,13 +1311,12 @@ export default function SkateboardCardGame() {
                   {gameState.players.map((player) => (
                     <div
                       key={player.id}
-                      className={`p-4 rounded-lg border-2 ${
-                        player.isEliminated
-                          ? "bg-red-900/20 border-red-600"
-                          : player.id === currentPlayer?.id
-                            ? "bg-blue-900/30 border-blue-500"
-                            : "bg-gray-800 border-gray-600"
-                      }`}
+                      className={`p-4 rounded-lg border-2 ${player.isEliminated
+                        ? "bg-red-900/20 border-red-600"
+                        : player.id === currentPlayer?.id
+                          ? "bg-blue-900/30 border-blue-500"
+                          : "bg-gray-800 border-gray-600"
+                        }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className={`font-semibold ${player.isEliminated ? "text-red-400" : "text-white"}`}>
@@ -1393,11 +1336,10 @@ export default function SkateboardCardGame() {
                         {SKATE_LETTERS.map((letter, index) => (
                           <div
                             key={letter}
-                            className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold ${
-                              index < player.letters.length
-                                ? "bg-red-600 border-red-500 text-white"
-                                : "bg-gray-700 border-gray-600 text-gray-400"
-                            }`}
+                            className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold ${index < player.letters.length
+                              ? "bg-red-600 border-red-500 text-white"
+                              : "bg-gray-700 border-gray-600 text-gray-400"
+                              }`}
                           >
                             {letter}
                           </div>
