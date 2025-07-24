@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Trash2, Plus, Play, RotateCcw, Target, X, Users, Shuffle } from "lucide-react"
+import { Trash2, Plus, Play, RotateCcw, Target, X, Users, Shuffle, CheckCircle2 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface Player {
@@ -1214,9 +1214,8 @@ export default function SkateboardCardGame() {
 
                     {/* Progress indicator */}
                     <div className="text-center">
-                      <p className="text-sm text-gray-400 mb-2">
-                        {activePlayers.length - playersWhoHaventAttempted.length} of {activePlayers.length} players have
-                        attempted
+                      <p className="text-sm text-gray-400 mb-1">
+                        {((activePlayers.length - playersWhoHaventAttempted.length) / activePlayers.length) * 100}%
                       </p>
                       <div className="w-full bg-gray-700 rounded-full h-2">
                         <div
@@ -1231,7 +1230,7 @@ export default function SkateboardCardGame() {
                     {/* Skill Cards */}
                     {currentPlayer?.skillCards && currentPlayer.skillCards.length > 0 && (
                       <div className="space-y-3">
-                        <h3 className="text-center text-lg font-semibold text-blue-400">Your Skill Cards</h3>
+                        <h3 className="text-center text-lg font-semibold text-blue-400">Skill Cards</h3>
                         <div className="flex gap-2 justify-center">
                           {currentPlayer.skillCards.map((card) => (
                             <div
@@ -1252,13 +1251,12 @@ export default function SkateboardCardGame() {
                     )}
 
                     {/* Action Buttons */}
-                    <div className="flex gap-4 justify-center">
-                      <Button onClick={landTrick} className="bg-green-600 hover:bg-green-700 flex-1">
-                        ✅ Landed It!
+                    <div className="flex gap-2 justify-center">
+                      <Button onClick={missTrick} className="bg-green-600 hover:bg-green-700 flex-1 h-20" size={"lg"}>
+                        <CheckCircle2 className="!h-10 !w-10" />
                       </Button>
-                      <Button onClick={missTrick} className="bg-red-600 hover:bg-red-700 flex-1">
-                        <X className="h-4 w-4 mr-2" />
-                        Missed
+                      <Button onClick={missTrick} className="bg-red-600/80 hover:bg-red-700/80 flex-1 h-20 " size={"lg"}>
+                        <X className="!h-10 !w-10" />
                       </Button>
                     </div>
 
