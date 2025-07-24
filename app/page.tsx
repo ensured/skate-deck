@@ -38,6 +38,7 @@ interface GameState {
 const SKATE_LETTERS = ["S", "K", "A", "T", "E"]
 
 const trickCards = [
+  // Basic Ollies
   {
     id: 1,
     name: "Ollie",
@@ -48,6 +49,172 @@ const trickCards = [
   },
   {
     id: 2,
+    name: "Nollie",
+    difficulty: "Intermediate",
+    points: 20,
+    description: "Ollie off the nose",
+    stance: "Regular",
+  },
+  {
+    id: 3,
+    name: "Fakie Ollie",
+    difficulty: "Beginner",
+    points: 12,
+    description: "Ollie while riding fakie",
+    stance: "Switch",
+  },
+  {
+    id: 4,
+    name: "Switch Ollie",
+    difficulty: "Intermediate",
+    points: 18,
+    description: "Ollie in switch stance",
+    stance: "Switch",
+  },
+
+  // Shove-Its
+  {
+    id: 5,
+    name: "Frontside Pop Shove-It",
+    difficulty: "Beginner",
+    points: 15,
+    description: "Board spins 180° frontside",
+    stance: "Regular",
+  },
+  {
+    id: 6,
+    name: "Backside Pop Shove-It",
+    difficulty: "Beginner",
+    points: 15,
+    description: "Board spins 180° backside",
+    stance: "Regular",
+  },
+  {
+    id: 7,
+    name: "Nollie Shove-It",
+    difficulty: "Intermediate",
+    points: 22,
+    description: "Shove-it from nollie position",
+    stance: "Regular",
+  },
+  {
+    id: 8,
+    name: "Fakie Shove-It",
+    difficulty: "Beginner",
+    points: 16,
+    description: "Shove-it while riding fakie",
+    stance: "Switch",
+  },
+  {
+    id: 9,
+    name: "Switch Pop Shove-It",
+    difficulty: "Intermediate",
+    points: 20,
+    description: "Shove-it in switch stance",
+    stance: "Switch",
+  },
+  {
+    id: 10,
+    name: "Nollie Pop Shove-It",
+    difficulty: "Intermediate",
+    points: 24,
+    description: "Pop shove-it from nollie",
+    stance: "Regular",
+  },
+  {
+    id: 11,
+    name: "Fakie Pop Shove-It",
+    difficulty: "Intermediate",
+    points: 18,
+    description: "Pop shove-it while riding fakie",
+    stance: "Switch",
+  },
+
+  // 180s
+  {
+    id: 12,
+    name: "Frontside 180",
+    difficulty: "Intermediate",
+    points: 20,
+    description: "180° frontside turn",
+    stance: "Regular",
+  },
+  {
+    id: 13,
+    name: "Backside 180",
+    difficulty: "Intermediate",
+    points: 20,
+    description: "180° backside turn",
+    stance: "Regular",
+  },
+  {
+    id: 14,
+    name: "Nollie Frontside 180",
+    difficulty: "Advanced",
+    points: 35,
+    description: "Frontside 180 from nollie",
+    stance: "Regular",
+  },
+  {
+    id: 15,
+    name: "Nollie Backside 180",
+    difficulty: "Advanced",
+    points: 35,
+    description: "Backside 180 from nollie",
+    stance: "Regular",
+  },
+  {
+    id: 16,
+    name: "Fakie Frontside 180",
+    difficulty: "Intermediate",
+    points: 22,
+    description: "Frontside 180 from fakie",
+    stance: "Switch",
+  },
+  {
+    id: 17,
+    name: "Fakie Backside 180",
+    difficulty: "Intermediate",
+    points: 22,
+    description: "Backside 180 from fakie",
+    stance: "Switch",
+  },
+  {
+    id: 18,
+    name: "Switch Frontside 180",
+    difficulty: "Advanced",
+    points: 30,
+    description: "Frontside 180 in switch stance",
+    stance: "Switch",
+  },
+  {
+    id: 19,
+    name: "Switch Backside 180",
+    difficulty: "Advanced",
+    points: 30,
+    description: "Backside 180 in switch stance",
+    stance: "Switch",
+  },
+  {
+    id: 20,
+    name: "Frontside Half-Cab",
+    difficulty: "Intermediate",
+    points: 25,
+    description: "Fakie frontside 180",
+    stance: "Switch",
+  },
+  {
+    id: 21,
+    name: "Backside Half-Cab",
+    difficulty: "Intermediate",
+    points: 25,
+    description: "Fakie backside 180",
+    stance: "Switch",
+  },
+
+  // Flip Tricks
+  {
+    id: 22,
     name: "Kickflip",
     difficulty: "Intermediate",
     points: 25,
@@ -55,7 +222,7 @@ const trickCards = [
     stance: "Regular",
   },
   {
-    id: 3,
+    id: 23,
     name: "Heelflip",
     difficulty: "Intermediate",
     points: 25,
@@ -63,15 +230,433 @@ const trickCards = [
     stance: "Regular",
   },
   {
-    id: 4,
-    name: "Pop Shuvit",
-    difficulty: "Beginner",
-    points: 15,
-    description: "Board spins 180° horizontally",
+    id: 24,
+    name: "Frontside Kickflip",
+    difficulty: "Advanced",
+    points: 40,
+    description: "Kickflip with frontside body rotation",
     stance: "Regular",
   },
   {
-    id: 5,
+    id: 25,
+    name: "Backside Kickflip",
+    difficulty: "Advanced",
+    points: 40,
+    description: "Kickflip with backside body rotation",
+    stance: "Regular",
+  },
+  {
+    id: 26,
+    name: "Nollie Kickflip",
+    difficulty: "Advanced",
+    points: 45,
+    description: "Kickflip from nollie position",
+    stance: "Regular",
+  },
+  {
+    id: 27,
+    name: "Fakie Kickflip",
+    difficulty: "Advanced",
+    points: 42,
+    description: "Kickflip while riding fakie",
+    stance: "Switch",
+  },
+  {
+    id: 28,
+    name: "Switch Kickflip",
+    difficulty: "Advanced",
+    points: 38,
+    description: "Kickflip in switch stance",
+    stance: "Switch",
+  },
+  {
+    id: 29,
+    name: "Nollie Heelflip",
+    difficulty: "Advanced",
+    points: 45,
+    description: "Heelflip from nollie position",
+    stance: "Regular",
+  },
+  {
+    id: 30,
+    name: "Fakie Heelflip",
+    difficulty: "Advanced",
+    points: 42,
+    description: "Heelflip while riding fakie",
+    stance: "Switch",
+  },
+  {
+    id: 31,
+    name: "Switch Heelflip",
+    difficulty: "Advanced",
+    points: 38,
+    description: "Heelflip in switch stance",
+    stance: "Switch",
+  },
+  {
+    id: 32,
+    name: "Varial Kickflip",
+    difficulty: "Intermediate",
+    points: 30,
+    description: "Shove-it combined with kickflip",
+    stance: "Regular",
+  },
+  {
+    id: 33,
+    name: "Varial Heelflip",
+    difficulty: "Intermediate",
+    points: 30,
+    description: "Frontside shove-it with heelflip",
+    stance: "Regular",
+  },
+
+  // Slides
+  {
+    id: 34,
+    name: "Frontside Boardslide",
+    difficulty: "Intermediate",
+    points: 26,
+    description: "Slide frontside on the middle of board",
+    stance: "Regular",
+  },
+  {
+    id: 35,
+    name: "Backside Boardslide",
+    difficulty: "Intermediate",
+    points: 26,
+    description: "Slide backside on the middle of board",
+    stance: "Regular",
+  },
+  {
+    id: 36,
+    name: "Frontside Noseslide",
+    difficulty: "Advanced",
+    points: 35,
+    description: "Slide on the nose frontside",
+    stance: "Regular",
+  },
+  {
+    id: 37,
+    name: "Backside Noseslide",
+    difficulty: "Advanced",
+    points: 35,
+    description: "Slide on the nose backside",
+    stance: "Regular",
+  },
+  {
+    id: 38,
+    name: "Frontside Tailslide",
+    difficulty: "Advanced",
+    points: 35,
+    description: "Slide on the tail frontside",
+    stance: "Regular",
+  },
+  {
+    id: 39,
+    name: "Backside Tailslide",
+    difficulty: "Advanced",
+    points: 35,
+    description: "Slide on the tail backside",
+    stance: "Regular",
+  },
+  {
+    id: 40,
+    name: "Frontside Lipslide",
+    difficulty: "Advanced",
+    points: 38,
+    description: "Lipslide approached frontside",
+    stance: "Regular",
+  },
+  {
+    id: 41,
+    name: "Backside Lipslide",
+    difficulty: "Advanced",
+    points: 38,
+    description: "Lipslide approached backside",
+    stance: "Regular",
+  },
+  {
+    id: 42,
+    name: "Frontside Noseblunt Slide",
+    difficulty: "Pro",
+    points: 55,
+    description: "Noseblunt slide frontside",
+    stance: "Regular",
+  },
+  {
+    id: 43,
+    name: "Backside Noseblunt Slide",
+    difficulty: "Pro",
+    points: 55,
+    description: "Noseblunt slide backside",
+    stance: "Regular",
+  },
+
+  // Grinds
+  {
+    id: 44,
+    name: "50-50 Grind",
+    difficulty: "Intermediate",
+    points: 22,
+    description: "Grind on both trucks",
+    stance: "Regular",
+  },
+  {
+    id: 45,
+    name: "Nosegrind",
+    difficulty: "Intermediate",
+    points: 24,
+    description: "Grind on front truck only",
+    stance: "Regular",
+  },
+  {
+    id: 46,
+    name: "5-0 Grind",
+    difficulty: "Intermediate",
+    points: 24,
+    description: "Grind on back truck only",
+    stance: "Regular",
+  },
+  {
+    id: 47,
+    name: "Frontside Feeble Grind",
+    difficulty: "Advanced",
+    points: 38,
+    description: "Feeble grind approached frontside",
+    stance: "Regular",
+  },
+  {
+    id: 48,
+    name: "Backside Feeble Grind",
+    difficulty: "Advanced",
+    points: 38,
+    description: "Feeble grind approached backside",
+    stance: "Regular",
+  },
+  {
+    id: 49,
+    name: "Frontside Smith Grind",
+    difficulty: "Advanced",
+    points: 38,
+    description: "Smith grind approached frontside",
+    stance: "Regular",
+  },
+  {
+    id: 50,
+    name: "Backside Smith Grind",
+    difficulty: "Advanced",
+    points: 38,
+    description: "Smith grind approached backside",
+    stance: "Regular",
+  },
+  {
+    id: 51,
+    name: "Crooked Grind",
+    difficulty: "Advanced",
+    points: 40,
+    description: "Front truck over, back truck grinds",
+    stance: "Regular",
+  },
+  {
+    id: 52,
+    name: "Frontside 5-0 Grind",
+    difficulty: "Advanced",
+    points: 32,
+    description: "5-0 grind approached frontside",
+    stance: "Regular",
+  },
+  {
+    id: 53,
+    name: "Backside 5-0 Grind",
+    difficulty: "Advanced",
+    points: 32,
+    description: "5-0 grind approached backside",
+    stance: "Regular",
+  },
+  {
+    id: 54,
+    name: "Frontside Crooked Grind",
+    difficulty: "Advanced",
+    points: 42,
+    description: "Crooked grind approached frontside",
+    stance: "Regular",
+  },
+  {
+    id: 55,
+    name: "Backside Crooked Grind",
+    difficulty: "Advanced",
+    points: 42,
+    description: "Crooked grind approached backside",
+    stance: "Regular",
+  },
+  {
+    id: 56,
+    name: "Salad Grind",
+    difficulty: "Advanced",
+    points: 45,
+    description: "Crooked grind with tweaked style",
+    stance: "Regular",
+  },
+  {
+    id: 57,
+    name: "Frontside Nosegrind",
+    difficulty: "Advanced",
+    points: 32,
+    description: "Nosegrind approached frontside",
+    stance: "Regular",
+  },
+  {
+    id: 58,
+    name: "Backside Nosegrind",
+    difficulty: "Advanced",
+    points: 32,
+    description: "Nosegrind approached backside",
+    stance: "Regular",
+  },
+
+  // Stalls
+  {
+    id: 59,
+    name: "Axle Stall",
+    difficulty: "Beginner",
+    points: 15,
+    description: "Stall on both trucks",
+    stance: "Regular",
+  },
+  {
+    id: 60,
+    name: "Nose Stall",
+    difficulty: "Beginner",
+    points: 16,
+    description: "Stall on the nose",
+    stance: "Regular",
+  },
+  {
+    id: 61,
+    name: "Tail Stall",
+    difficulty: "Beginner",
+    points: 16,
+    description: "Stall on the tail",
+    stance: "Regular",
+  },
+  {
+    id: 62,
+    name: "Frontside Feeble Stall",
+    difficulty: "Intermediate",
+    points: 25,
+    description: "Feeble stall approached frontside",
+    stance: "Regular",
+  },
+  {
+    id: 63,
+    name: "Backside Feeble Stall",
+    difficulty: "Intermediate",
+    points: 25,
+    description: "Feeble stall approached backside",
+    stance: "Regular",
+  },
+  {
+    id: 64,
+    name: "Frontside Smith Stall",
+    difficulty: "Intermediate",
+    points: 25,
+    description: "Smith stall approached frontside",
+    stance: "Regular",
+  },
+  {
+    id: 65,
+    name: "Backside Smith Stall",
+    difficulty: "Intermediate",
+    points: 25,
+    description: "Smith stall approached backside",
+    stance: "Regular",
+  },
+  {
+    id: 66,
+    name: "Frontside Nose Stall",
+    difficulty: "Intermediate",
+    points: 22,
+    description: "Nose stall approached frontside",
+    stance: "Regular",
+  },
+  {
+    id: 67,
+    name: "Backside Nose Stall",
+    difficulty: "Intermediate",
+    points: 22,
+    description: "Nose stall approached backside",
+    stance: "Regular",
+  },
+  {
+    id: 68,
+    name: "Disaster",
+    difficulty: "Intermediate",
+    points: 28,
+    description: "Backside axle stall",
+    stance: "Regular",
+  },
+  {
+    id: 69,
+    name: "Backside Air Stall",
+    difficulty: "Advanced",
+    points: 35,
+    description: "Stall while grabbing backside",
+    stance: "Regular",
+  },
+
+  // Transition Tricks
+  {
+    id: 70,
+    name: "Rock to Fakie",
+    difficulty: "Beginner",
+    points: 18,
+    description: "Rock over coping and ride back fakie",
+    stance: "Regular",
+  },
+  {
+    id: 71,
+    name: "Rock and Roll",
+    difficulty: "Intermediate",
+    points: 24,
+    description: "Rock over and kick turn back in",
+    stance: "Regular",
+  },
+  {
+    id: 72,
+    name: "Frontside Rock and Roll",
+    difficulty: "Intermediate",
+    points: 26,
+    description: "Rock and roll approached frontside",
+    stance: "Regular",
+  },
+  {
+    id: 73,
+    name: "Drop-In",
+    difficulty: "Beginner",
+    points: 12,
+    description: "Drop into a ramp or bowl",
+    stance: "Regular",
+  },
+  {
+    id: 74,
+    name: "Frontside Air",
+    difficulty: "Advanced",
+    points: 45,
+    description: "Air with frontside grab",
+    stance: "Regular",
+  },
+  {
+    id: 75,
+    name: "Backside Air",
+    difficulty: "Advanced",
+    points: 45,
+    description: "Air with backside grab",
+    stance: "Regular",
+  },
+
+  // Advanced Flip Tricks
+  {
+    id: 76,
     name: "360 Flip",
     difficulty: "Advanced",
     points: 50,
@@ -79,7 +664,7 @@ const trickCards = [
     stance: "Regular",
   },
   {
-    id: 6,
+    id: 77,
     name: "Hardflip",
     difficulty: "Advanced",
     points: 45,
@@ -87,31 +672,65 @@ const trickCards = [
     stance: "Regular",
   },
   {
-    id: 7,
-    name: "Varial Flip",
+    id: 78,
+    name: "Inward Heelflip",
+    difficulty: "Advanced",
+    points: 45,
+    description: "Backside shuvit with heelflip",
+    stance: "Regular",
+  },
+  {
+    id: 79,
+    name: "360 Shuvit",
+    difficulty: "Intermediate",
+    points: 28,
+    description: "Board spins 360° horizontally",
+    stance: "Regular",
+  },
+  {
+    id: 80,
+    name: "Frontside 360 Shuvit",
     difficulty: "Intermediate",
     points: 30,
-    description: "Shuvit combined with kickflip",
+    description: "Board spins 360° frontside",
     stance: "Regular",
   },
   {
-    id: 8,
-    name: "Impossible",
-    difficulty: "Pro",
-    points: 75,
-    description: "Board wraps around back foot",
+    id: 81,
+    name: "Backside 360 Shuvit",
+    difficulty: "Intermediate",
+    points: 30,
+    description: "Board spins 360° backside",
+    stance: "Regular",
+  },
+
+  // Manual Tricks
+  {
+    id: 82,
+    name: "Manual",
+    difficulty: "Beginner",
+    points: 12,
+    description: "Balance on back wheels",
     stance: "Regular",
   },
   {
-    id: 9,
-    name: "Laser Flip",
-    difficulty: "Pro",
-    points: 80,
-    description: "360 heelflip underflip",
+    id: 83,
+    name: "Nose Manual",
+    difficulty: "Beginner",
+    points: 12,
+    description: "Balance on front wheels",
     stance: "Regular",
   },
   {
-    id: 10,
+    id: 84,
+    name: "Manual to Manual",
+    difficulty: "Intermediate",
+    points: 25,
+    description: "Manual to nose manual",
+    stance: "Regular",
+  },
+  {
+    id: 85,
     name: "Casper Slide",
     difficulty: "Advanced",
     points: 40,
@@ -119,19 +738,85 @@ const trickCards = [
     stance: "Regular",
   },
   {
-    id: 11,
+    id: 86,
     name: "Primo Slide",
     difficulty: "Advanced",
     points: 35,
     description: "Balance on the edge of the board",
     stance: "Regular",
   },
+
+  // Pro Level Tricks
   {
-    id: 12,
-    name: "Darkslide",
+    id: 87,
+    name: "Double Kickflip",
     difficulty: "Pro",
-    points: 70,
-    description: "Slide on the grip tape",
+    points: 65,
+    description: "Kickflip that rotates twice",
+    stance: "Regular",
+  },
+  {
+    id: 88,
+    name: "Double Heelflip",
+    difficulty: "Pro",
+    points: 65,
+    description: "Heelflip that rotates twice",
+    stance: "Regular",
+  },
+  {
+    id: 89,
+    name: "Nollie 360 Flip",
+    difficulty: "Pro",
+    points: 75,
+    description: "360 flip from nollie position",
+    stance: "Regular",
+  },
+  {
+    id: 90,
+    name: "Switch 360 Flip",
+    difficulty: "Pro",
+    points: 72,
+    description: "360 flip in switch stance",
+    stance: "Switch",
+  },
+  {
+    id: 91,
+    name: "Fakie 360 Flip",
+    difficulty: "Pro",
+    points: 75,
+    description: "360 flip while riding fakie",
+    stance: "Switch",
+  },
+  {
+    id: 92,
+    name: "Kickflip 360",
+    difficulty: "Pro",
+    points: 68,
+    description: "Kickflip with full body rotation",
+    stance: "Regular",
+  },
+  {
+    id: 93,
+    name: "Heelflip 360",
+    difficulty: "Pro",
+    points: 68,
+    description: "Heelflip with full body rotation",
+    stance: "Regular",
+  },
+  {
+    id: 94,
+    name: "Frontside 360",
+    difficulty: "Advanced",
+    points: 40,
+    description: "Full frontside rotation",
+    stance: "Regular",
+  },
+  {
+    id: 95,
+    name: "Backside 360",
+    difficulty: "Advanced",
+    points: 40,
+    description: "Full backside rotation",
     stance: "Regular",
   },
 ]
@@ -151,7 +836,6 @@ const difficultyColors = {
   Beginner: "bg-green-500",
   Intermediate: "bg-yellow-500",
   Advanced: "bg-orange-500",
-  Pro: "bg-red-500",
 }
 
 export default function SkateboardCardGame() {
@@ -166,8 +850,8 @@ export default function SkateboardCardGame() {
   })
   const [newPlayerName, setNewPlayerName] = useState("")
   const [trickInput, setTrickInput] = useState("")
+  const [usedTricks, setUsedTricks] = useState<number[]>([])
 
-  // Update the addPlayer function to include skillCards
   const addPlayer = () => {
     if (newPlayerName.trim() && gameState.players.length < 8) {
       setGameState((prev) => ({
@@ -194,7 +878,6 @@ export default function SkateboardCardGame() {
     }))
   }
 
-  // Update startGame function to give starting skill cards
   const startGame = () => {
     if (gameState.players.length >= 2) {
       // Randomly select first player
@@ -217,7 +900,28 @@ export default function SkateboardCardGame() {
   }
 
   const drawRandomTrick = (playerIndex: number) => {
-    const randomTrick = trickCards[Math.floor(Math.random() * trickCards.length)]
+    // Filter out used tricks
+    const availableTricks = trickCards.filter((trick) => !usedTricks.includes(trick.id))
+
+    // If no tricks left, reset the used tricks (shouldn't happen with 50 tricks)
+    if (availableTricks.length === 0) {
+      setUsedTricks([])
+      const randomTrick = trickCards[Math.floor(Math.random() * trickCards.length)]
+      setUsedTricks([randomTrick.id])
+
+      setGameState((prev) => ({
+        ...prev,
+        currentTrick: randomTrick,
+        currentPlayerIndex: playerIndex,
+        showTurnModal: true,
+      }))
+      return
+    }
+
+    const randomTrick = availableTricks[Math.floor(Math.random() * availableTricks.length)]
+
+    // Add this trick to used tricks
+    setUsedTricks((prev) => [...prev, randomTrick.id])
 
     setGameState((prev) => ({
       ...prev,
@@ -300,7 +1004,6 @@ export default function SkateboardCardGame() {
     }, 500)
   }
 
-  // Update resetGame to reset skill cards
   const resetGame = () => {
     setGameState({
       players: gameState.players.map((p) => ({
@@ -316,6 +1019,7 @@ export default function SkateboardCardGame() {
       winner: null,
       showTurnModal: false,
     })
+    setUsedTricks([]) // Reset used tricks
   }
 
   const newGame = () => {
@@ -328,9 +1032,9 @@ export default function SkateboardCardGame() {
       winner: null,
       showTurnModal: false,
     })
+    setUsedTricks([]) // Reset used tricks
   }
 
-  // Add function to use a skill card
   const useSkillCard = (cardId: string) => {
     const currentPlayer = gameState.players[gameState.currentPlayerIndex]
 
@@ -503,17 +1207,16 @@ export default function SkateboardCardGame() {
                         <h3 className="text-center text-lg font-semibold text-blue-400">Your Skill Cards</h3>
                         <div className="flex gap-2 justify-center">
                           {currentPlayer.skillCards.map((card) => (
-                            <Card
+                            <div
                               key={card.id}
                               className="bg-purple-900/50 border-purple-500 cursor-pointer hover:bg-purple-800/50 transition-colors"
-                              onClick={() => useSkillCard(card.id)}
                             >
-                              <CardContent className="p-3 text-center">
+                              <div className="p-3 text-center">
                                 <div className="text-2xl mb-1">{card.icon}</div>
                                 <div className="text-white font-semibold text-sm">{card.name}</div>
                                 <div className="text-gray-300 text-xs">{card.description}</div>
-                              </CardContent>
-                            </Card>
+                              </div>
+                            </div>
                           ))}
                         </div>
                         <p className="text-center text-gray-400 text-sm">Click a card to use it</p>
