@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Trash2, Plus, Play, RotateCcw, Target, X } from "lucide-react"
+import { Trash2, Plus, Play, RotateCcw, Target, X, Users, Shuffle } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface Player {
@@ -14,6 +14,7 @@ interface Player {
   letters: string[]
   isEliminated: boolean
   skillCards: SkillCard[]
+  hasAttemptedCurrentTrick: boolean
 }
 
 // Add skill card interface after the Player interface
@@ -33,6 +34,7 @@ interface GameState {
   gamePhase: "setting" | "attempting" | "game-over"
   winner: string | null
   showTurnModal: boolean
+  roundNumber: number
 }
 
 const SKATE_LETTERS = ["S", "K", "A", "T", "E"]
@@ -836,6 +838,7 @@ const difficultyColors = {
   Beginner: "bg-green-500",
   Intermediate: "bg-yellow-500",
   Advanced: "bg-orange-500",
+  Pro: "bg-red-500",
 }
 
 export default function SkateboardCardGame() {
@@ -847,10 +850,12 @@ export default function SkateboardCardGame() {
     gamePhase: "setting",
     winner: null,
     showTurnModal: false,
+    roundNumber: 1,
   })
   const [newPlayerName, setNewPlayerName] = useState("")
   const [trickInput, setTrickInput] = useState("")
   const [usedTricks, setUsedTricks] = useState<number[]>([])
+  const [isTransitioning, setIsTransitioning] = useState(false)
 
   const addPlayer = () => {
     if (newPlayerName.trim() && gameState.players.length < 8) {
@@ -864,6 +869,7 @@ export default function SkateboardCardGame() {
             letters: [],
             isEliminated: false,
             skillCards: [],
+            hasAttemptedCurrentTrick: false,
           },
         ],
       }))
@@ -891,6 +897,7 @@ export default function SkateboardCardGame() {
         players: prev.players.map((player) => ({
           ...player,
           skillCards: [availableSkillCards[0]], // Give everyone a Hard Pass card to start
+          hasAttemptedCurrentTrick: false,
         })),
       }))
 
@@ -903,7 +910,7 @@ export default function SkateboardCardGame() {
     // Filter out used tricks
     const availableTricks = trickCards.filter((trick) => !usedTricks.includes(trick.id))
 
-    // If no tricks left, reset the used tricks (shouldn't happen with 50 tricks)
+    // If no tricks left, reset the used tricks
     if (availableTricks.length === 0) {
       setUsedTricks([])
       const randomTrick = trickCards[Math.floor(Math.random() * trickCards.length)]
@@ -914,6 +921,9 @@ export default function SkateboardCardGame() {
         currentTrick: randomTrick,
         currentPlayerIndex: playerIndex,
         showTurnModal: true,
+        gamePhase: "attempting",
+        players: prev.players.map((p) => ({ ...p, hasAttemptedCurrentTrick: false })),
+        roundNumber: prev.roundNumber + 1,
       }))
       return
     }
@@ -928,14 +938,21 @@ export default function SkateboardCardGame() {
       currentTrick: randomTrick,
       currentPlayerIndex: playerIndex,
       showTurnModal: true,
+      gamePhase: "attempting",
+      players: prev.players.map((p) => ({ ...p, hasAttemptedCurrentTrick: false })),
+      roundNumber: prev.roundNumber + 1,
     }))
   }
 
   const landTrick = () => {
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex]
+
     setGameState((prev) => ({
       ...prev,
+      players: prev.players.map((p) => (p.id === currentPlayer.id ? { ...p, hasAttemptedCurrentTrick: true } : p)),
       showTurnModal: false,
     }))
+
     nextPlayer()
   }
 
@@ -946,7 +963,7 @@ export default function SkateboardCardGame() {
 
     setGameState((prev) => {
       const updatedPlayers = prev.players.map((p) =>
-        p.id === currentPlayer.id ? { ...p, letters: newLetters, isEliminated } : p,
+        p.id === currentPlayer.id ? { ...p, letters: newLetters, isEliminated, hasAttemptedCurrentTrick: true } : p,
       )
 
       const activePlayers = updatedPlayers.filter((p) => !p.isEliminated)
@@ -972,36 +989,48 @@ export default function SkateboardCardGame() {
   }
 
   const nextPlayer = () => {
-    setGameState((prev) => {
-      const activePlayers = prev.players.filter((p) => !p.isEliminated)
-      if (activePlayers.length <= 1) return prev
+    setIsTransitioning(true)
 
-      let nextIndex = (prev.currentPlayerIndex + 1) % prev.players.length
-
-      // Skip eliminated players
-      while (prev.players[nextIndex].isEliminated) {
-        nextIndex = (nextIndex + 1) % prev.players.length
-      }
-
-      return {
-        ...prev,
-        currentPlayerIndex: nextIndex,
-        gamePhase: "setting",
-        currentTrick: null,
-      }
-    })
-
-    // Draw trick for next player after state update
     setTimeout(() => {
-      const activePlayers = gameState.players.filter((p) => !p.isEliminated)
-      if (activePlayers.length > 1) {
-        let nextIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length
-        while (gameState.players[nextIndex].isEliminated) {
-          nextIndex = (nextIndex + 1) % gameState.players.length
+      setGameState((prev) => {
+        const activePlayers = prev.players.filter((p) => !p.isEliminated)
+        if (activePlayers.length <= 1) return prev
+
+        // Check if everyone has attempted the current trick
+        const activePlayersWhoHaventAttempted = activePlayers.filter((p) => !p.hasAttemptedCurrentTrick)
+
+        if (activePlayersWhoHaventAttempted.length === 0) {
+          // Everyone has attempted, draw new trick for first active player
+          const firstActivePlayerIndex = prev.players.findIndex((p) => !p.isEliminated)
+          setTimeout(() => {
+            drawRandomTrick(firstActivePlayerIndex)
+          }, 500)
+          return prev
         }
-        drawRandomTrick(nextIndex)
-      }
-    }, 500)
+
+        // Find next player who hasn't attempted yet
+        let nextIndex = (prev.currentPlayerIndex + 1) % prev.players.length
+
+        // Skip eliminated players and players who have already attempted
+        while (prev.players[nextIndex].isEliminated || prev.players[nextIndex].hasAttemptedCurrentTrick) {
+          nextIndex = (nextIndex + 1) % prev.players.length
+        }
+
+        return {
+          ...prev,
+          currentPlayerIndex: nextIndex,
+        }
+      })
+
+      // Wait a bit more, then show the modal with fade in
+      setTimeout(() => {
+        setGameState((prev) => ({
+          ...prev,
+          showTurnModal: true,
+        }))
+        setIsTransitioning(false)
+      }, 300)
+    }, 300)
   }
 
   const resetGame = () => {
@@ -1011,6 +1040,7 @@ export default function SkateboardCardGame() {
         letters: [],
         isEliminated: false,
         skillCards: [availableSkillCards[0]], // Give everyone a Hard Pass card again
+        hasAttemptedCurrentTrick: false,
       })),
       currentPlayerIndex: 0,
       gameStarted: false,
@@ -1018,6 +1048,7 @@ export default function SkateboardCardGame() {
       gamePhase: "setting",
       winner: null,
       showTurnModal: false,
+      roundNumber: 1,
     })
     setUsedTricks([]) // Reset used tricks
   }
@@ -1031,6 +1062,7 @@ export default function SkateboardCardGame() {
       gamePhase: "setting",
       winner: null,
       showTurnModal: false,
+      roundNumber: 1,
     })
     setUsedTricks([]) // Reset used tricks
   }
@@ -1039,11 +1071,17 @@ export default function SkateboardCardGame() {
     const currentPlayer = gameState.players[gameState.currentPlayerIndex]
 
     if (cardId === "hard-pass") {
-      // Remove the card from player's hand
+      // Remove the card from player's hand and mark as attempted
       setGameState((prev) => ({
         ...prev,
         players: prev.players.map((p) =>
-          p.id === currentPlayer.id ? { ...p, skillCards: p.skillCards.filter((card) => card.id !== cardId) } : p,
+          p.id === currentPlayer.id
+            ? {
+                ...p,
+                skillCards: p.skillCards.filter((card) => card.id !== cardId),
+                hasAttemptedCurrentTrick: true,
+              }
+            : p,
         ),
         showTurnModal: false,
       }))
@@ -1055,6 +1093,11 @@ export default function SkateboardCardGame() {
 
   const currentPlayer = gameState.players[gameState.currentPlayerIndex]
   const activePlayers = gameState.players.filter((p) => !p.isEliminated)
+  const playersWhoHaventAttempted = activePlayers.filter((p) => !p.hasAttemptedCurrentTrick)
+
+  const handleSkillCardClick = (cardId: string) => {
+    useSkillCard(cardId)
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4">
@@ -1143,7 +1186,8 @@ export default function SkateboardCardGame() {
               <CardContent className="p-8">
                 <div className="text-6xl mb-4">🏆</div>
                 <h2 className="text-3xl font-bold text-white mb-2">Game Over!</h2>
-                <p className="text-xl text-yellow-400 mb-6">{gameState.winner} Wins!</p>
+                <p className="text-xl text-yellow-400 mb-4">{gameState.winner} Wins!</p>
+                <p className="text-gray-300 mb-6">Completed {gameState.roundNumber - 1} rounds</p>
                 <div className="flex gap-3 justify-center">
                   <Button onClick={resetGame} className="bg-blue-600 hover:bg-blue-700">
                     <RotateCcw className="h-4 w-4 mr-2" />
@@ -1166,21 +1210,43 @@ export default function SkateboardCardGame() {
             {/* Current Game Status */}
             <Card className="bg-black/20 border-blue-600">
               <CardHeader>
-                <CardTitle className="text-white text-center">
-                  <Target className="h-6 w-6 inline mr-2" />
-                  Game in Progress
+                <CardTitle className="text-white text-center flex items-center justify-center gap-2">
+                  <Target className="h-6 w-6" />
+                  Round {gameState.roundNumber}
+                  <Users className="h-5 w-5 ml-2" />
+                  {activePlayers.length} players left
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-center text-gray-300">{activePlayers.length} players remaining</p>
+                <div className="text-center">
+                  <p className="text-gray-300 mb-2">
+                    Current trick: <span className="text-blue-400 font-semibold">{gameState.currentTrick?.name}</span>
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    {playersWhoHaventAttempted.length} player{playersWhoHaventAttempted.length !== 1 ? "s" : ""} still
+                    need to attempt this trick
+                  </p>
+                </div>
               </CardContent>
             </Card>
 
             {/* Turn Modal */}
-            <Dialog open={gameState.showTurnModal} onOpenChange={() => {}}>
-              <DialogContent className="bg-gray-900 border-gray-600 text-white max-w-md">
+            <Dialog open={gameState.showTurnModal && !isTransitioning} onOpenChange={() => {}}>
+              <DialogContent
+                className={`bg-gray-900 border-gray-600 text-white max-w-md transition-all duration-300 ${
+                  isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"
+                }`}
+              >
                 <DialogHeader>
-                  <DialogTitle className="text-center text-xl">{currentPlayer?.name}'s Turn</DialogTitle>
+                  <DialogTitle className="text-center text-xl">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Shuffle className="h-5 w-5 text-blue-400" />
+                      <span className="text-blue-400">Round {gameState.roundNumber}</span>
+                    </div>
+                    Everyone attempts: {gameState.currentTrick?.name}
+                    <br />
+                    <span className="text-lg text-yellow-400">{currentPlayer?.name}'s turn</span>
+                  </DialogTitle>
                 </DialogHeader>
 
                 {gameState.currentTrick && (
@@ -1201,6 +1267,22 @@ export default function SkateboardCardGame() {
                       </CardContent>
                     </Card>
 
+                    {/* Progress indicator */}
+                    <div className="text-center">
+                      <p className="text-sm text-gray-400 mb-2">
+                        {activePlayers.length - playersWhoHaventAttempted.length} of {activePlayers.length} players have
+                        attempted
+                      </p>
+                      <div className="w-full bg-gray-700 rounded-full h-2">
+                        <div
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                          style={{
+                            width: `${((activePlayers.length - playersWhoHaventAttempted.length) / activePlayers.length) * 100}%`,
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+
                     {/* Skill Cards */}
                     {currentPlayer?.skillCards && currentPlayer.skillCards.length > 0 && (
                       <div className="space-y-3">
@@ -1209,7 +1291,8 @@ export default function SkateboardCardGame() {
                           {currentPlayer.skillCards.map((card) => (
                             <div
                               key={card.id}
-                              className="bg-purple-900/50 border-purple-500 cursor-pointer hover:bg-purple-800/50 transition-colors"
+                              onClick={() => handleSkillCardClick(card.id)}
+                              className="bg-purple-900/50 border border-purple-500 cursor-pointer hover:bg-purple-800/50 transition-colors rounded-lg"
                             >
                               <div className="p-3 text-center">
                                 <div className="text-2xl mb-1">{card.icon}</div>
@@ -1257,6 +1340,23 @@ export default function SkateboardCardGame() {
               </DialogContent>
             </Dialog>
 
+            {/* Transition Overlay */}
+            {isTransitioning && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 transition-opacity duration-300">
+                <div className="bg-gray-900 border-2 border-blue-500 rounded-lg p-8 text-center animate-pulse">
+                  <div className="text-4xl mb-4">{playersWhoHaventAttempted.length === 1 ? "🎯" : "🔄"}</div>
+                  <h3 className="text-2xl font-bold text-white mb-2">
+                    {playersWhoHaventAttempted.length === 1 ? "Drawing New Trick..." : "Next Player..."}
+                  </h3>
+                  <p className="text-gray-300">
+                    {playersWhoHaventAttempted.length === 1
+                      ? "Everyone has attempted this trick!"
+                      : "Get ready for the next attempt!"}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Players Status */}
             <Card className="bg-black/20 border-gray-600">
               <CardHeader>
@@ -1279,10 +1379,15 @@ export default function SkateboardCardGame() {
                         <span className={`font-semibold ${player.isEliminated ? "text-red-400" : "text-white"}`}>
                           {player.name}
                         </span>
-                        {player.id === currentPlayer?.id && !player.isEliminated && (
-                          <Badge className="bg-blue-600 text-white">Current</Badge>
-                        )}
-                        {player.isEliminated && <Badge className="bg-red-600 text-white">Out</Badge>}
+                        <div className="flex gap-1">
+                          {player.id === currentPlayer?.id && !player.isEliminated && (
+                            <Badge className="bg-blue-600 text-white text-xs">Current</Badge>
+                          )}
+                          {player.isEliminated && <Badge className="bg-red-600 text-white text-xs">Out</Badge>}
+                          {!player.isEliminated && player.hasAttemptedCurrentTrick && (
+                            <Badge className="bg-green-600 text-white text-xs">✓</Badge>
+                          )}
+                        </div>
                       </div>
                       <div className="flex gap-1">
                         {SKATE_LETTERS.map((letter, index) => (
