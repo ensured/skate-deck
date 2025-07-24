@@ -1207,6 +1207,20 @@ export default function SkateboardCardGame() {
 
                   </DialogTitle>
                 </DialogHeader>
+                {/* Progress indicator */}
+                <div className="text-center">
+                  <p className="text-sm text-gray-400 mb-1">
+                    {((activePlayers.length - playersWhoHaventAttempted.length) / activePlayers.length) * 100}%
+                  </p>
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{
+                        width: `${((activePlayers.length - playersWhoHaventAttempted.length) / activePlayers.length) * 100}%`,
+                      }}
+                    ></div>
+                  </div>
+                </div>
 
                 {gameState.currentTrick && (
                   <div className="space-y-6">
@@ -1225,20 +1239,19 @@ export default function SkateboardCardGame() {
                       </CardContent>
                     </Card>
 
-                    {/* Progress indicator */}
-                    <div className="text-center">
-                      <p className="text-sm text-gray-400 mb-1">
-                        {((activePlayers.length - playersWhoHaventAttempted.length) / activePlayers.length) * 100}%
-                      </p>
-                      <div className="w-full bg-gray-700 rounded-full h-2">
-                        <div
-                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                          style={{
-                            width: `${((activePlayers.length - playersWhoHaventAttempted.length) / activePlayers.length) * 100}%`,
-                          }}
-                        ></div>
-                      </div>
+                    {/* Action Buttons */}
+                    <div className="flex gap-8 justify-between px-8">
+                      <Button onClick={missTrick} className="bg-green-600 hover:bg-green-700 flex-1 h-24" size={"lg"}>
+                        <CheckCircle2 className="!h-10 !w-10" />
+                      </Button>
+                      <Button onClick={missTrick} className="bg-red-600/80 hover:bg-red-700/80 flex-1 h-24 " size={"lg"}>
+                        <X className="!h-10 !w-10" />
+                      </Button>
                     </div>
+
+
+
+
 
                     {/* Skill Cards */}
                     {currentPlayer?.skillCards && currentPlayer.skillCards.length > 0 && (
@@ -1259,19 +1272,10 @@ export default function SkateboardCardGame() {
                             </div>
                           ))}
                         </div>
-                        <p className="text-center text-gray-400 text-sm">Click a card to use it</p>
+                        {/* <p className="text-center text-gray-400 text-sm">Click a card to use it</p> */}
                       </div>
                     )}
 
-                    {/* Action Buttons */}
-                    <div className="flex gap-8 justify-between px-8">
-                      <Button onClick={missTrick} className="bg-green-600 hover:bg-green-700 flex-1 h-24" size={"lg"}>
-                        <CheckCircle2 className="!h-10 !w-10" />
-                      </Button>
-                      <Button onClick={missTrick} className="bg-red-600/80 hover:bg-red-700/80 flex-1 h-24 " size={"lg"}>
-                        <X className="!h-10 !w-10" />
-                      </Button>
-                    </div>
 
                     {/* Player's Current Letters */}
                     <div className="text-center">
