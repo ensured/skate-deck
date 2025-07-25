@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Trash2, Plus, Play, RotateCcw, Target, X, Users, Shuffle, CheckCircle2 } from "lucide-react"
+import { Trash2, Plus, Play, RotateCcw, Target, X, Users, CheckCircle2 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface Player {
@@ -18,11 +18,11 @@ interface Player {
 }
 
 interface Trick {
-  id: number;
-  name: string;
-  difficulty: "Beginner" | "Intermediate" | "Advanced" | "Pro";
-  points: number;
-  description: string;
+  id: number
+  name: string
+  difficulty: "Beginner" | "Intermediate" | "Advanced" | "Pro"
+  points: number
+  description: string
 }
 
 // Add skill card interface after the Player interface
@@ -35,17 +35,15 @@ interface SkillCard {
 }
 
 interface GameState {
-  players: Player[];
-  currentPlayerIndex: number;
-  gameStarted: boolean;
-  currentTrick: Trick | null;
-  gamePhase: "setting" | "attempting" | "game-over";
-  winner: string | null;
-  showTurnModal: boolean;
-  roundNumber: number;
+  players: Player[]
+  currentPlayerIndex: number
+  gameStarted: boolean
+  currentTrick: Trick | null
+  gamePhase: "setting" | "attempting" | "game-over"
+  winner: string | null
+  showTurnModal: boolean
+  roundNumber: number
 }
-
-
 
 const SKATE_LETTERS = ["S", "K", "A", "T", "E"]
 
@@ -87,7 +85,6 @@ const trickCards: Trick[] = [
     difficulty: "Beginner",
     points: 15,
     description: "Board spins 180° frontside",
-
   },
   {
     id: 6,
@@ -123,7 +120,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 24,
     description: "Pop shove-it from nollie",
-
   },
   {
     id: 11,
@@ -161,7 +157,6 @@ const trickCards: Trick[] = [
     difficulty: "Advanced",
     points: 35,
     description: "Backside 180 from nollie",
-
   },
   {
     id: 16,
@@ -169,7 +164,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 22,
     description: "Frontside 180 from fakie",
-
   },
   {
     id: 17,
@@ -177,7 +171,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 22,
     description: "Backside 180 from fakie",
-
   },
   {
     id: 18,
@@ -185,7 +178,6 @@ const trickCards: Trick[] = [
     difficulty: "Advanced",
     points: 30,
     description: "Frontside 180 in switch stance",
-
   },
   {
     id: 19,
@@ -193,7 +185,6 @@ const trickCards: Trick[] = [
     difficulty: "Advanced",
     points: 30,
     description: "Backside 180 in switch stance",
-
   },
   {
     id: 20,
@@ -201,7 +192,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 25,
     description: "Fakie frontside 180",
-
   },
   {
     id: 21,
@@ -209,7 +199,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 25,
     description: "Fakie backside 180",
-
   },
 
   // Flip Tricks
@@ -219,7 +208,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 25,
     description: "Board flips along the length axis",
-
   },
   {
     id: 23,
@@ -227,7 +215,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 25,
     description: "Board flips opposite to kickflip",
-
   },
   {
     id: 24,
@@ -235,7 +222,6 @@ const trickCards: Trick[] = [
     difficulty: "Advanced",
     points: 40,
     description: "Kickflip with frontside body rotation",
-
   },
   {
     id: 25,
@@ -243,7 +229,6 @@ const trickCards: Trick[] = [
     difficulty: "Advanced",
     points: 40,
     description: "Kickflip with backside body rotation",
-
   },
   {
     id: 26,
@@ -286,7 +271,6 @@ const trickCards: Trick[] = [
     difficulty: "Advanced",
     points: 38,
     description: "Heelflip in switch stance",
-
   },
   {
     id: 32,
@@ -294,7 +278,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 30,
     description: "Shove-it combined with kickflip",
-
   },
   {
     id: 33,
@@ -446,7 +429,6 @@ const trickCards: Trick[] = [
     difficulty: "Advanced",
     points: 32,
     description: "5-0 grind approached backside",
-
   },
   {
     id: 54,
@@ -454,7 +436,6 @@ const trickCards: Trick[] = [
     difficulty: "Advanced",
     points: 42,
     description: "Crooked grind approached frontside",
-
   },
   {
     id: 55,
@@ -462,7 +443,6 @@ const trickCards: Trick[] = [
     difficulty: "Advanced",
     points: 42,
     description: "Crooked grind approached backside",
-
   },
   {
     id: 56,
@@ -470,7 +450,6 @@ const trickCards: Trick[] = [
     difficulty: "Advanced",
     points: 45,
     description: "Crooked grind with tweaked style",
-
   },
   {
     id: 57,
@@ -501,7 +480,6 @@ const trickCards: Trick[] = [
     difficulty: "Beginner",
     points: 16,
     description: "Stall on the nose",
-
   },
   {
     id: 61,
@@ -509,7 +487,6 @@ const trickCards: Trick[] = [
     difficulty: "Beginner",
     points: 16,
     description: "Stall on the tail",
-
   },
   {
     id: 62,
@@ -517,7 +494,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 25,
     description: "Feeble stall approached frontside",
-
   },
   {
     id: 63,
@@ -525,7 +501,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 25,
     description: "Feeble stall approached backside",
-
   },
   {
     id: 64,
@@ -533,7 +508,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 25,
     description: "Smith stall approached frontside",
-
   },
   {
     id: 65,
@@ -541,7 +515,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 25,
     description: "Smith stall approached backside",
-
   },
   {
     id: 66,
@@ -549,7 +522,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 22,
     description: "Nose stall approached frontside",
-
   },
   {
     id: 67,
@@ -557,7 +529,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 22,
     description: "Nose stall approached backside",
-
   },
   {
     id: 68,
@@ -565,7 +536,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 28,
     description: "Backside axle stall",
-
   },
   {
     id: 69,
@@ -573,7 +543,6 @@ const trickCards: Trick[] = [
     difficulty: "Advanced",
     points: 35,
     description: "Stall while grabbing backside",
-
   },
 
   // Transition Tricks
@@ -583,7 +552,6 @@ const trickCards: Trick[] = [
     difficulty: "Beginner",
     points: 18,
     description: "Rock over coping and ride back fakie",
-
   },
   {
     id: 71,
@@ -591,7 +559,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 24,
     description: "Rock over and kick turn back in",
-
   },
   {
     id: 72,
@@ -599,7 +566,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 26,
     description: "Rock and roll approached frontside",
-
   },
   {
     id: 73,
@@ -607,7 +573,6 @@ const trickCards: Trick[] = [
     difficulty: "Beginner",
     points: 12,
     description: "Drop into a ramp or bowl",
-
   },
   {
     id: 74,
@@ -615,7 +580,6 @@ const trickCards: Trick[] = [
     difficulty: "Advanced",
     points: 45,
     description: "Air with frontside grab",
-
   },
   {
     id: 75,
@@ -623,7 +587,6 @@ const trickCards: Trick[] = [
     difficulty: "Advanced",
     points: 45,
     description: "Air with backside grab",
-
   },
 
   // Advanced Flip Tricks
@@ -633,7 +596,6 @@ const trickCards: Trick[] = [
     difficulty: "Advanced",
     points: 50,
     description: "Combines kickflip and 360 shuvit",
-
   },
   {
     id: 77,
@@ -641,7 +603,6 @@ const trickCards: Trick[] = [
     difficulty: "Advanced",
     points: 45,
     description: "Frontside shuvit with kickflip",
-
   },
   {
     id: 78,
@@ -649,7 +610,6 @@ const trickCards: Trick[] = [
     difficulty: "Advanced",
     points: 45,
     description: "Backside shuvit with heelflip",
-
   },
   {
     id: 79,
@@ -657,7 +617,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 28,
     description: "Board spins 360° horizontally",
-
   },
   {
     id: 80,
@@ -665,7 +624,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 30,
     description: "Board spins 360° frontside",
-
   },
   {
     id: 81,
@@ -673,7 +631,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 30,
     description: "Board spins 360° backside",
-
   },
 
   // Manual Tricks
@@ -683,7 +640,6 @@ const trickCards: Trick[] = [
     difficulty: "Beginner",
     points: 12,
     description: "Balance on back wheels",
-
   },
   {
     id: 83,
@@ -691,7 +647,6 @@ const trickCards: Trick[] = [
     difficulty: "Beginner",
     points: 12,
     description: "Balance on front wheels",
-
   },
   {
     id: 84,
@@ -699,7 +654,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 25,
     description: "Manual to Ollie",
-
   },
   {
     id: 84,
@@ -707,7 +661,6 @@ const trickCards: Trick[] = [
     difficulty: "Intermediate",
     points: 25,
     description: "Manual to Roll-in",
-
   },
 
   // Pro Level Tricks
@@ -717,7 +670,6 @@ const trickCards: Trick[] = [
     difficulty: "Pro",
     points: 65,
     description: "Kickflip that rotates twice",
-
   },
   {
     id: 88,
@@ -725,7 +677,6 @@ const trickCards: Trick[] = [
     difficulty: "Pro",
     points: 65,
     description: "Heelflip that rotates twice",
-
   },
   {
     id: 89,
@@ -733,7 +684,6 @@ const trickCards: Trick[] = [
     difficulty: "Pro",
     points: 75,
     description: "360 flip from nollie position",
-
   },
   {
     id: 91,
@@ -741,7 +691,6 @@ const trickCards: Trick[] = [
     difficulty: "Pro",
     points: 75,
     description: "360 flip while riding fakie",
-
   },
   {
     id: 92,
@@ -749,7 +698,6 @@ const trickCards: Trick[] = [
     difficulty: "Pro",
     points: 68,
     description: "Kickflip with full body rotation",
-
   },
 
   {
@@ -758,7 +706,6 @@ const trickCards: Trick[] = [
     difficulty: "Advanced",
     points: 40,
     description: "Full frontside rotation",
-
   },
   {
     id: 95,
@@ -766,7 +713,6 @@ const trickCards: Trick[] = [
     difficulty: "Advanced",
     points: 40,
     description: "Full backside rotation",
-
   },
 ]
 
@@ -786,7 +732,7 @@ const difficultyColors: Record<Trick["difficulty"], string> = {
   Intermediate: "bg-yellow-500",
   Advanced: "bg-orange-500",
   Pro: "bg-red-500",
-};
+}
 
 export default function SkateboardCardGame() {
   const [gameState, setGameState] = useState<GameState>({
@@ -1023,10 +969,10 @@ export default function SkateboardCardGame() {
         players: prev.players.map((p) =>
           p.id === currentPlayer.id
             ? {
-              ...p,
-              skillCards: p.skillCards.filter((card) => card.id !== cardId),
-              hasAttemptedCurrentTrick: true,
-            }
+                ...p,
+                skillCards: p.skillCards.filter((card) => card.id !== cardId),
+                hasAttemptedCurrentTrick: true,
+              }
             : p,
         ),
         showTurnModal: false,
@@ -1154,15 +1100,16 @@ export default function SkateboardCardGame() {
           /* Game Phase */
           <div className="space-y-6">
             {/* Current Game Status */}
-            <Card className="bg-black/20 border-blue-600 hover:bg-black/30 hover:border hover:border-emerald-600 hover:cursor-pointer" onClick={() => {
-              setGameState((prevState) => ({
-                ...prevState,
-                showTurnModal: true, // Update showTurnModal based on the dialog's open state
-              }));
-            }}>
+            <Card
+              className="bg-black/20 border-blue-600 hover:bg-black/30 hover:border hover:border-emerald-600 hover:cursor-pointer"
+              onClick={() => {
+                setGameState((prevState) => ({
+                  ...prevState,
+                  showTurnModal: true, // Update showTurnModal based on the dialog's open state
+                }))
+              }}
+            >
               <CardHeader>
-
-
                 <CardTitle className="text-white text-center flex items-center justify-center gap-2">
                   <Target className="h-6 w-6" />
                   Round {gameState.roundNumber}
@@ -1184,27 +1131,25 @@ export default function SkateboardCardGame() {
             </Card>
 
             {/* Turn Modal */}
-            <Dialog open={gameState.showTurnModal && !isTransitioning} onOpenChange={(isOpen) => {
-              setGameState((prevState) => ({
-                ...prevState,
-                showTurnModal: isOpen, // Update showTurnModal based on the dialog's open state
-              }));
-            }}
+            <Dialog
+              open={gameState.showTurnModal && !isTransitioning}
+              onOpenChange={(isOpen) => {
+                setGameState((prevState) => ({
+                  ...prevState,
+                  showTurnModal: isOpen, // Update showTurnModal based on the dialog's open state
+                }))
+              }}
             >
               <DialogContent
-                className={`bg-gray-900 border-gray-600 text-white max-w-md transition-all duration-300 ${isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"
-                  }`}
+                className={`bg-gray-900 border-gray-600 text-white max-w-md transition-all duration-300 ${
+                  isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"
+                }`}
               >
                 <DialogHeader>
                   <DialogTitle className="text-center">
-                    {/* <div className="text-blue-400 flex justify-start items-center gap-2">
-                      <Shuffle className="h-4 w-4 text-blue-400" /> Round {gameState.roundNumber}
-                    </div> */}
-
                     <span className="text-2xl text-yellow-400 flex items-center justify-center gap-2">
-
-                      {currentPlayer?.name}'s Turn</span>
-
+                      {currentPlayer?.name}'s Turn
+                    </span>
                   </DialogTitle>
                 </DialogHeader>
                 {/* Progress indicator */}
@@ -1241,17 +1186,17 @@ export default function SkateboardCardGame() {
 
                     {/* Action Buttons */}
                     <div className="flex gap-8 justify-between px-8">
-                      <Button onClick={missTrick} className="bg-green-600 hover:bg-green-700 flex-1 h-24" size={"lg"}>
+                      <Button onClick={landTrick} className="bg-green-600 hover:bg-green-700 flex-1 h-24" size={"lg"}>
                         <CheckCircle2 className="!h-10 !w-10" />
                       </Button>
-                      <Button onClick={missTrick} className="bg-red-600/80 hover:bg-red-700/80 flex-1 h-24 " size={"lg"}>
+                      <Button
+                        onClick={missTrick}
+                        className="bg-red-600/80 hover:bg-red-700/80 flex-1 h-24 "
+                        size={"lg"}
+                      >
                         <X className="!h-10 !w-10" />
                       </Button>
                     </div>
-
-
-
-
 
                     {/* Skill Cards */}
                     {currentPlayer?.skillCards && currentPlayer.skillCards.length > 0 && (
@@ -1272,10 +1217,8 @@ export default function SkateboardCardGame() {
                             </div>
                           ))}
                         </div>
-                        {/* <p className="text-center text-gray-400 text-sm">Click a card to use it</p> */}
                       </div>
                     )}
-
 
                     {/* Player's Current Letters */}
                     <div className="text-center">
@@ -1284,10 +1227,11 @@ export default function SkateboardCardGame() {
                         {SKATE_LETTERS.map((letter, index) => (
                           <div
                             key={letter}
-                            className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold ${index < (currentPlayer?.letters.length || 0)
-                              ? "bg-red-600 border-red-500 text-white"
-                              : "bg-gray-700 border-gray-600 text-gray-400"
-                              }`}
+                            className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold ${
+                              index < (currentPlayer?.letters.length || 0)
+                                ? "bg-red-600 border-red-500 text-white"
+                                : "bg-gray-700 border-gray-600 text-gray-400"
+                            }`}
                           >
                             {letter}
                           </div>
@@ -1326,12 +1270,13 @@ export default function SkateboardCardGame() {
                   {gameState.players.map((player) => (
                     <div
                       key={player.id}
-                      className={`p-4 rounded-lg border-2 ${player.isEliminated
-                        ? "bg-red-900/20 border-red-600"
-                        : player.id === currentPlayer?.id
-                          ? "bg-blue-900/30 border-blue-500"
-                          : "bg-gray-800 border-gray-600"
-                        }`}
+                      className={`p-4 rounded-lg border-2 ${
+                        player.isEliminated
+                          ? "bg-red-900/20 border-red-600"
+                          : player.id === currentPlayer?.id
+                            ? "bg-blue-900/30 border-blue-500"
+                            : "bg-gray-800 border-gray-600"
+                      }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className={`font-semibold ${player.isEliminated ? "text-red-400" : "text-white"}`}>
@@ -1351,10 +1296,11 @@ export default function SkateboardCardGame() {
                         {SKATE_LETTERS.map((letter, index) => (
                           <div
                             key={letter}
-                            className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold ${index < player.letters.length
-                              ? "bg-red-600 border-red-500 text-white"
-                              : "bg-gray-700 border-gray-600 text-gray-400"
-                              }`}
+                            className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold ${
+                              index < player.letters.length
+                                ? "bg-red-600 border-red-500 text-white"
+                                : "bg-gray-700 border-gray-600 text-gray-400"
+                            }`}
                           >
                             {letter}
                           </div>
