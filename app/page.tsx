@@ -987,6 +987,14 @@ export default function SkateboardCardGame() {
   const activePlayers = gameState.players.filter((p) => !p.isEliminated)
   const playersWhoHaventAttempted = activePlayers.filter((p) => !p.hasAttemptedCurrentTrick)
 
+  const handleSkillCardClick = (cardId: string) => {
+    setGameState((prev) => ({
+      ...prev,
+      showTurnModal: false,
+    }))
+    useSkillCard(cardId)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4">
       <div className="max-w-4xl mx-auto">
@@ -1128,113 +1136,178 @@ export default function SkateboardCardGame() {
 
             {/* Turn Modal */}
             <Dialog
-              open={gameState.showTurnModal && !isTransitioning}
+              open={gameState.showTurnModal || isTransitioning}
               onOpenChange={(isOpen) => {
-                setGameState((prevState) => ({
-                  ...prevState,
-                  showTurnModal: isOpen, // Update showTurnModal based on the dialog's open state
-                }))
+                if (!isTransitioning) {
+                  setGameState((prevState) => ({
+                    ...prevState,
+                    showTurnModal: isOpen,
+                  }))
+                }
               }}
             >
-              <DialogContent
-                className={`bg-gray-900 border-gray-600 text-white max-w-md transition-all duration-300 ${
-                  isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"
-                }`}
-              >
-                <DialogHeader>
-                  <DialogTitle className="text-center">
-                    <span className="text-2xl text-yellow-400 flex items-center justify-center gap-2">
-                      {currentPlayer?.name}'s Turn
-                    </span>
-                  </DialogTitle>
-                </DialogHeader>
-                {/* Progress indicator */}
-                <div className="text-center">
-                  <p className="text-sm text-gray-400 mb-1">
-                    {((activePlayers.length - playersWhoHaventAttempted.length) / activePlayers.length) * 100}%
-                  </p>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                      style={{
-                        width: `${((activePlayers.length - playersWhoHaventAttempted.length) / activePlayers.length) * 100}%`,
-                      }}
-                    ></div>
-                  </div>
-                </div>
+              <DialogContent className="bg-gray-900 border-gray-600 text-white max-w-md">
+                {isTransitioning ? (
+                  /* Transition Animation Content */
+                  <div className="py-8">
+                    <DialogHeader>
+                      <DialogTitle className="text-center">
+                        <span className="text-2xl text-yellow-400">Switching Players...</span>
+                      </DialogTitle>
+                    </DialogHeader>
 
-                {gameState.currentTrick && (
-                  <div className="space-y-6">
-                    {/* Trick Card */}
-                    <Card className="bg-gradient-to-br from-gray-800 to-gray-900 border-blue-500">
-                      <CardHeader className="text-center">
-                        <CardTitle className="text-white text-2xl">{gameState.currentTrick.name}</CardTitle>
-                        <Badge
-                          className={`${difficultyColors[gameState.currentTrick?.difficulty ?? "Beginner"]} text-white w-fit mx-auto`}
+                    <div className="flex flex-col items-center justify-center space-y-6 py-8">
+                      {/* Skateboard Animation */}
+                      <div className="relative">
+                        <div className="animate-bounce">
+                          <div className="text-8xl animate-spin" style={{ animationDuration: "0.8s" }}>
+                            🛹
+                          </div>
+                        </div>
+                        {/* Trick emojis floating around */}
+                        <div className="absolute -top-6 -left-6 text-3xl animate-pulse">✨</div>
+                        <div
+                          className="absolute -top-6 -right-6 text-3xl animate-pulse"
+                          style={{ animationDelay: "0.2s" }}
                         >
-                          {gameState.currentTrick?.difficulty ?? "N/A"}
-                        </Badge>
-                      </CardHeader>
-                      <CardContent className="text-center">
-                        <p className="text-gray-300 mb-4">{gameState.currentTrick.description}</p>
-                      </CardContent>
-                    </Card>
+                          ⚡
+                        </div>
+                        <div
+                          className="absolute -bottom-6 -left-6 text-3xl animate-pulse"
+                          style={{ animationDelay: "0.4s" }}
+                        >
+                          🔥
+                        </div>
+                        <div
+                          className="absolute -bottom-6 -right-6 text-3xl animate-pulse"
+                          style={{ animationDelay: "0.6s" }}
+                        >
+                          💫
+                        </div>
+                      </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex gap-8 justify-between px-8">
-                      <Button onClick={landTrick} className="bg-green-600 hover:bg-green-700 flex-1 h-24" size={"lg"}>
-                        <Check className="!h-10 !w-10" />
-                      </Button>
-                      <Button
-                        onClick={missTrick}
-                        className="bg-red-600/80 hover:bg-red-700/80 flex-1 h-24 "
-                        size={"lg"}
-                      >
-                        <X className="!h-10 !w-10" />
-                      </Button>
+                      {/* Status Message */}
+                      <div className="text-center">
+                        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4 rounded-xl shadow-lg">
+                          <h3 className="text-xl font-bold mb-2">
+                            {playersWhoHaventAttempted.length === 1 ? "🎯 New Trick Coming!" : "🔄 Next Skater Up!"}
+                          </h3>
+                          <p className="text-sm opacity-90">
+                            {playersWhoHaventAttempted.length === 1
+                              ? "Everyone crushed that trick!"
+                              : "Get ready to shred!"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Normal Dialog Content */
+                  <>
+                    <DialogHeader>
+                      <DialogTitle className="text-center">
+                        <span className="text-2xl text-yellow-400 flex items-center justify-center gap-2">
+                          {currentPlayer?.name}'s Turn
+                        </span>
+                      </DialogTitle>
+                    </DialogHeader>
+
+                    {/* Progress indicator */}
+                    <div className="text-center">
+                      <p className="text-sm text-gray-400 mb-1">
+                        {Math.round(
+                          ((activePlayers.length - playersWhoHaventAttempted.length) / activePlayers.length) * 100,
+                        )}
+                        %
+                      </p>
+                      <div className="w-full bg-gray-700 rounded-full h-2">
+                        <div
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                          style={{
+                            width: `${((activePlayers.length - playersWhoHaventAttempted.length) / activePlayers.length) * 100}%`,
+                          }}
+                        ></div>
+                      </div>
                     </div>
 
-                    {/* Skill Cards */}
-                    {currentPlayer?.skillCards && currentPlayer.skillCards.length > 0 && (
-                      <div className="space-y-3">
-                        <h3 className="text-center text-lg font-semibold text-blue-400">Skill Cards</h3>
-                        <div className="flex gap-2 justify-center">
-                          {currentPlayer.skillCards.map((card) => (
-                            <div
-                              key={card.id}
-                              onClick={() => useSkillCard(card.id)}
-                              className="bg-purple-900/50 border border-purple-500 cursor-pointer hover:bg-purple-800/50 transition-colors rounded-lg"
+                    {gameState.currentTrick && (
+                      <div className="space-y-6">
+                        {/* Trick Card */}
+                        <Card className="bg-gradient-to-br from-gray-800 to-gray-900 border-blue-500">
+                          <CardHeader className="text-center">
+                            <CardTitle className="text-white text-2xl">{gameState.currentTrick.name}</CardTitle>
+                            <Badge
+                              className={`${difficultyColors[gameState.currentTrick?.difficulty ?? "Beginner"]} text-white w-fit mx-auto`}
                             >
-                              <div className="p-3 text-center">
-                                <div className="text-2xl mb-1">{card.icon}</div>
-                                <div className="text-white font-semibold text-sm">{card.name}</div>
-                                <div className="text-gray-300 text-xs">{card.description}</div>
-                              </div>
+                              {gameState.currentTrick?.difficulty ?? "N/A"}
+                            </Badge>
+                          </CardHeader>
+                          <CardContent className="text-center">
+                            <p className="text-gray-300 mb-4">{gameState.currentTrick.description}</p>
+                          </CardContent>
+                        </Card>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-8 justify-between px-8">
+                          <Button
+                            onClick={landTrick}
+                            className="bg-green-600 hover:bg-green-700 flex-1 h-24"
+                            size={"lg"}
+                          >
+                            <Check className="!h-10 !w-10" />
+                          </Button>
+                          <Button
+                            onClick={missTrick}
+                            className="bg-red-600/80 hover:bg-red-700/80 flex-1 h-24 "
+                            size={"lg"}
+                          >
+                            <X className="!h-10 !w-10" />
+                          </Button>
+                        </div>
+
+                        {/* Skill Cards */}
+                        {currentPlayer?.skillCards && currentPlayer.skillCards.length > 0 && (
+                          <div className="space-y-3">
+                            <h3 className="text-center text-lg font-semibold text-blue-400">Skill Cards</h3>
+                            <div className="flex gap-2 justify-center">
+                              {currentPlayer.skillCards.map((card) => (
+                                <div
+                                  key={card.id}
+                                  onClick={() => handleSkillCardClick(card.id)}
+                                  className="bg-purple-900/50 border border-purple-500 cursor-pointer hover:bg-purple-800/50 transition-colors rounded-lg"
+                                >
+                                  <div className="p-3 text-center">
+                                    <div className="text-2xl mb-1">{card.icon}</div>
+                                    <div className="text-white font-semibold text-sm">{card.name}</div>
+                                    <div className="text-gray-300 text-xs">{card.description}</div>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                          ))}
+                          </div>
+                        )}
+
+                        {/* Player's Current Letters */}
+                        <div className="text-center">
+                          <p className="text-gray-400 text-sm mb-2">Your current letters:</p>
+                          <div className="flex gap-1 justify-center">
+                            {SKATE_LETTERS.map((letter, index) => (
+                              <div
+                                key={letter}
+                                className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold ${
+                                  index < (currentPlayer?.letters.length || 0)
+                                    ? "bg-red-600 border-red-500 text-white"
+                                    : "bg-gray-700 border-gray-600 text-gray-400"
+                                }`}
+                              >
+                                {letter}
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     )}
-
-                    {/* Player's Current Letters */}
-                    <div className="text-center">
-                      <p className="text-gray-400 text-sm mb-2">Your current letters:</p>
-                      <div className="flex gap-1 justify-center">
-                        {SKATE_LETTERS.map((letter, index) => (
-                          <div
-                            key={letter}
-                            className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold ${
-                              index < (currentPlayer?.letters.length || 0)
-                                ? "bg-red-600 border-red-500 text-white"
-                                : "bg-gray-700 border-gray-600 text-gray-400"
-                            }`}
-                          >
-                            {letter}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                  </>
                 )}
               </DialogContent>
             </Dialog>
