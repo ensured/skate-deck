@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Trash2, Plus, Play, RotateCcw, Target, X, Users, CheckCircle2 } from "lucide-react"
+import { Trash2, Plus, Play, RotateCcw, Target, X, Users, CheckCircle2, Check } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface Player {
@@ -969,10 +969,10 @@ export default function SkateboardCardGame() {
         players: prev.players.map((p) =>
           p.id === currentPlayer.id
             ? {
-                ...p,
-                skillCards: p.skillCards.filter((card) => card.id !== cardId),
-                hasAttemptedCurrentTrick: true,
-              }
+              ...p,
+              skillCards: p.skillCards.filter((card) => card.id !== cardId),
+              hasAttemptedCurrentTrick: true,
+            }
             : p,
         ),
         showTurnModal: false,
@@ -1141,9 +1141,8 @@ export default function SkateboardCardGame() {
               }}
             >
               <DialogContent
-                className={`bg-gray-900 border-gray-600 text-white max-w-md transition-all duration-300 ${
-                  isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"
-                }`}
+                className={`bg-gray-900 border-gray-600 text-white max-w-md transition-all duration-300 ${isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"
+                  }`}
               >
                 <DialogHeader>
                   <DialogTitle className="text-center">
@@ -1187,7 +1186,7 @@ export default function SkateboardCardGame() {
                     {/* Action Buttons */}
                     <div className="flex gap-8 justify-between px-8">
                       <Button onClick={landTrick} className="bg-green-600 hover:bg-green-700 flex-1 h-24" size={"lg"}>
-                        <CheckCircle2 className="!h-10 !w-10" />
+                        <Check className="!h-10 !w-10" />
                       </Button>
                       <Button
                         onClick={missTrick}
@@ -1227,11 +1226,10 @@ export default function SkateboardCardGame() {
                         {SKATE_LETTERS.map((letter, index) => (
                           <div
                             key={letter}
-                            className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold ${
-                              index < (currentPlayer?.letters.length || 0)
+                            className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold ${index < (currentPlayer?.letters.length || 0)
                                 ? "bg-red-600 border-red-500 text-white"
                                 : "bg-gray-700 border-gray-600 text-gray-400"
-                            }`}
+                              }`}
                           >
                             {letter}
                           </div>
@@ -1270,13 +1268,12 @@ export default function SkateboardCardGame() {
                   {gameState.players.map((player) => (
                     <div
                       key={player.id}
-                      className={`p-4 rounded-lg border-2 ${
-                        player.isEliminated
+                      className={`p-4 rounded-lg border-2 ${player.isEliminated
                           ? "bg-red-900/20 border-red-600"
                           : player.id === currentPlayer?.id
                             ? "bg-blue-900/30 border-blue-500"
                             : "bg-gray-800 border-gray-600"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className={`font-semibold ${player.isEliminated ? "text-red-400" : "text-white"}`}>
@@ -1296,11 +1293,10 @@ export default function SkateboardCardGame() {
                         {SKATE_LETTERS.map((letter, index) => (
                           <div
                             key={letter}
-                            className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold ${
-                              index < player.letters.length
+                            className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold ${index < player.letters.length
                                 ? "bg-red-600 border-red-500 text-white"
                                 : "bg-gray-700 border-gray-600 text-gray-400"
-                            }`}
+                              }`}
                           >
                             {letter}
                           </div>
