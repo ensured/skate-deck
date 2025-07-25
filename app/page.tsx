@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Trash2, Plus, Play, RotateCcw, Target, X, Users, CheckCircle2, Check } from "lucide-react"
+import { Trash2, Plus, Play, RotateCcw, Target, X, Users, Check } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface Player {
@@ -969,10 +969,10 @@ export default function SkateboardCardGame() {
         players: prev.players.map((p) =>
           p.id === currentPlayer.id
             ? {
-              ...p,
-              skillCards: p.skillCards.filter((card) => card.id !== cardId),
-              hasAttemptedCurrentTrick: true,
-            }
+                ...p,
+                skillCards: p.skillCards.filter((card) => card.id !== cardId),
+                hasAttemptedCurrentTrick: true,
+              }
             : p,
         ),
         showTurnModal: false,
@@ -986,10 +986,6 @@ export default function SkateboardCardGame() {
   const currentPlayer = gameState.players[gameState.currentPlayerIndex]
   const activePlayers = gameState.players.filter((p) => !p.isEliminated)
   const playersWhoHaventAttempted = activePlayers.filter((p) => !p.hasAttemptedCurrentTrick)
-
-  const handleSkillCardClick = (cardId: string) => {
-    useSkillCard(cardId)
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4">
@@ -1141,8 +1137,9 @@ export default function SkateboardCardGame() {
               }}
             >
               <DialogContent
-                className={`bg-gray-900 border-gray-600 text-white max-w-md transition-all duration-300 ${isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"
-                  }`}
+                className={`bg-gray-900 border-gray-600 text-white max-w-md transition-all duration-300 ${
+                  isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"
+                }`}
               >
                 <DialogHeader>
                   <DialogTitle className="text-center">
@@ -1205,7 +1202,7 @@ export default function SkateboardCardGame() {
                           {currentPlayer.skillCards.map((card) => (
                             <div
                               key={card.id}
-                              onClick={() => handleSkillCardClick(card.id)}
+                              onClick={() => useSkillCard(card.id)}
                               className="bg-purple-900/50 border border-purple-500 cursor-pointer hover:bg-purple-800/50 transition-colors rounded-lg"
                             >
                               <div className="p-3 text-center">
@@ -1226,10 +1223,11 @@ export default function SkateboardCardGame() {
                         {SKATE_LETTERS.map((letter, index) => (
                           <div
                             key={letter}
-                            className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold ${index < (currentPlayer?.letters.length || 0)
+                            className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold ${
+                              index < (currentPlayer?.letters.length || 0)
                                 ? "bg-red-600 border-red-500 text-white"
                                 : "bg-gray-700 border-gray-600 text-gray-400"
-                              }`}
+                            }`}
                           >
                             {letter}
                           </div>
@@ -1241,23 +1239,6 @@ export default function SkateboardCardGame() {
               </DialogContent>
             </Dialog>
 
-            {/* Transition Overlay */}
-            {isTransitioning && (
-              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 transition-opacity duration-300">
-                <div className="bg-gray-900 border-2 border-blue-500 rounded-lg p-8 text-center animate-pulse">
-                  <div className="text-4xl mb-4">{playersWhoHaventAttempted.length === 1 ? "🎯" : "🔄"}</div>
-                  <h3 className="text-2xl font-bold text-white mb-2">
-                    {playersWhoHaventAttempted.length === 1 ? "Drawing New Trick..." : "Next Player..."}
-                  </h3>
-                  <p className="text-gray-300">
-                    {playersWhoHaventAttempted.length === 1
-                      ? "Everyone has attempted this trick!"
-                      : "Get ready for the next attempt!"}
-                  </p>
-                </div>
-              </div>
-            )}
-
             {/* Players Status */}
             <Card className="bg-black/20 border-gray-600">
               <CardHeader>
@@ -1268,12 +1249,13 @@ export default function SkateboardCardGame() {
                   {gameState.players.map((player) => (
                     <div
                       key={player.id}
-                      className={`p-4 rounded-lg border-2 ${player.isEliminated
+                      className={`p-4 rounded-lg border-2 ${
+                        player.isEliminated
                           ? "bg-red-900/20 border-red-600"
                           : player.id === currentPlayer?.id
                             ? "bg-blue-900/30 border-blue-500"
                             : "bg-gray-800 border-gray-600"
-                        }`}
+                      }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className={`font-semibold ${player.isEliminated ? "text-red-400" : "text-white"}`}>
@@ -1293,10 +1275,11 @@ export default function SkateboardCardGame() {
                         {SKATE_LETTERS.map((letter, index) => (
                           <div
                             key={letter}
-                            className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold ${index < player.letters.length
+                            className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold ${
+                              index < player.letters.length
                                 ? "bg-red-600 border-red-500 text-white"
                                 : "bg-gray-700 border-gray-600 text-gray-400"
-                              }`}
+                            }`}
                           >
                             {letter}
                           </div>
