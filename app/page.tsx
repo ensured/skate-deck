@@ -526,9 +526,14 @@ export default function SkateboardCardGame() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8 ">
-          <h1 className="text-5xl font-bold text-white mb-2">The S.K.A.T.E. Deck</h1>
-          <p className="text-gray-300">Tricks, Flicks, and Epic Picks! 🛹</p>
-
+          <div className="text-center mb-8">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-2">
+              The S.K.A.T.E. Deck
+            </h1>
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-gray-300">
+              Tricks, Flicks, and Epic Picks! 🛹
+            </p>
+          </div>
 
         </div>
         {localStorageLoading && gameStateCardSkeleton()}
