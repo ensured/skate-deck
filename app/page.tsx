@@ -1,6 +1,5 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -8,9 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Trash2, Plus, Play, RotateCcw, Target, X, Users, Check, ArrowDown } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import gameStateCardSkeleton from "@/components/gameStateCardSkeleton"
-import { type Trick } from "@/types/types"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { trickCards } from "@/lib/tricks"
 import { difficultyColors } from "@/lib/tricks"
 import { SKATE_LETTERS } from "@/lib/tricks"
 import { useSkateboardGame } from "@/components/useSkateboardGame"
@@ -18,8 +15,6 @@ import { useSkateboardGame } from "@/components/useSkateboardGame"
 export default function SkateboardCardGame() {
   const { gameState,
     setGameState,
-    usedTricks,
-    setUsedTricks,
     localStorageLoading,
     newPlayerName,
     setNewPlayerName,
@@ -31,9 +26,6 @@ export default function SkateboardCardGame() {
     startGame,
     landTrick,
     missTrick,
-    nextPlayerForTrick,
-    nextPlayer,
-    useSkillCard,
     resetGame,
     newGame,
     handleSkillCardClick } = useSkateboardGame()
@@ -56,7 +48,7 @@ export default function SkateboardCardGame() {
 
         {!gameState.gameStarted ? (
           <div className="space-y-6">
-            {localStorageLoading ? (null) :
+            {!localStorageLoading && (
               <Card className="bg-black/20 border-gray-600">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
@@ -85,7 +77,7 @@ export default function SkateboardCardGame() {
                   <p className="text-gray-400 text-sm">{gameState.players.length}/8 players • Need at least 2 to start</p>
                 </CardContent>
               </Card>
-            }
+            )}
             {gameState.players.length > 0 && (
               <Card className="bg-black/20 border-gray-600">
                 <CardHeader>
