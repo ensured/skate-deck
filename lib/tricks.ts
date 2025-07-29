@@ -1,5 +1,14 @@
 import { type Trick } from "@/types/types";
 
+export const SKATE_LETTERS = ["S", "K", "A", "T", "E"];
+
+export const difficultyColors: Record<Trick["difficulty"], string> = {
+  Beginner: "bg-green-500",
+  Intermediate: "bg-yellow-500",
+  Advanced: "bg-orange-500",
+  Pro: "bg-red-500",
+};
+
 export const trickCards: Trick[] = [
   // Basic Ollies
   {
