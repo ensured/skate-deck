@@ -5,52 +5,15 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Trash2, Plus, Play, RotateCcw, Target, X, Users, Check, Loader2 } from "lucide-react"
+import { Trash2, Plus, Play, RotateCcw, Target, X, Users, Check, Loader2, ArrowDown } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import gameStateCardSkeleton from "@/components/gameStateCardSkeleton"
 import { trickCards } from "@/lib/tricks"
-
-interface Player {
-  id: number
-  name: string
-  letters: string[]
-  isEliminated: boolean
-  skillCards: SkillCard[]
-  consecutiveTricks: number
-  hasAttemptedCurrentTrick: boolean
-}
-
-export interface Trick {
-  id: number
-  name: string
-  difficulty: "Beginner" | "Intermediate" | "Advanced" | "Pro"
-  points: number
-  description: string
-}
-
-interface SkillCard {
-  id: string
-  name: string
-  description: string
-  type: "hard-pass" | "bonus" | "defensive"
-  icon: string
-}
-
-interface GameState {
-  players: Player[]
-  currentPlayerIndex: number
-  gameStarted: boolean
-  currentTrick: Trick | null
-  gamePhase: "setting" | "attempting" | "game-over"
-  winner: string | null
-  showTurnModal: boolean
-  roundNumber: number
-  trickLeaderLanded: boolean
-  leaderIndex: number | null
-}
+import { type Player, GameState, Trick, SkillCard } from "@/types/types"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 const SKATE_LETTERS = ["S", "K", "A", "T", "E"]
-
 
 const availableSkillCards: SkillCard[] = [
   {
@@ -60,6 +23,13 @@ const availableSkillCards: SkillCard[] = [
     type: "hard-pass",
     icon: "🛡️",
   },
+  {
+    id: "trick-swap",
+    name: "Trick Swap",
+    description: "Swap the current trick for a new one of the same or lower difficulty.",
+    type: "defensive",
+    icon: "🔄",
+  }
 ]
 
 const difficultyColors: Record<Trick["difficulty"], string> = {
@@ -509,6 +479,33 @@ export default function SkateboardCardGame() {
         nextPlayerForTrick()
       }
     }
+
+    if (cardId === "trick-swap") {
+      setGameState((prev) => {
+        const availableTricks = trickCards.filter(
+          (trick) =>
+            !usedTricks.includes(trick.id) &&
+            (trick.difficulty === prev.currentTrick?.difficulty ||
+              ["Beginner", "Intermediate", "Advanced", "Pro"].indexOf(trick.difficulty) <
+              ["Beginner", "Intermediate", "Advanced", "Pro"].indexOf(prev.currentTrick?.difficulty || "Pro"))
+        );
+        const newTrick = availableTricks[Math.floor(Math.random() * availableTricks.length)] || prev.currentTrick;
+        setUsedTricks((prevUsed) => [...prevUsed, newTrick?.id || 0]);
+        return {
+          ...prev,
+          currentTrick: newTrick,
+          players: prev.players.map((p) =>
+            p.id === currentPlayer.id
+              ? { ...p, skillCards: p.skillCards.filter((card) => card.id !== cardId), hasAttemptedCurrentTrick: true }
+              : { ...p, hasAttemptedCurrentTrick: false }
+          ),
+          showTurnModal: false,
+          trickLeaderLanded: false,
+          leaderIndex: prev.currentPlayerIndex,
+        };
+      });
+      nextPlayer();
+    }
   }
 
   const currentPlayer = gameState.players[gameState.currentPlayerIndex]
@@ -706,23 +703,27 @@ export default function SkateboardCardGame() {
                     </div>
 
                     {currentPlayer?.skillCards && currentPlayer.skillCards.length > 0 && (
-                      <div className="space-y-3">
-                        <h3 className="text-center text-lg font-semibold text-blue-400">Skill Cards</h3>
-                        <div className="flex gap-2 justify-center">
-                          {currentPlayer.skillCards.map((card) => (
-                            <div
-                              key={card.id}
-                              onClick={() => handleSkillCardClick(card.id)}
-                              className="bg-purple-900/50 border border-purple-500 cursor-pointer hover:bg-purple-800/50 transition-all duration-300 rounded-lg"
-                            >
-                              <div className="p-3 text-center">
-                                <div className="text-2xl mb-1">{card.icon}</div>
-                                <div className="text-white font-semibold text-sm">{card.name}</div>
-                                <div className="text-gray-300 text-xs">{card.description}</div>
+                      <div >
+                        <Popover>
+                          <PopoverTrigger asChild className="w-full flex justify-center items-center h-full">
+                            <Button variant={"default"} className="text-center text-lg font-semibold !border !border-green-500/60">Skill Cards <ArrowDown /></Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="flex gap-2 justify-center bg-[rgb(17,24,39)] !border !border-green-500/60">
+                            {currentPlayer.skillCards.map((card) => (
+                              <div
+                                key={card.id}
+                                onClick={() => handleSkillCardClick(card.id)}
+                                className="bg-purple-900/50 border border-purple-500 cursor-pointer hover:bg-purple-800/50 transition-all duration-300 rounded-lg"
+                              >
+                                <div className="p-3 text-center">
+                                  <div className="text-2xl mb-1">{card.icon}</div>
+                                  <div className="text-white font-semibold text-sm">{card.name}</div>
+                                  <div className="text-gray-300 text-xs">{card.description}</div>
+                                </div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
+                            ))}
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     )}
 

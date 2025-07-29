@@ -1,4 +1,4 @@
-import { type Trick } from "@/app/page";
+import { type Trick } from "@/types/types";
 
 export const trickCards: Trick[] = [
   // Basic Ollies
