@@ -10,7 +10,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import gameStateCardSkeleton from "@/components/gameStateCardSkeleton"
 import { trickCards } from "@/lib/tricks"
 import { type Player, GameState, Trick, SkillCard } from "@/types/types"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 const SKATE_LETTERS = ["S", "K", "A", "T", "E"]
@@ -200,7 +199,7 @@ export default function SkateboardCardGame() {
         gamePhase: "setting",
         players: prev.players.map((player) => ({
           ...player,
-          skillCards: [availableSkillCards[0]],
+          skillCards: [availableSkillCards[0], availableSkillCards[1]],
           consecutiveTricks: 0,
           hasAttemptedCurrentTrick: false,
         })),
@@ -420,7 +419,7 @@ export default function SkateboardCardGame() {
         ...p,
         letters: [],
         isEliminated: false,
-        skillCards: [availableSkillCards[0]],
+        skillCards: [availableSkillCards[0], availableSkillCards[1]],
         consecutiveTricks: 0,
         hasAttemptedCurrentTrick: false,
       })),
@@ -460,7 +459,7 @@ export default function SkateboardCardGame() {
   }
 
   const useSkillCard = (cardId: string) => {
-    const currentPlayer = gameState.players[gameState.currentPlayerIndex]
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
 
     if (cardId === "hard-pass") {
       setGameState((prev) => ({
@@ -471,42 +470,69 @@ export default function SkateboardCardGame() {
             : p
         ),
         showTurnModal: false,
-      }))
+      }));
 
       if (!gameState.trickLeaderLanded) {
-        nextPlayer()
+        nextPlayer();
       } else {
-        nextPlayerForTrick()
+        nextPlayerForTrick();
       }
     }
 
     if (cardId === "trick-swap") {
+      if (gameState.gamePhase !== "attempting" || !gameState.currentTrick) {
+        console.warn("Trick Swap can only be used during the attempt phase with an active trick.");
+        return;
+      }
+
       setGameState((prev) => {
+        const currentTrick = prev.currentTrick as Trick;
+        const currentDifficultyIndex = ["Beginner", "Intermediate", "Advanced", "Pro"].indexOf(currentTrick.difficulty);
+
         const availableTricks = trickCards.filter(
           (trick) =>
             !usedTricks.includes(trick.id) &&
-            (trick.difficulty === prev.currentTrick?.difficulty ||
-              ["Beginner", "Intermediate", "Advanced", "Pro"].indexOf(trick.difficulty) <
-              ["Beginner", "Intermediate", "Advanced", "Pro"].indexOf(prev.currentTrick?.difficulty || "Pro"))
+            ["Beginner", "Intermediate", "Advanced", "Pro"].indexOf(trick.difficulty) <= currentDifficultyIndex
         );
-        const newTrick = availableTricks[Math.floor(Math.random() * availableTricks.length)] || prev.currentTrick;
-        setUsedTricks((prevUsed) => [...prevUsed, newTrick?.id || 0]);
+
+        let newTrick: Trick;
+        if (availableTricks.length === 0) {
+          console.warn("No available tricks of same or lower difficulty. Resetting usedTricks.");
+          setUsedTricks([currentTrick.id]);
+          const fallbackTricks = trickCards.filter(
+            (trick) =>
+              trick.id !== currentTrick.id &&
+              ["Beginner", "Intermediate", "Advanced", "Pro"].indexOf(trick.difficulty) <= currentDifficultyIndex
+          );
+          newTrick = fallbackTricks[Math.floor(Math.random() * fallbackTricks.length)] || trickCards[0];
+        } else {
+          newTrick = availableTricks[Math.floor(Math.random() * availableTricks.length)];
+        }
+
+        setUsedTricks((prevUsed) => [...prevUsed, newTrick.id]);
+        console.log(`Trick swapped from ${currentTrick.name} to ${newTrick.name}`);
+
+        // Update players: remove skill card, reset hasAttemptedCurrentTrick for all (including current player)
+        const updatedPlayers = prev.players.map((p) =>
+          p.id === currentPlayer.id
+            ? { ...p, skillCards: p.skillCards.filter((card) => card.id !== cardId), hasAttemptedCurrentTrick: false }
+            : { ...p, hasAttemptedCurrentTrick: false }
+        );
+
         return {
           ...prev,
+          players: updatedPlayers,
           currentTrick: newTrick,
-          players: prev.players.map((p) =>
-            p.id === currentPlayer.id
-              ? { ...p, skillCards: p.skillCards.filter((card) => card.id !== cardId), hasAttemptedCurrentTrick: true }
-              : { ...p, hasAttemptedCurrentTrick: false }
-          ),
-          showTurnModal: false,
+          currentPlayerIndex: prev.currentPlayerIndex, // Stay on current player
           trickLeaderLanded: false,
-          leaderIndex: prev.currentPlayerIndex,
+          leaderIndex: prev.currentPlayerIndex, // Current player is the leader
+          showTurnModal: true, // Keep dialog open for current player's attempt
+          gamePhase: "attempting",
+          roundNumber: prev.roundNumber + 1,
         };
       });
-      nextPlayer();
     }
-  }
+  };
 
   const currentPlayer = gameState.players[gameState.currentPlayerIndex]
   const activePlayers = gameState.players.filter((p) => !p.isEliminated)
@@ -516,8 +542,6 @@ export default function SkateboardCardGame() {
     setGameState((prev) => ({ ...prev, showTurnModal: false }))
     useSkillCard(cardId)
   }
-
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4">
@@ -709,19 +733,21 @@ export default function SkateboardCardGame() {
                             <Button variant={"default"} className="text-center text-lg font-semibold !border !border-green-500/60">Skill Cards <ArrowDown /></Button>
                           </PopoverTrigger>
                           <PopoverContent className="flex gap-2 justify-center bg-[rgb(17,24,39)] !border !border-green-500/60">
-                            {currentPlayer.skillCards.map((card) => (
-                              <div
-                                key={card.id}
-                                onClick={() => handleSkillCardClick(card.id)}
-                                className="bg-purple-900/50 border border-purple-500 cursor-pointer hover:bg-purple-800/50 transition-all duration-300 rounded-lg"
-                              >
-                                <div className="p-3 text-center">
-                                  <div className="text-2xl mb-1">{card.icon}</div>
-                                  <div className="text-white font-semibold text-sm">{card.name}</div>
-                                  <div className="text-gray-300 text-xs">{card.description}</div>
+                            <div className="grid grid-cols-2 gap-4">
+                              {currentPlayer.skillCards.map((card) => (
+                                <div
+                                  key={card.id}
+                                  onClick={() => handleSkillCardClick(card.id)}
+                                  className="bg-purple-900/50 border border-purple-500 cursor-pointer hover:bg-purple-800/50 transition-all duration-300 rounded-lg"
+                                >
+                                  <div className="p-3 text-center">
+                                    <div className="text-2xl mb-1">{card.icon}</div>
+                                    <div className="text-white font-semibold text-sm">{card.name}</div>
+                                    <div className="text-gray-300 text-xs">{card.description}</div>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </PopoverContent>
                         </Popover>
                       </div>
