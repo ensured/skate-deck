@@ -1,6 +1,6 @@
 // hooks/useSkateboardGame.ts
 import { useState, useEffect } from "react";
-import { GameState, Trick, SkillCard } from "@/types/types";
+import { GameState, Trick } from "@/types/types";
 import { trickCards, SKATE_LETTERS } from "@/lib/tricks";
 import { isValidGameState } from "@/lib/helpers";
 import { skillCards } from "@/lib/skills";
@@ -17,6 +17,9 @@ export const useSkateboardGame = () => {
         roundNumber: 1,
         trickLeaderLanded: false,
         leaderIndex: null,
+        justUsedHardPass: false,
+        showTrickPicker: false,
+        trickPickerOptions: [],
     };
     const [gameState, setGameState] = useState<GameState>(defaultGameState);
     const [usedTricks, setUsedTricks] = useState<number[]>([]);
@@ -63,6 +66,38 @@ export const useSkateboardGame = () => {
         }
     }, [gameState, usedTricks]);
 
+    useEffect(() => {
+        if (!gameState.justUsedHardPass) return;
+
+        if (!gameState.trickLeaderLanded) {
+            nextPlayer();
+        } else {
+            nextPlayerForTrick();
+        }
+
+        // Clean up the flag to avoid loops
+        setGameState((prev) => ({ ...prev, justUsedHardPass: false }));
+    }, [gameState.justUsedHardPass]);
+
+    const handleTrickSelect = (selected: Trick) => {
+        setUsedTricks((prev) => [...prev, selected.id]);
+        setGameState((prev) => ({
+            ...prev,
+            showTrickPicker: false,
+            trickPickerOptions: [],
+            currentTrick: selected,
+            gamePhase: "attempting",
+            showTurnModal: true,
+            trickLeaderLanded: false,
+            leaderIndex: prev.currentPlayerIndex,
+            roundNumber: prev.roundNumber + 1,
+            players: prev.players.map((p) => ({
+                ...p,
+                hasAttemptedCurrentTrick: false,
+            })),
+        }));
+    };
+
     const addPlayer = () => {
         if (newPlayerName.trim() && gameState.players.length < 8) {
             setGameState((prev) => ({
@@ -92,6 +127,7 @@ export const useSkateboardGame = () => {
         }));
     };
 
+    // start game and set skills for all player
     const startGame = () => {
         if (gameState.players.length >= 2) {
             const randomFirstPlayer = Math.floor(Math.random() * gameState.players.length);
@@ -106,6 +142,7 @@ export const useSkateboardGame = () => {
                         skillCards[0],
                         skillCards[1],
                         skillCards[2],
+                        skillCards[3],
                     ],
                     consecutiveTricks: 0,
                     hasAttemptedCurrentTrick: false,
@@ -393,21 +430,34 @@ export const useSkateboardGame = () => {
         const currentPlayer = gameState.players[gameState.currentPlayerIndex];
 
         if (cardId === "hard-pass") {
-            setGameState((prev) => ({
-                ...prev,
-                players: prev.players.map((p) =>
+            setGameState((prev) => {
+                const updatedPlayers = prev.players.map((p) =>
                     p.id === currentPlayer.id
-                        ? { ...p, skillCards: p.skillCards.filter((card) => card.id !== cardId), consecutiveTricks: 0, hasAttemptedCurrentTrick: true, extraTries: 0 }
+                        ? {
+                            ...p,
+                            skillCards: p.skillCards.filter((card) => card.id !== cardId),
+                            consecutiveTricks: 0,
+                            hasAttemptedCurrentTrick: true,
+                            extraTries: 0
+                        }
                         : p
-                ),
-                showTurnModal: false,
-            }));
+                );
 
-            if (!gameState.trickLeaderLanded) {
-                nextPlayer();
-            } else {
-                nextPlayerForTrick();
-            }
+                const updatedState = {
+                    ...prev,
+                    players: updatedPlayers,
+                    showTurnModal: false,
+                    justUsedHardPass: true, // This triggers the effect to skip the turn
+                };
+                // Determine who to go to next based on the current state
+                if (!prev.trickLeaderLanded) {
+                    nextPlayer(); // Pass updated state if needed
+                } else {
+                    nextPlayerForTrick();
+                }
+
+                return updatedState;
+            });
         } else if (cardId === "trick-swap") {
             if (gameState.gamePhase !== "attempting" || !gameState.currentTrick) {
                 console.warn("Trick Swap can only be used during the attempt phase with an active trick.");
@@ -468,6 +518,24 @@ export const useSkateboardGame = () => {
                 ),
                 showTurnModal: true, // Keep modal open for first attempt
             }));
+        } else if (cardId === "peek-choose") {
+            const available = trickCards.filter((t) => !usedTricks.includes(t.id));
+            const nextThree = available.slice(0, 3);
+            if (nextThree.length === 0) {
+                console.warn("No available tricks to peek at.");
+                return;
+            }
+            setGameState((prev) => ({
+                ...prev,
+                showTurnModal: false,
+                showTrickPicker: true,
+                trickPickerOptions: nextThree,
+                players: prev.players.map((p) =>
+                    p.id === currentPlayer.id
+                        ? { ...p, skillCards: p.skillCards.filter((c) => c.id !== cardId) }
+                        : p
+                ),
+            }));
         }
     };
 
@@ -499,6 +567,7 @@ export const useSkateboardGame = () => {
         nextPlayerForTrick,
         nextPlayer,
         useSkillCard,
+        handleTrickSelect,
         resetGame,
         newGame,
         handleSkillCardClick,

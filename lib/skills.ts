@@ -24,4 +24,11 @@ export const skillCards: SkillCard[] = [
     type: "defensive",
     icon: "🔄",
   },
+  {
+    id: "peek-choose",
+    name: "Drop In",
+    description: "Peek at the next 3 tricks and choose one to attempt.",
+    type: "offensive",
+    icon: "🔄",
+  },
 ];

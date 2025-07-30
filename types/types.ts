@@ -9,6 +9,11 @@ export interface GameState {
   roundNumber: number;
   trickLeaderLanded: boolean;
   leaderIndex: number | null;
+  justUsedHardPass?: boolean;
+
+  // for the peek-choose/Drop In skill card
+  showTrickPicker?: boolean;
+  trickPickerOptions?: Trick[];
 }
 
 export interface Trick {
@@ -33,6 +38,6 @@ export interface SkillCard {
   id: string;
   name: string;
   description: string;
-  type: "hard-pass" | "bonus" | "defensive";
+  type: "hard-pass" | "bonus" | "defensive" | "offensive";
   icon: string;
 }

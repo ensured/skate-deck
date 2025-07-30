@@ -31,6 +31,7 @@ export default function SkateboardCardGame() {
     resetGame,
     newGame,
     handleSkillCardClick,
+    handleTrickSelect
   } = useSkateboardGame();
 
   return (
@@ -47,6 +48,35 @@ export default function SkateboardCardGame() {
         </div>
 
         {localStorageLoading && gameStateCardSkeleton()}
+
+        {gameState.showTrickPicker && (
+          <Dialog
+            open={true}
+            onOpenChange={() =>
+              setGameState((prev) => ({ ...prev, showTrickPicker: false }))
+            }
+          >
+            <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-md">
+              <DialogTitle className="text-center text-xl font-semibold mb-4">
+                Pick Your Trick
+              </DialogTitle>
+              <div className="grid grid-cols-1 gap-3">
+                {gameState.trickPickerOptions?.map((trick) => (
+                  <Button
+                    key={trick.id}
+                    onClick={() => handleTrickSelect(trick)}
+                    className="bg-blue-800 hover:bg-blue-700 border border-blue-500/50 text-white p-4 rounded-lg text-left"
+                  >
+                    <div className="font-bold">{trick.name}</div>
+                    <div className="text-sm text-gray-300">{trick.description}</div>
+                  </Button>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+
 
         {!gameState.gameStarted ? (
           <div className="space-y-6">
@@ -376,6 +406,6 @@ export default function SkateboardCardGame() {
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 };
