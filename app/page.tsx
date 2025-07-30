@@ -1,19 +1,21 @@
-"use client"
+// app/page.tsx
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Trash2, Plus, Play, RotateCcw, Target, X, Users, Check, ArrowDown } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import gameStateCardSkeleton from "@/components/gameStateCardSkeleton"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { difficultyColors } from "@/lib/tricks"
-import { SKATE_LETTERS } from "@/lib/tricks"
-import { useSkateboardGame } from "@/components/useSkateboardGame"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Trash2, Plus, Play, RotateCcw, Target, X, Users, Check, ArrowDown } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import gameStateCardSkeleton from "@/components/gameStateCardSkeleton";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { difficultyColors } from "@/lib/tricks";
+import { SKATE_LETTERS } from "@/lib/tricks";
+import { useSkateboardGame } from "@/components/useSkateboardGame";
 
 export default function SkateboardCardGame() {
-  const { gameState,
+  const {
+    gameState,
     setGameState,
     localStorageLoading,
     newPlayerName,
@@ -28,20 +30,20 @@ export default function SkateboardCardGame() {
     missTrick,
     resetGame,
     newGame,
-    handleSkillCardClick } = useSkateboardGame()
+    handleSkillCardClick,
+  } = useSkateboardGame();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8 ">
-          <div className="text-center mb-8">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-2">
-              The S.K.A.T.E. Deck
-            </h1>
-            <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-gray-300">
-              Tricks, Flicks, and Epic Picks! 🛹
-            </p>
-          </div>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ">
+        <div className="text-center mb-8">
+          <h1 className="text-white font-bold text-balance text-[clamp(1.9rem,3.8vw,3.3rem)] leading-tight mb-2">
+            The S.K.A.T.E Deck
+          </h1>
+          <p className="text-gray-300 text-[clamp(0.875rem,2.5vw,1.25rem)] leading-snug">
+            Tricks, Flicks, and Epic Picks! 🛹
+          </p>
+
         </div>
 
         {localStorageLoading && gameStateCardSkeleton()}
@@ -69,7 +71,7 @@ export default function SkateboardCardGame() {
                     <Button
                       onClick={addPlayer}
                       disabled={!newPlayerName.trim() || gameState.players.length >= 8}
-                      className="bg-blue-600 hover:bg-blue-700"
+                      className="w-full sm:w-auto px-4 py-3 text-base rounded-md shadow-md bg-blue-600 hover:bg-blue-700 transition"
                     >
                       Add
                     </Button>
@@ -117,7 +119,8 @@ export default function SkateboardCardGame() {
         ) : gameState.gamePhase === "game-over" ? (
           <div className="text-center space-y-6">
             <Card className="bg-black/50 border-yellow-600 max-w-md mx-auto transition-all duration-300">
-              <CardContent className="p-8">
+              <CardContent className="p-4 sm:p-6 md:p-8">
+
                 <div className="text-6xl mb-4">🏆</div>
                 <h2 className="text-3xl font-bold text-white mb-2">Game Over!</h2>
                 <p className="text-xl text-yellow-400 mb-4">{gameState.winner} Wins!</p>
@@ -141,30 +144,43 @@ export default function SkateboardCardGame() {
         ) : (
           <div className="space-y-6">
             <Card
-              className="bg-black/20  hover:bg-black/30  border-blue-600 hover:border-blue-500 transition-all duration-300 cursor-pointer"
+              className="bg-gradient-to-br from-gray-800 to-gray-900 border border-blue-600 hover:border-blue-400 transition-all duration-300 p-4 sm:p-6 text-white rounded-xl shadow-md cursor-pointer"
+
               onClick={() => setGameState((prev) => ({ ...prev, showTurnModal: true }))}
             >
-              <CardHeader>
-                <CardTitle className="text-white text-center flex items-center justify-center gap-2">
-                  <Target className="h-6 w-6" />
-                  Round {gameState.roundNumber}
-                  <Users className="h-5 w-5 ml-2" />
-                  {activePlayers.length} players left
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center">
-                  <p className="text-gray-300 mb-2">
-                    Current trick: <span className="text-blue-400 font-semibold">{gameState.currentTrick?.name}</span>
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    {gameState.trickLeaderLanded
-                      ? `${playersToAttempt.length} player${playersToAttempt.length !== 1 ? "s" : ""} still need to attempt this trick`
-                      : `${currentPlayer?.name} to set the trick`}
-                  </p>
+              <div className="text-center space-y-3">
+                <div className="flex justify-center items-center gap-4 text-sm sm:text-base text-gray-300 font-medium">
+                  <div className="flex items-center gap-1">
+                    <Target className="h-4 w-4 text-blue-400" />
+                    Round <span className="font-semibold text-white">{gameState.roundNumber}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Users className="h-4 w-4 text-blue-400" />
+                    <span className="font-semibold text-white">{activePlayers.length}</span> players left
+                  </div>
                 </div>
-              </CardContent>
+
+                <div>
+                  <p className="uppercase text-xs tracking-wide text-gray-400 mb-1">Current Trick</p>
+                  <h2 className="text-xl sm:text-2xl font-bold text-blue-300">{gameState.currentTrick?.name}</h2>
+                </div>
+
+                <div className="text-sm sm:text-base text-gray-400 mt-4">
+                  {gameState.trickLeaderLanded ? (
+                    <p>
+                      <span className="font-semibold text-white">{playersToAttempt.length}</span>{" "}
+                      player{playersToAttempt.length !== 1 ? "s" : ""} need to attempt
+                    </p>
+                  ) : (
+                    <p>
+                      <span className="font-semibold text-yellow-400">{currentPlayer?.name}</span>{" "}
+                      to set the trick
+                    </p>
+                  )}
+                </div>
+              </div>
             </Card>
+
 
             <Dialog
               open={gameState.showTurnModal}
@@ -212,29 +228,38 @@ export default function SkateboardCardGame() {
                       </Button>
                     </div>
 
+                    {(currentPlayer?.extraTries || 0) > 0 && (
+                      <p className="text-center text-gray-300 text-sm">
+                        Extra Tries Remaining: {currentPlayer?.extraTries}
+                      </p>
+                    )}
+
                     {currentPlayer?.skillCards && currentPlayer.skillCards.length > 0 && (
-                      <div >
+                      <div>
                         <Popover>
                           <PopoverTrigger asChild className="w-full flex justify-center items-center h-full">
-                            <Button variant={"default"} className="text-center text-lg font-semibold !border !border-green-500/60">Skill Cards <ArrowDown /></Button>
+                            <Button variant={"default"} className="text-center text-lg font-semibold !border !border-green-500/60">
+                              Skill Cards <ArrowDown />
+                            </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="flex gap-2 justify-center bg-[rgb(17,24,39)] !border !border-green-500/60">
-                            <div className="grid grid-cols-2 gap-4">
-                              {currentPlayer.skillCards.map((card) => (
+                          <PopoverContent className="bg-gray-900 border border-green-500/60 p-3 sm:p-4 rounded-lg w-[90vw] max-w-sm">
+                            <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                              {currentPlayer.skillCards.map((card, index) => (
                                 <div
-                                  key={card.id}
+                                  key={index}
                                   onClick={() => handleSkillCardClick(card.id)}
-                                  className="bg-purple-900/50 border border-purple-500 cursor-pointer hover:bg-purple-800/50 transition-all duration-300 rounded-lg"
+                                  className="cursor-pointer bg-purple-900/50 hover:bg-purple-800/50 transition-all duration-300 border border-purple-600 rounded-md p-2 sm:p-3 text-center"
                                 >
-                                  <div className="p-3 text-center">
-                                    <div className="text-2xl mb-1">{card.icon}</div>
-                                    <div className="text-white font-semibold text-sm">{card.name}</div>
-                                    <div className="text-gray-300 text-xs">{card.description}</div>
+                                  <div className="text-lg sm:text-xl mb-1">{card.icon}</div>
+                                  <div className="text-xs sm:text-sm text-white font-semibold truncate">{card.name}</div>
+                                  <div className="text-[10px] sm:text-xs text-gray-300 leading-tight line-clamp-2">
+                                    {card.description}
                                   </div>
                                 </div>
                               ))}
                             </div>
                           </PopoverContent>
+
                         </Popover>
                       </div>
                     )}
@@ -267,39 +292,43 @@ export default function SkateboardCardGame() {
 
             <Card className="bg-black/20 border-gray-600 transition-all duration-300">
               <CardHeader>
-                <CardTitle className="text-white">Players Status</CardTitle>
+                <CardTitle className="text-white text-base sm:text-lg">Players Status</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {gameState.players.map((player) => (
                     <div
                       key={player.id}
-                      className={`p-4 rounded-lg border-2 transition-all duration-300 ${player.isEliminated
+                      className={`p-3 rounded border text-sm transition-all duration-300 ${player.isEliminated
                         ? "bg-red-900/20 border-red-600"
                         : player.id === currentPlayer?.id
                           ? "bg-blue-900/30 border-blue-500"
                           : "bg-gray-800 border-gray-600"
                         }`}
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className={`font-semibold ${player.isEliminated ? "text-red-400" : "text-white"}`}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className={`font-medium truncate ${player.isEliminated ? "text-red-400" : "text-white"}`}>
                           {player.name}
                         </span>
                         <div className="flex gap-1">
                           {player.id === currentPlayer?.id && !player.isEliminated && (
-                            <Badge className="bg-blue-600 text-white text-xs">Current</Badge>
+                            <Badge className="bg-blue-600 text-white text-[10px] px-1.5 py-0.5">Current</Badge>
                           )}
-                          {player.isEliminated && <Badge className="bg-red-600 text-white text-xs">Out</Badge>}
-                          {!player.isEliminated && player.hasAttemptedCurrentTrick && gameState.trickLeaderLanded && (
-                            <Badge className="bg-green-600 text-white text-xs">✓</Badge>
-                          )}
+                          {player.isEliminated && <Badge className="bg-red-600 text-white text-[10px] px-1.5 py-0.5">Out</Badge>}
+                          {!player.isEliminated &&
+                            player.hasAttemptedCurrentTrick &&
+                            gameState.trickLeaderLanded && (
+                              <Badge className="bg-green-600 text-white text-[10px] px-1.5 py-0.5">✓</Badge>
+                            )}
                         </div>
                       </div>
-                      <div className="flex gap-1">
+
+                      {/* Letters */}
+                      <div className="flex gap-1 flex-wrap">
                         {SKATE_LETTERS.map((letter, index) => (
                           <div
                             key={letter}
-                            className={`w-8 h-8 rounded border-2 flex items-center justify-center font-bold transition-all duration-300 ${index < player.letters.length
+                            className={`w-6 h-6 text-xs rounded border flex items-center justify-center font-bold transition-all duration-300 ${index < player.letters.length
                               ? "bg-red-600 border-red-500 text-white"
                               : "bg-gray-700 border-gray-600 text-gray-400"
                               }`}
@@ -308,24 +337,26 @@ export default function SkateboardCardGame() {
                           </div>
                         ))}
                       </div>
-                      <div className="mt-2">
-                        <p className="text-gray-400 text-sm">
-                          Consecutive Tricks: {player.consecutiveTricks}/3
-                        </p>
-                        {player.skillCards.length > 0 && (
-                          <div className="mt-2 flex gap-1">
-                            {player.skillCards.map((card, index) => (
-                              <div
-                                key={index}
-                                className="text-xs bg-purple-600 text-white px-2 py-1 rounded flex items-center gap-1"
-                              >
-                                <span>{card.icon}</span>
-                                <span>{card.name}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+
+                      {/* Conditionally show Consecutive Tricks */}
+                      {player.consecutiveTricks > 0 && (
+                        <p className="text-gray-400 text-xs mt-2">🔥 {player.consecutiveTricks} in a row</p>
+                      )}
+
+                      {/* Conditionally show Skill Cards */}
+                      {player.skillCards.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {player.skillCards.map((card, index) => (
+                            <div
+                              key={index}
+                              className="text-[10px] bg-purple-600 text-white px-1.5 py-0.5 rounded flex items-center gap-1"
+                            >
+                              <span className="text-sm">{card.icon}</span>
+                              <span className="truncate max-w-[60px]">{card.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -346,5 +377,5 @@ export default function SkateboardCardGame() {
         )}
       </div>
     </div>
-  )
-}
+  );
+};

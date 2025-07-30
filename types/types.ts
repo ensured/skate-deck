@@ -26,6 +26,7 @@ export interface Player {
   skillCards: SkillCard[];
   consecutiveTricks: number;
   hasAttemptedCurrentTrick: boolean;
+  extraTries?: number; // Tracks remaining extra attempts (0, 1, or 2)
 }
 
 export interface SkillCard {

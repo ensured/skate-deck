@@ -1,10 +1,9 @@
 // hooks/useSkateboardGame.ts
 import { useState, useEffect } from "react";
-import { GameState, Trick } from "@/types/types";
+import { GameState, Trick, SkillCard } from "@/types/types";
 import { trickCards, SKATE_LETTERS } from "@/lib/tricks";
 import { isValidGameState } from "@/lib/helpers";
 import { skillCards } from "@/lib/skills";
-
 
 export const useSkateboardGame = () => {
     const defaultGameState: GameState = {
@@ -18,52 +17,51 @@ export const useSkateboardGame = () => {
         roundNumber: 1,
         trickLeaderLanded: false,
         leaderIndex: null,
-    }
+    };
     const [gameState, setGameState] = useState<GameState>(defaultGameState);
     const [usedTricks, setUsedTricks] = useState<number[]>([]);
-    const [newPlayerName, setNewPlayerName] = useState("")
+    const [newPlayerName, setNewPlayerName] = useState("");
     const [localStorageLoading, setLocalStorageLoading] = useState<boolean>(true);
 
     // Load from localStorage on client mount
     useEffect(() => {
-        if (typeof window === "undefined" || !window.localStorage) return
+        if (typeof window === "undefined" || !window.localStorage) return;
 
         const loadGameFromStorage = () => {
             try {
-                const saved = localStorage.getItem("skateboardGameState")
+                const saved = localStorage.getItem("skateboardGameState");
                 if (saved) {
-                    const parsed = JSON.parse(saved)
+                    const parsed = JSON.parse(saved);
                     if (
                         parsed &&
                         isValidGameState(parsed.gameState) &&
                         Array.isArray(parsed.usedTricks) &&
                         parsed.usedTricks.every((id: any) => typeof id === "number" && trickCards.some((t) => t.id === id))
                     ) {
-                        setGameState(parsed.gameState)
-                        setUsedTricks(parsed.usedTricks)
+                        setGameState(parsed.gameState);
+                        setUsedTricks(parsed.usedTricks);
                     }
                 }
             } catch (error) {
-                console.error("Failed to load game state from localStorage:", error)
+                console.error("Failed to load game state from localStorage:", error);
             } finally {
-                setLocalStorageLoading(false)
-
+                setLocalStorageLoading(false);
             }
-        }
+        };
 
-        loadGameFromStorage()
-    }, [])
+        loadGameFromStorage();
+    }, []);
 
     // Save to localStorage on state updates
     useEffect(() => {
-        if (typeof window === "undefined" || !window.localStorage) return
+        if (typeof window === "undefined" || !window.localStorage) return;
 
         try {
-            localStorage.setItem("skateboardGameState", JSON.stringify({ gameState, usedTricks }))
+            localStorage.setItem("skateboardGameState", JSON.stringify({ gameState, usedTricks }));
         } catch (error) {
-            console.error("Failed to save game state to localStorage:", error)
+            console.error("Failed to save game state to localStorage:", error);
         }
-    }, [gameState, usedTricks])
+    }, [gameState, usedTricks]);
 
     const addPlayer = () => {
         if (newPlayerName.trim() && gameState.players.length < 8) {
@@ -79,25 +77,24 @@ export const useSkateboardGame = () => {
                         skillCards: [],
                         consecutiveTricks: 0,
                         hasAttemptedCurrentTrick: false,
+                        extraTries: 0,
                     },
                 ],
-            }))
-            setNewPlayerName("")
+            }));
+            setNewPlayerName("");
         }
-    }
-
-
+    };
 
     const removePlayer = (playerId: number) => {
         setGameState((prev) => ({
             ...prev,
             players: prev.players.filter((p) => p.id !== playerId),
-        }))
-    }
+        }));
+    };
 
     const startGame = () => {
         if (gameState.players.length >= 2) {
-            const randomFirstPlayer = Math.floor(Math.random() * gameState.players.length)
+            const randomFirstPlayer = Math.floor(Math.random() * gameState.players.length);
             setGameState((prev) => ({
                 ...prev,
                 gameStarted: true,
@@ -105,40 +102,48 @@ export const useSkateboardGame = () => {
                 gamePhase: "setting",
                 players: prev.players.map((player) => ({
                     ...player,
-                    skillCards: [skillCards[0], skillCards[1]],
+                    skillCards: [
+                        skillCards[0],
+                        skillCards[1],
+                        skillCards[2],
+                    ],
                     consecutiveTricks: 0,
                     hasAttemptedCurrentTrick: false,
+                    extraTries: 0,
                 })),
-            }))
-            drawRandomTrick(randomFirstPlayer)
+            }));
+            drawRandomTrick(randomFirstPlayer);
         }
-    }
+    };
 
     const drawRandomTrick = (playerIndex: number) => {
         setGameState((prev) => {
-            if (prev.gamePhase === "game-over") return prev
+            if (prev.gamePhase === "game-over") return prev;
 
-            const availableTricks = trickCards.filter((trick) => !usedTricks.includes(trick.id))
+            const availableTricks = trickCards.filter((trick) => !usedTricks.includes(trick.id));
+            const randomTrick =
+                availableTricks.length === 0
+                    ? trickCards[Math.floor(Math.random() * trickCards.length)]
+                    : availableTricks[Math.floor(Math.random() * availableTricks.length)];
+            setUsedTricks((prev) => [...prev, randomTrick.id]);
 
-            if (availableTricks.length === 0) {
-                setUsedTricks([])
-                const randomTrick = trickCards[Math.floor(Math.random() * trickCards.length)]
-                setUsedTricks([randomTrick.id])
-                return {
-                    ...prev,
-                    currentTrick: randomTrick,
-                    currentPlayerIndex: playerIndex,
-                    showTurnModal: true,
-                    gamePhase: "attempting",
-                    roundNumber: prev.roundNumber + 1,
-                    trickLeaderLanded: false,
-                    leaderIndex: playerIndex,
-                    players: prev.players.map((p) => ({ ...p, hasAttemptedCurrentTrick: false })),
+            // 10% chance to award a random skill card to the current player
+            let updatedPlayers = prev.players;
+            const currentPlayer = prev.players[playerIndex];
+            if (Math.random() < 0.1 && currentPlayer && !currentPlayer.isEliminated && currentPlayer.skillCards.length < 3) {
+                const availableSkillCards = skillCards.filter(
+                    (card) => !currentPlayer.skillCards.some((c) => c.id === card.id)
+                );
+                if (availableSkillCards.length > 0) {
+                    const newSkillCard = availableSkillCards[Math.floor(Math.random() * availableSkillCards.length)];
+                    console.log(`${currentPlayer.name} got a lucky ${newSkillCard.name} card!`);
+                    updatedPlayers = prev.players.map((p) =>
+                        p.id === currentPlayer.id
+                            ? { ...p, skillCards: [...p.skillCards, newSkillCard] }
+                            : p
+                    );
                 }
             }
-
-            const randomTrick = availableTricks[Math.floor(Math.random() * availableTricks.length)]
-            setUsedTricks((prev) => [...prev, randomTrick.id])
 
             return {
                 ...prev,
@@ -149,27 +154,28 @@ export const useSkateboardGame = () => {
                 roundNumber: prev.roundNumber + 1,
                 trickLeaderLanded: false,
                 leaderIndex: playerIndex,
-                players: prev.players.map((p) => ({ ...p, hasAttemptedCurrentTrick: false })),
-            }
-        })
-    }
+                players: updatedPlayers.map((player) => ({ ...player, hasAttemptedCurrentTrick: false, extraTries: player.extraTries || 0 })),
+            };
+        });
+    };
 
     const landTrick = () => {
-        const currentPlayer = gameState.players[gameState.currentPlayerIndex]
+        const currentPlayer = gameState.players[gameState.currentPlayerIndex];
 
         setGameState((prev) => {
-            const isLeader = prev.currentPlayerIndex === prev.leaderIndex
+            const isLeader = prev.currentPlayerIndex === prev.leaderIndex;
             const updatedPlayers = prev.players.map((p) =>
                 p.id === currentPlayer.id
                     ? {
                         ...p,
                         consecutiveTricks: isLeader ? p.consecutiveTricks + 1 : p.consecutiveTricks,
                         hasAttemptedCurrentTrick: true,
+                        extraTries: 0, // Reset extra tries on success
                     }
                     : p
-            )
+            );
 
-            const activePlayers = updatedPlayers.filter((p) => !p.isEliminated)
+            const activePlayers = updatedPlayers.filter((p) => !p.isEliminated);
 
             if (activePlayers.length <= 1) {
                 return {
@@ -179,7 +185,7 @@ export const useSkateboardGame = () => {
                     winner: activePlayers.length === 1 ? activePlayers[0].name : null,
                     showTurnModal: false,
                     currentTrick: null,
-                }
+                };
             }
 
             return {
@@ -187,25 +193,35 @@ export const useSkateboardGame = () => {
                 players: updatedPlayers,
                 showTurnModal: false,
                 trickLeaderLanded: isLeader ? true : prev.trickLeaderLanded,
-            }
-        })
+            };
+        });
 
-        nextPlayerForTrick()
-    }
+        nextPlayerForTrick();
+    };
 
     const missTrick = () => {
-        const currentPlayer = gameState.players[gameState.currentPlayerIndex]
-        const newLetters = [...currentPlayer.letters, SKATE_LETTERS[currentPlayer.letters.length]]
-        const isEliminated = newLetters.length >= 5
+        const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+        const hasExtraTries = (currentPlayer.extraTries || 0) > 0;
+        const newLetters = hasExtraTries
+            ? currentPlayer.letters
+            : [...currentPlayer.letters, SKATE_LETTERS[currentPlayer.letters.length]];
+        const isEliminated = newLetters.length >= 5;
 
         setGameState((prev) => {
             const updatedPlayers = prev.players.map((p) =>
                 p.id === currentPlayer.id
-                    ? { ...p, letters: newLetters, isEliminated, consecutiveTricks: 0, hasAttemptedCurrentTrick: true }
+                    ? {
+                        ...p,
+                        letters: newLetters,
+                        isEliminated,
+                        consecutiveTricks: 0,
+                        hasAttemptedCurrentTrick: true,
+                        extraTries: hasExtraTries ? (p.extraTries || 0) - 1 : 0,
+                    }
                     : p
-            )
+            );
 
-            const activePlayers = updatedPlayers.filter((p) => !p.isEliminated)
+            const activePlayers = updatedPlayers.filter((p) => !p.isEliminated);
 
             if (activePlayers.length <= 1) {
                 return {
@@ -215,75 +231,79 @@ export const useSkateboardGame = () => {
                     winner: activePlayers.length === 1 ? activePlayers[0].name : null,
                     showTurnModal: false,
                     currentTrick: null,
-                }
+                };
             }
 
             return {
                 ...prev,
                 players: updatedPlayers,
-                showTurnModal: false,
-            }
-        })
+                showTurnModal: hasExtraTries, // Keep modal open if extra tries remain
+            };
+        });
 
-        if (!gameState.trickLeaderLanded) {
-            nextPlayer()
-        } else {
-            nextPlayerForTrick()
+        if (!hasExtraTries) {
+            // Only advance if no extra tries remain
+            if (!gameState.trickLeaderLanded) {
+                nextPlayer();
+            } else {
+                nextPlayerForTrick();
+            }
         }
-    }
+        // If hasExtraTries is true, do nothing (stay on current player)
+    };
 
     const nextPlayerForTrick = () => {
         setGameState((prev) => {
-            if (prev.gamePhase === "game-over") return prev
+            if (prev.gamePhase === "game-over") return prev;
 
-            const activePlayers = prev.players.filter((p) => !p.isEliminated)
-            const playersToAttempt = activePlayers.filter((p) => !p.hasAttemptedCurrentTrick)
+            const activePlayers = prev.players.filter((p) => !p.isEliminated);
+            const playersToAttempt = activePlayers.filter((p) => !p.hasAttemptedCurrentTrick);
 
             if (!prev.trickLeaderLanded || playersToAttempt.length === 0) {
                 if (prev.trickLeaderLanded && prev.leaderIndex !== null) {
-                    const leader = prev.players[prev.leaderIndex]
+                    const leader = prev.players[prev.leaderIndex];
                     if (!leader.isEliminated && leader.consecutiveTricks < 3) {
-                        drawRandomTrick(prev.leaderIndex)
+                        drawRandomTrick(prev.leaderIndex);
                         return {
                             ...prev,
                             currentPlayerIndex: prev.leaderIndex,
                             showTurnModal: true,
-                        }
+                        };
                     } else {
-                        let nextIndex = (prev.leaderIndex + 1) % prev.players.length
+                        let nextIndex = (prev.leaderIndex + 1) % prev.players.length;
                         while (prev.players[nextIndex].isEliminated) {
-                            nextIndex = (nextIndex + 1) % prev.players.length
+                            nextIndex = (nextIndex + 1) % prev.players.length;
                         }
-                        drawRandomTrick(nextIndex)
+                        drawRandomTrick(nextIndex);
                         return {
                             ...prev,
                             currentPlayerIndex: nextIndex,
                             players: prev.players.map((p) => ({ ...p, consecutiveTricks: 0 })),
                             showTurnModal: true,
-                        }
+                        };
                     }
                 }
-                return prev
+                return prev;
             }
 
-            let nextIndex = (prev.currentPlayerIndex + 1) % prev.players.length
+            let nextIndex = (prev.currentPlayerIndex + 1) % prev.players.length;
             while (prev.players[nextIndex].isEliminated || prev.players[nextIndex].hasAttemptedCurrentTrick) {
-                nextIndex = (nextIndex + 1) % prev.players.length
+                nextIndex = (nextIndex + 1) % prev.players.length;
             }
 
             return {
                 ...prev,
                 currentPlayerIndex: nextIndex,
                 showTurnModal: true,
-            }
-        })
-    }
+            };
+        });
+    };
 
     const nextPlayer = () => {
         setGameState((prev) => {
-            if (prev.gamePhase === "game-over") return prev
+            if (prev.gamePhase === "game-over") return prev;
 
-            const activePlayers = prev.players.filter((p) => !p.isEliminated)
+            const activePlayers = prev.players.filter((p) => !p.isEliminated);
             if (activePlayers.length <= 1) {
                 return {
                     ...prev,
@@ -292,21 +312,22 @@ export const useSkateboardGame = () => {
                     showTurnModal: false,
                     currentTrick: null,
                     leaderIndex: null,
-                }
+                };
             }
 
-            let nextIndex = (prev.currentPlayerIndex + 1) % prev.players.length
+            let nextIndex = (prev.currentPlayerIndex + 1) % prev.players.length;
             while (prev.players[nextIndex].isEliminated) {
-                nextIndex = (nextIndex + 1) % prev.players.length
+                nextIndex = (nextIndex + 1) % prev.players.length;
             }
 
             const updatedPlayers = prev.players.map((p) => ({
                 ...p,
                 consecutiveTricks: 0,
                 hasAttemptedCurrentTrick: false,
-            }))
+                extraTries: 0, // Reset extra tries for new round
+            }));
 
-            drawRandomTrick(nextIndex)
+            drawRandomTrick(nextIndex);
 
             return {
                 ...prev,
@@ -315,9 +336,9 @@ export const useSkateboardGame = () => {
                 trickLeaderLanded: false,
                 leaderIndex: nextIndex,
                 showTurnModal: true,
-            }
-        })
-    }
+            };
+        });
+    };
 
     const resetGame = () => {
         setGameState({
@@ -325,9 +346,13 @@ export const useSkateboardGame = () => {
                 ...p,
                 letters: [],
                 isEliminated: false,
-                skillCards: [skillCards[0], skillCards[1]],
+                skillCards: [
+                    skillCards[Math.floor(Math.random() * skillCards.length)],
+                    skillCards[Math.floor(Math.random() * skillCards.length)],
+                ],
                 consecutiveTricks: 0,
                 hasAttemptedCurrentTrick: false,
+                extraTries: 0,
             })),
             currentPlayerIndex: 0,
             gameStarted: false,
@@ -338,12 +363,12 @@ export const useSkateboardGame = () => {
             roundNumber: 1,
             trickLeaderLanded: false,
             leaderIndex: null,
-        })
-        setUsedTricks([])
+        });
+        setUsedTricks([]);
         if (typeof window !== "undefined" && window.localStorage) {
-            localStorage.removeItem("skateboardGameState")
+            localStorage.removeItem("skateboardGameState");
         }
-    }
+    };
 
     const newGame = () => {
         setGameState({
@@ -357,12 +382,12 @@ export const useSkateboardGame = () => {
             roundNumber: 1,
             trickLeaderLanded: false,
             leaderIndex: null,
-        })
-        setUsedTricks([])
+        });
+        setUsedTricks([]);
         if (typeof window !== "undefined" && window.localStorage) {
-            localStorage.removeItem("skateboardGameState")
+            localStorage.removeItem("skateboardGameState");
         }
-    }
+    };
 
     const useSkillCard = (cardId: string) => {
         const currentPlayer = gameState.players[gameState.currentPlayerIndex];
@@ -372,7 +397,7 @@ export const useSkateboardGame = () => {
                 ...prev,
                 players: prev.players.map((p) =>
                     p.id === currentPlayer.id
-                        ? { ...p, skillCards: p.skillCards.filter((card) => card.id !== cardId), consecutiveTricks: 0, hasAttemptedCurrentTrick: true }
+                        ? { ...p, skillCards: p.skillCards.filter((card) => card.id !== cardId), consecutiveTricks: 0, hasAttemptedCurrentTrick: true, extraTries: 0 }
                         : p
                 ),
                 showTurnModal: false,
@@ -383,9 +408,7 @@ export const useSkateboardGame = () => {
             } else {
                 nextPlayerForTrick();
             }
-        }
-
-        if (cardId === "trick-swap") {
+        } else if (cardId === "trick-swap") {
             if (gameState.gamePhase !== "attempting" || !gameState.currentTrick) {
                 console.warn("Trick Swap can only be used during the attempt phase with an active trick.");
                 return;
@@ -394,7 +417,6 @@ export const useSkateboardGame = () => {
             setGameState((prev) => {
                 const currentTrick = prev.currentTrick as Trick;
                 const currentDifficultyIndex = ["Beginner", "Intermediate", "Advanced", "Pro"].indexOf(currentTrick.difficulty);
-
                 const availableTricks = trickCards.filter(
                     (trick) =>
                         !usedTricks.includes(trick.id) &&
@@ -418,10 +440,9 @@ export const useSkateboardGame = () => {
                 setUsedTricks((prevUsed) => [...prevUsed, newTrick.id]);
                 console.log(`Trick swapped from ${currentTrick.name} to ${newTrick.name}`);
 
-                // Update players: remove skill card, reset hasAttemptedCurrentTrick for all (including current player)
                 const updatedPlayers = prev.players.map((p) =>
                     p.id === currentPlayer.id
-                        ? { ...p, skillCards: p.skillCards.filter((card) => card.id !== cardId), hasAttemptedCurrentTrick: false }
+                        ? { ...p, skillCards: p.skillCards.filter((card) => card.id !== cardId), hasAttemptedCurrentTrick: false, extraTries: 0 }
                         : { ...p, hasAttemptedCurrentTrick: false }
                 );
 
@@ -429,25 +450,35 @@ export const useSkateboardGame = () => {
                     ...prev,
                     players: updatedPlayers,
                     currentTrick: newTrick,
-                    currentPlayerIndex: prev.currentPlayerIndex, // Stay on current player
+                    currentPlayerIndex: prev.currentPlayerIndex,
                     trickLeaderLanded: false,
-                    leaderIndex: prev.currentPlayerIndex, // Current player is the leader
-                    showTurnModal: true, // Keep dialog open for current player's attempt
+                    leaderIndex: prev.currentPlayerIndex,
+                    showTurnModal: true,
                     gamePhase: "attempting",
                     roundNumber: prev.roundNumber + 1,
                 };
             });
+        } else if (cardId === "extra-try") {
+            setGameState((prev) => ({
+                ...prev,
+                players: prev.players.map((p) =>
+                    p.id === currentPlayer.id
+                        ? { ...p, skillCards: p.skillCards.filter((card) => card.id !== cardId), extraTries: 1 } // Changed to 1 extra try
+                        : p
+                ),
+                showTurnModal: true, // Keep modal open for first attempt
+            }));
         }
     };
 
-    const currentPlayer = gameState.players[gameState.currentPlayerIndex]
-    const activePlayers = gameState.players.filter((p) => !p.isEliminated)
-    const playersToAttempt = activePlayers.filter((p) => !p.hasAttemptedCurrentTrick)
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    const activePlayers = gameState.players.filter((p) => !p.isEliminated);
+    const playersToAttempt = activePlayers.filter((p) => !p.hasAttemptedCurrentTrick);
 
     const handleSkillCardClick = (cardId: string) => {
-        setGameState((prev) => ({ ...prev, showTurnModal: false }))
-        useSkillCard(cardId)
-    }
+        setGameState((prev) => ({ ...prev, showTurnModal: false }));
+        useSkillCard(cardId);
+    };
 
     return {
         gameState,
@@ -470,6 +501,6 @@ export const useSkateboardGame = () => {
         useSkillCard,
         resetGame,
         newGame,
-        handleSkillCardClick
+        handleSkillCardClick,
     };
 };
