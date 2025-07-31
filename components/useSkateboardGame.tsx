@@ -129,6 +129,7 @@ export const useSkateboardGame = () => {
 
     // start game and set skills for all player
     const startGame = () => {
+        // const startingSkillCards = [skillCards[Math.floor(Math.random() * skillCards.length)], skillCards[Math.floor(Math.random() * skillCards.length)]];
         if (gameState.players.length >= 2) {
             const randomFirstPlayer = Math.floor(Math.random() * gameState.players.length);
             setGameState((prev) => ({
