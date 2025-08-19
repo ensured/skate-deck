@@ -6,12 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Plus, Play, RotateCcw, Target, X, Users, Check, ArrowDown } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import gameStateCardSkeleton from "@/components/gameStateCardSkeleton";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { difficultyColors } from "@/lib/tricks";
 import { SKATE_LETTERS } from "@/lib/tricks";
 import { useSkateboardGame } from "@/components/useSkateboardGame";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogFooter, AlertDialogCancel } from "@/components/ui/alert-dialog";
 
 export default function SkateboardCardGame() {
   const {
@@ -50,17 +50,14 @@ export default function SkateboardCardGame() {
         {localStorageLoading && gameStateCardSkeleton()}
 
         {gameState.showTrickPicker && (
-          <Dialog
-            open={true}
-            onOpenChange={() =>
-              setGameState((prev) => ({ ...prev, showTrickPicker: false }))
-            }
-          >
-            <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-md">
-              <DialogTitle className="text-center text-xl font-semibold mb-4">
-                Pick Your Trick
-              </DialogTitle>
-              <div className="grid grid-cols-1 gap-3">
+          <AlertDialog open={true}>
+            <AlertDialogContent className="bg-gray-900 border-gray-700 text-white max-w-md">
+              <AlertDialogHeader>
+                <AlertDialogTitle className="text-center text-xl font-semibold mb-4">
+                  Pick Your Trick
+                </AlertDialogTitle>
+              </AlertDialogHeader>
+              <div className="grid grid-cols-1 gap-3 mb-4">
                 {gameState.trickPickerOptions?.map((trick) => (
                   <Button
                     key={trick.id}
@@ -71,8 +68,19 @@ export default function SkateboardCardGame() {
                   </Button>
                 ))}
               </div>
-            </DialogContent>
-          </Dialog>
+              {/* Only show close button when modal overlay is not active */}
+              {!gameState.modalOverlay && (
+                <AlertDialogFooter>
+                  <AlertDialogCancel
+                    onClick={() => setGameState((prev) => ({ ...prev, showTrickPicker: false }))}
+                    className="w-full bg-gray-600 hover:bg-gray-500"
+                  >
+                    Cancel
+                  </AlertDialogCancel>
+                </AlertDialogFooter>
+              )}
+            </AlertDialogContent>
+          </AlertDialog>
         )}
 
 
@@ -211,18 +219,18 @@ export default function SkateboardCardGame() {
             </Card>
 
 
-            <Dialog
+            <AlertDialog
               open={gameState.showTurnModal}
               onOpenChange={(isOpen) => setGameState((prev) => ({ ...prev, showTurnModal: isOpen }))}
             >
-              <DialogContent className="bg-gray-900 border-gray-600 text-white max-w-md transition-all duration-300">
-                <DialogHeader>
-                  <DialogTitle className="text-center">
+              <AlertDialogContent className="bg-gray-900 border-gray-600 text-white max-w-md transition-all duration-300">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-center">
                     <span className="text-2xl text-yellow-400 flex items-center justify-center gap-2">
                       {currentPlayer?.name}'s Turn
                     </span>
-                  </DialogTitle>
-                </DialogHeader>
+                  </AlertDialogTitle>
+                </AlertDialogHeader>
 
                 {gameState.currentTrick && (
                   <div className="space-y-6">
@@ -316,8 +324,8 @@ export default function SkateboardCardGame() {
                     </div>
                   </div>
                 )}
-              </DialogContent>
-            </Dialog>
+              </AlertDialogContent>
+            </AlertDialog>
 
             <Card className="bg-black/20 border-gray-600 transition-all duration-300">
               <CardHeader>

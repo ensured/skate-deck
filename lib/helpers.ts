@@ -62,6 +62,20 @@ export const isValidGameState = (state: any): state is GameState => {
     (state.leaderIndex === null ||
       (typeof state.leaderIndex === "number" &&
         state.leaderIndex >= 0 &&
-        state.leaderIndex < state.players.length))
+        state.leaderIndex < state.players.length)) &&
+    // Optional properties
+    (state.showTrickPicker === undefined ||
+      typeof state.showTrickPicker === "boolean") &&
+    (state.trickPickerOptions === undefined ||
+      Array.isArray(state.trickPickerOptions)) &&
+    (state.modalOverlay === undefined ||
+      typeof state.modalOverlay === "boolean") &&
+    (state.shouldDrawNextTrick === undefined ||
+      typeof state.shouldDrawNextTrick === "boolean") &&
+    (state.nextPlayerIndex === undefined ||
+      state.nextPlayerIndex === null ||
+      typeof state.nextPlayerIndex === "number") &&
+    (state.shouldAdvanceTurn === undefined ||
+      typeof state.shouldAdvanceTurn === "boolean")
   );
 };

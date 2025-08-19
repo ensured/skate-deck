@@ -14,6 +14,14 @@ export interface GameState {
   // for the peek-choose/Drop In skill card
   showTrickPicker?: boolean;
   trickPickerOptions?: Trick[];
+
+  // Modal overlay to lock screen during powerup usage
+  modalOverlay?: boolean;
+
+  // Clean flags to replace setTimeout hacks
+  shouldDrawNextTrick?: boolean;
+  nextPlayerIndex?: number | null;
+  shouldAdvanceTurn?: boolean;
 }
 
 export interface Trick {

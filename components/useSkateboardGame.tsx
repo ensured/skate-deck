@@ -20,6 +20,10 @@ export const useSkateboardGame = () => {
         justUsedHardPass: false,
         showTrickPicker: false,
         trickPickerOptions: [],
+        modalOverlay: false,
+        shouldDrawNextTrick: false,
+        nextPlayerIndex: null,
+        shouldAdvanceTurn: false,
     };
     const [gameState, setGameState] = useState<GameState>(defaultGameState);
     const [usedTricks, setUsedTricks] = useState<number[]>([]);
@@ -66,29 +70,53 @@ export const useSkateboardGame = () => {
         }
     }, [gameState, usedTricks]);
 
-    // Handle hard pass effect with proper cleanup
+    // Clean effect to handle hard pass logic
     useEffect(() => {
         if (!gameState.justUsedHardPass) return;
 
-        const timer = setTimeout(() => {
-            setGameState((prev) => {
-                if (!prev.trickLeaderLanded) {
-                    return { ...prev, justUsedHardPass: false };
-                } else {
-                    return { ...prev, justUsedHardPass: false };
-                }
-            });
+        setGameState((prev) => ({ ...prev, justUsedHardPass: false }));
 
-            // Use the current state to determine next action
+        // Determine next action based on current state
+        if (!gameState.trickLeaderLanded) {
+            setGameState((prev) => ({ ...prev, shouldAdvanceTurn: true }));
+        } else {
+            setGameState((prev) => ({ ...prev, shouldAdvanceTurn: true }));
+        }
+    }, [gameState.justUsedHardPass, gameState.trickLeaderLanded]);
+
+    // Clean effect to handle drawing next tricks
+    useEffect(() => {
+        if (gameState.shouldDrawNextTrick && gameState.nextPlayerIndex !== null && gameState.nextPlayerIndex !== undefined) {
+            drawRandomTrick(gameState.nextPlayerIndex);
+            setGameState((prev) => ({
+                ...prev,
+                shouldDrawNextTrick: false,
+                nextPlayerIndex: null
+            }));
+        }
+    }, [gameState.shouldDrawNextTrick, gameState.nextPlayerIndex]);
+
+    // Clean effect to handle turn advancement
+    useEffect(() => {
+        if (gameState.shouldAdvanceTurn) {
             if (!gameState.trickLeaderLanded) {
                 nextPlayer();
             } else {
                 nextPlayerForTrick();
             }
-        }, 0);
+            setGameState((prev) => ({ ...prev, shouldAdvanceTurn: false }));
+        }
+    }, [gameState.shouldAdvanceTurn, gameState.trickLeaderLanded]);
 
-        return () => clearTimeout(timer);
-    }, [gameState.justUsedHardPass]);
+    // Force close powerup (used when trick is selected)
+    const forceClosePowerup = useCallback(() => {
+        setGameState((prev) => ({
+            ...prev,
+            showTrickPicker: false,
+            trickPickerOptions: [],
+            modalOverlay: false,
+        }));
+    }, []);
 
     const handleTrickSelect = useCallback((selected: Trick) => {
         setUsedTricks((prev) => [...prev, selected.id]);
@@ -107,7 +135,9 @@ export const useSkateboardGame = () => {
                 hasAttemptedCurrentTrick: false,
             })),
         }));
-    }, []);
+        // Force close the modal overlay after trick selection
+        forceClosePowerup();
+    }, [forceClosePowerup]);
 
     const addPlayer = useCallback(() => {
         if (newPlayerName.trim() && gameState.players.length < 8) {
@@ -138,7 +168,6 @@ export const useSkateboardGame = () => {
         }));
     }, []);
 
-    // start game and set skills for all player
     const startGame = useCallback(() => {
         if (gameState.players.length >= 2) {
             const randomFirstPlayer = Math.floor(Math.random() * gameState.players.length);
@@ -220,7 +249,7 @@ export const useSkateboardGame = () => {
                         ...p,
                         consecutiveTricks: isLeader ? p.consecutiveTricks + 1 : p.consecutiveTricks,
                         hasAttemptedCurrentTrick: true,
-                        extraTries: 0, // Reset extra tries on success
+                        extraTries: 0,
                     }
                     : p
             );
@@ -243,17 +272,9 @@ export const useSkateboardGame = () => {
                 players: updatedPlayers,
                 showTurnModal: false,
                 trickLeaderLanded: isLeader ? true : prev.trickLeaderLanded,
+                shouldAdvanceTurn: true, // Clean flag to trigger useEffect
             };
         });
-
-        // Delay next player logic to avoid race conditions
-        setTimeout(() => {
-            if (!gameState.trickLeaderLanded) {
-                nextPlayer();
-            } else {
-                nextPlayerForTrick();
-            }
-        }, 0);
     }, [gameState.players, gameState.currentPlayerIndex, gameState.trickLeaderLanded]);
 
     const missTrick = useCallback(() => {
@@ -296,20 +317,10 @@ export const useSkateboardGame = () => {
             return {
                 ...prev,
                 players: updatedPlayers,
-                showTurnModal: hasExtraTries, // Keep modal open if extra tries remain
+                showTurnModal: hasExtraTries,
+                shouldAdvanceTurn: !hasExtraTries, // Only advance if no extra tries remain
             };
         });
-
-        // Only advance if no extra tries remain
-        if (!hasExtraTries) {
-            setTimeout(() => {
-                if (!gameState.trickLeaderLanded) {
-                    nextPlayer();
-                } else {
-                    nextPlayerForTrick();
-                }
-            }, 0);
-        }
     }, [gameState.players, gameState.currentPlayerIndex, gameState.trickLeaderLanded]);
 
     const nextPlayerForTrick = useCallback(() => {
@@ -323,24 +334,27 @@ export const useSkateboardGame = () => {
                 if (prev.trickLeaderLanded && prev.leaderIndex !== null) {
                     const leader = prev.players[prev.leaderIndex];
                     if (!leader.isEliminated && leader.consecutiveTricks < 3) {
-                        // Use setTimeout to avoid calling drawRandomTrick during state update
-                        setTimeout(() => drawRandomTrick(prev.leaderIndex!), 0);
+                        // Clean flag to trigger useEffect
                         return {
                             ...prev,
                             currentPlayerIndex: prev.leaderIndex,
                             showTurnModal: true,
+                            shouldDrawNextTrick: true,
+                            nextPlayerIndex: prev.leaderIndex,
                         };
                     } else {
                         let nextIndex = (prev.leaderIndex + 1) % prev.players.length;
                         while (prev.players[nextIndex].isEliminated) {
                             nextIndex = (nextIndex + 1) % prev.players.length;
                         }
-                        setTimeout(() => drawRandomTrick(nextIndex), 0);
+
                         return {
                             ...prev,
                             currentPlayerIndex: nextIndex,
                             players: prev.players.map((p) => ({ ...p, consecutiveTricks: 0 })),
                             showTurnModal: true,
+                            shouldDrawNextTrick: true,
+                            nextPlayerIndex: nextIndex,
                         };
                     }
                 }
@@ -385,11 +399,8 @@ export const useSkateboardGame = () => {
                 ...p,
                 consecutiveTricks: 0,
                 hasAttemptedCurrentTrick: false,
-                extraTries: 0, // Reset extra tries for new round
+                extraTries: 0,
             }));
-
-            // Use setTimeout to avoid calling drawRandomTrick during state update
-            setTimeout(() => drawRandomTrick(nextIndex), 0);
 
             return {
                 ...prev,
@@ -398,9 +409,11 @@ export const useSkateboardGame = () => {
                 trickLeaderLanded: false,
                 leaderIndex: nextIndex,
                 showTurnModal: true,
+                shouldDrawNextTrick: true, // Clean flag to trigger useEffect
+                nextPlayerIndex: nextIndex,
             };
         });
-    }, [drawRandomTrick]);
+    }, []);
 
     const resetGame = useCallback(() => {
         setGameState({
@@ -425,6 +438,12 @@ export const useSkateboardGame = () => {
             roundNumber: 1,
             trickLeaderLanded: false,
             leaderIndex: null,
+            showTrickPicker: false,
+            trickPickerOptions: [],
+            modalOverlay: false,
+            shouldDrawNextTrick: false,
+            nextPlayerIndex: null,
+            shouldAdvanceTurn: false,
         });
         setUsedTricks([]);
         if (typeof window !== "undefined" && window.localStorage) {
@@ -444,6 +463,12 @@ export const useSkateboardGame = () => {
             roundNumber: 1,
             trickLeaderLanded: false,
             leaderIndex: null,
+            showTrickPicker: false,
+            trickPickerOptions: [],
+            modalOverlay: false,
+            shouldDrawNextTrick: false,
+            nextPlayerIndex: null,
+            shouldAdvanceTurn: false,
         });
         setUsedTricks([]);
         if (typeof window !== "undefined" && window.localStorage) {
@@ -451,7 +476,6 @@ export const useSkateboardGame = () => {
         }
     }, []);
 
-    // Consolidated powerup logic to prevent race conditions
     const useSkillCard = useCallback((cardId: string) => {
         const currentPlayer = gameState.players[gameState.currentPlayerIndex];
         if (!currentPlayer) return;
@@ -474,7 +498,12 @@ export const useSkateboardGame = () => {
             return;
         }
 
-        // Single state update for all powerups to prevent race conditions
+        // Prevent any skill card usage when modal overlay is active
+        if (gameState.modalOverlay && cardId !== "extra-try" && cardId !== "peek-choose") {
+            console.warn("Cannot use skill cards while modal overlay is active.");
+            return;
+        }
+
         setGameState((prev) => {
             let newState = { ...prev };
 
@@ -556,7 +585,7 @@ export const useSkateboardGame = () => {
                 const nextThree = available.slice(0, 3);
                 if (nextThree.length === 0) {
                     console.warn("No available tricks to peek at.");
-                    return prev; // Don't update state if no tricks available
+                    return prev;
                 }
 
                 newState = {
@@ -564,12 +593,27 @@ export const useSkateboardGame = () => {
                     showTurnModal: false,
                     showTrickPicker: true,
                     trickPickerOptions: nextThree,
+                    modalOverlay: true,
                 };
             }
 
             return newState;
         });
     }, [gameState.players, gameState.currentPlayerIndex, gameState.gamePhase, gameState.currentTrick, usedTricks]);
+
+    const closePowerup = useCallback(() => {
+        // Don't allow closing during peek-choose when modal overlay is active
+        if (gameState.showTrickPicker && gameState.modalOverlay) {
+            return;
+        }
+
+        setGameState((prev) => ({
+            ...prev,
+            showTrickPicker: false,
+            trickPickerOptions: [],
+            modalOverlay: false,
+        }));
+    }, [gameState.showTrickPicker, gameState.modalOverlay]);
 
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
     const activePlayers = gameState.players.filter((p) => !p.isEliminated);
@@ -603,5 +647,7 @@ export const useSkateboardGame = () => {
         resetGame,
         newGame,
         handleSkillCardClick,
+        closePowerup,
+        forceClosePowerup,
     };
 };
