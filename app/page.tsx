@@ -67,8 +67,7 @@ export default function SkateboardCardGame() {
                     onClick={() => handleTrickSelect(trick)}
                     className="bg-blue-800 hover:bg-blue-700 border border-blue-500/50 text-white p-4 rounded-lg text-left"
                   >
-                    <div className="font-bold">{trick.name}</div>
-                    <div className="text-sm text-gray-300">{trick.description}</div>
+                    <div className="font-bold text-lg">{trick.name}</div>
                   </Button>
                 ))}
               </div>
