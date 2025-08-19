@@ -1,5 +1,5 @@
 // hooks/useSkateboardGame.ts
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { GameState, Trick } from "@/types/types";
 import { trickCards, SKATE_LETTERS } from "@/lib/tricks";
 import { isValidGameState } from "@/lib/helpers";
@@ -66,20 +66,31 @@ export const useSkateboardGame = () => {
         }
     }, [gameState, usedTricks]);
 
+    // Handle hard pass effect with proper cleanup
     useEffect(() => {
         if (!gameState.justUsedHardPass) return;
 
-        if (!gameState.trickLeaderLanded) {
-            nextPlayer();
-        } else {
-            nextPlayerForTrick();
-        }
+        const timer = setTimeout(() => {
+            setGameState((prev) => {
+                if (!prev.trickLeaderLanded) {
+                    return { ...prev, justUsedHardPass: false };
+                } else {
+                    return { ...prev, justUsedHardPass: false };
+                }
+            });
 
-        // Clean up the flag to avoid loops
-        setGameState((prev) => ({ ...prev, justUsedHardPass: false }));
+            // Use the current state to determine next action
+            if (!gameState.trickLeaderLanded) {
+                nextPlayer();
+            } else {
+                nextPlayerForTrick();
+            }
+        }, 0);
+
+        return () => clearTimeout(timer);
     }, [gameState.justUsedHardPass]);
 
-    const handleTrickSelect = (selected: Trick) => {
+    const handleTrickSelect = useCallback((selected: Trick) => {
         setUsedTricks((prev) => [...prev, selected.id]);
         setGameState((prev) => ({
             ...prev,
@@ -96,9 +107,9 @@ export const useSkateboardGame = () => {
                 hasAttemptedCurrentTrick: false,
             })),
         }));
-    };
+    }, []);
 
-    const addPlayer = () => {
+    const addPlayer = useCallback(() => {
         if (newPlayerName.trim() && gameState.players.length < 8) {
             setGameState((prev) => ({
                 ...prev,
@@ -118,17 +129,17 @@ export const useSkateboardGame = () => {
             }));
             setNewPlayerName("");
         }
-    };
+    }, [newPlayerName, gameState.players.length]);
 
-    const removePlayer = (playerId: number) => {
+    const removePlayer = useCallback((playerId: number) => {
         setGameState((prev) => ({
             ...prev,
             players: prev.players.filter((p) => p.id !== playerId),
         }));
-    };
+    }, []);
 
     // start game and set skills for all player
-    const startGame = () => {
+    const startGame = useCallback(() => {
         if (gameState.players.length >= 2) {
             const randomFirstPlayer = Math.floor(Math.random() * gameState.players.length);
             setGameState((prev) => ({
@@ -138,12 +149,7 @@ export const useSkateboardGame = () => {
                 gamePhase: "setting",
                 players: prev.players.map((player) => ({
                     ...player,
-                    skillCards: [
-                        skillCards[0],
-                        skillCards[1],
-                        skillCards[2],
-                        skillCards[3],
-                    ],
+                    skillCards: [...skillCards].sort(() => 0.5 - Math.random()).slice(0, 2),
                     consecutiveTricks: 0,
                     hasAttemptedCurrentTrick: false,
                     extraTries: 0,
@@ -151,9 +157,9 @@ export const useSkateboardGame = () => {
             }));
             drawRandomTrick(randomFirstPlayer);
         }
-    };
+    }, [gameState.players.length]);
 
-    const drawRandomTrick = (playerIndex: number) => {
+    const drawRandomTrick = useCallback((playerIndex: number) => {
         setGameState((prev) => {
             if (prev.gamePhase === "game-over") return prev;
 
@@ -162,7 +168,9 @@ export const useSkateboardGame = () => {
                 availableTricks.length === 0
                     ? trickCards[Math.floor(Math.random() * trickCards.length)]
                     : availableTricks[Math.floor(Math.random() * availableTricks.length)];
-            setUsedTricks((prev) => [...prev, randomTrick.id]);
+
+            // Update usedTricks atomically
+            setUsedTricks((prevUsed) => [...prevUsed, randomTrick.id]);
 
             // 10% chance to award a random skill card to the current player
             let updatedPlayers = prev.players;
@@ -191,13 +199,18 @@ export const useSkateboardGame = () => {
                 roundNumber: prev.roundNumber + 1,
                 trickLeaderLanded: false,
                 leaderIndex: playerIndex,
-                players: updatedPlayers.map((player) => ({ ...player, hasAttemptedCurrentTrick: false, extraTries: player.extraTries || 0 })),
+                players: updatedPlayers.map((player) => ({
+                    ...player,
+                    hasAttemptedCurrentTrick: false,
+                    extraTries: player.extraTries || 0
+                })),
             };
         });
-    };
+    }, [usedTricks]);
 
-    const landTrick = () => {
+    const landTrick = useCallback(() => {
         const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+        if (!currentPlayer) return;
 
         setGameState((prev) => {
             const isLeader = prev.currentPlayerIndex === prev.leaderIndex;
@@ -233,11 +246,20 @@ export const useSkateboardGame = () => {
             };
         });
 
-        nextPlayerForTrick();
-    };
+        // Delay next player logic to avoid race conditions
+        setTimeout(() => {
+            if (!gameState.trickLeaderLanded) {
+                nextPlayer();
+            } else {
+                nextPlayerForTrick();
+            }
+        }, 0);
+    }, [gameState.players, gameState.currentPlayerIndex, gameState.trickLeaderLanded]);
 
-    const missTrick = () => {
+    const missTrick = useCallback(() => {
         const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+        if (!currentPlayer) return;
+
         const hasExtraTries = (currentPlayer.extraTries || 0) > 0;
         const newLetters = hasExtraTries
             ? currentPlayer.letters
@@ -278,18 +300,19 @@ export const useSkateboardGame = () => {
             };
         });
 
+        // Only advance if no extra tries remain
         if (!hasExtraTries) {
-            // Only advance if no extra tries remain
-            if (!gameState.trickLeaderLanded) {
-                nextPlayer();
-            } else {
-                nextPlayerForTrick();
-            }
+            setTimeout(() => {
+                if (!gameState.trickLeaderLanded) {
+                    nextPlayer();
+                } else {
+                    nextPlayerForTrick();
+                }
+            }, 0);
         }
-        // If hasExtraTries is true, do nothing (stay on current player)
-    };
+    }, [gameState.players, gameState.currentPlayerIndex, gameState.trickLeaderLanded]);
 
-    const nextPlayerForTrick = () => {
+    const nextPlayerForTrick = useCallback(() => {
         setGameState((prev) => {
             if (prev.gamePhase === "game-over") return prev;
 
@@ -300,7 +323,8 @@ export const useSkateboardGame = () => {
                 if (prev.trickLeaderLanded && prev.leaderIndex !== null) {
                     const leader = prev.players[prev.leaderIndex];
                     if (!leader.isEliminated && leader.consecutiveTricks < 3) {
-                        drawRandomTrick(prev.leaderIndex);
+                        // Use setTimeout to avoid calling drawRandomTrick during state update
+                        setTimeout(() => drawRandomTrick(prev.leaderIndex!), 0);
                         return {
                             ...prev,
                             currentPlayerIndex: prev.leaderIndex,
@@ -311,7 +335,7 @@ export const useSkateboardGame = () => {
                         while (prev.players[nextIndex].isEliminated) {
                             nextIndex = (nextIndex + 1) % prev.players.length;
                         }
-                        drawRandomTrick(nextIndex);
+                        setTimeout(() => drawRandomTrick(nextIndex), 0);
                         return {
                             ...prev,
                             currentPlayerIndex: nextIndex,
@@ -334,9 +358,9 @@ export const useSkateboardGame = () => {
                 showTurnModal: true,
             };
         });
-    };
+    }, []);
 
-    const nextPlayer = () => {
+    const nextPlayer = useCallback(() => {
         setGameState((prev) => {
             if (prev.gamePhase === "game-over") return prev;
 
@@ -364,7 +388,8 @@ export const useSkateboardGame = () => {
                 extraTries: 0, // Reset extra tries for new round
             }));
 
-            drawRandomTrick(nextIndex);
+            // Use setTimeout to avoid calling drawRandomTrick during state update
+            setTimeout(() => drawRandomTrick(nextIndex), 0);
 
             return {
                 ...prev,
@@ -375,9 +400,9 @@ export const useSkateboardGame = () => {
                 showTurnModal: true,
             };
         });
-    };
+    }, [drawRandomTrick]);
 
-    const resetGame = () => {
+    const resetGame = useCallback(() => {
         setGameState({
             players: gameState.players.map((p) => ({
                 ...p,
@@ -405,9 +430,9 @@ export const useSkateboardGame = () => {
         if (typeof window !== "undefined" && window.localStorage) {
             localStorage.removeItem("skateboardGameState");
         }
-    };
+    }, [gameState.players]);
 
-    const newGame = () => {
+    const newGame = useCallback(() => {
         setGameState({
             players: [],
             currentPlayerIndex: 0,
@@ -424,47 +449,59 @@ export const useSkateboardGame = () => {
         if (typeof window !== "undefined" && window.localStorage) {
             localStorage.removeItem("skateboardGameState");
         }
-    };
+    }, []);
 
-    const useSkillCard = (cardId: string) => {
+    // Consolidated powerup logic to prevent race conditions
+    const useSkillCard = useCallback((cardId: string) => {
         const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+        if (!currentPlayer) return;
 
-        if (cardId === "hard-pass") {
-            setGameState((prev) => {
-                const updatedPlayers = prev.players.map((p) =>
-                    p.id === currentPlayer.id
-                        ? {
-                            ...p,
-                            skillCards: p.skillCards.filter((card) => card.id !== cardId),
-                            consecutiveTricks: 0,
-                            hasAttemptedCurrentTrick: true,
-                            extraTries: 0
-                        }
-                        : p
-                );
+        // Validate card exists in player's hand
+        const cardExists = currentPlayer.skillCards.some(card => card.id === cardId);
+        if (!cardExists) {
+            console.warn(`Player ${currentPlayer.name} doesn't have card ${cardId}`);
+            return;
+        }
 
-                const updatedState = {
-                    ...prev,
-                    players: updatedPlayers,
+        // Validate game state for card usage
+        if (cardId === "trick-swap" && (gameState.gamePhase !== "attempting" || !gameState.currentTrick)) {
+            console.warn("Trick Swap can only be used during the attempt phase with an active trick.");
+            return;
+        }
+
+        if (cardId === "peek-choose" && gameState.gamePhase !== "attempting") {
+            console.warn("Peek Choose can only be used during the attempt phase.");
+            return;
+        }
+
+        // Single state update for all powerups to prevent race conditions
+        setGameState((prev) => {
+            let newState = { ...prev };
+
+            // Remove the used card
+            newState.players = prev.players.map((p) =>
+                p.id === currentPlayer.id
+                    ? { ...p, skillCards: p.skillCards.filter((card) => card.id !== cardId) }
+                    : p
+            );
+
+            if (cardId === "hard-pass") {
+                newState = {
+                    ...newState,
                     showTurnModal: false,
-                    justUsedHardPass: true, // This triggers the effect to skip the turn
+                    justUsedHardPass: true,
+                    players: newState.players.map((p) =>
+                        p.id === currentPlayer.id
+                            ? {
+                                ...p,
+                                consecutiveTricks: 0,
+                                hasAttemptedCurrentTrick: true,
+                                extraTries: 0
+                            }
+                            : p
+                    ),
                 };
-                // Determine who to go to next based on the current state
-                if (!prev.trickLeaderLanded) {
-                    nextPlayer(); // Pass updated state if needed
-                } else {
-                    nextPlayerForTrick();
-                }
-
-                return updatedState;
-            });
-        } else if (cardId === "trick-swap") {
-            if (gameState.gamePhase !== "attempting" || !gameState.currentTrick) {
-                console.warn("Trick Swap can only be used during the attempt phase with an active trick.");
-                return;
-            }
-
-            setGameState((prev) => {
+            } else if (cardId === "trick-swap") {
                 const currentTrick = prev.currentTrick as Trick;
                 const currentDifficultyIndex = ["Beginner", "Intermediate", "Advanced", "Pro"].indexOf(currentTrick.difficulty);
                 const availableTricks = trickCards.filter(
@@ -490,63 +527,58 @@ export const useSkateboardGame = () => {
                 setUsedTricks((prevUsed) => [...prevUsed, newTrick.id]);
                 console.log(`Trick swapped from ${currentTrick.name} to ${newTrick.name}`);
 
-                const updatedPlayers = prev.players.map((p) =>
-                    p.id === currentPlayer.id
-                        ? { ...p, skillCards: p.skillCards.filter((card) => card.id !== cardId), hasAttemptedCurrentTrick: false, extraTries: 0 }
-                        : { ...p, hasAttemptedCurrentTrick: false }
-                );
-
-                return {
-                    ...prev,
-                    players: updatedPlayers,
+                newState = {
+                    ...newState,
                     currentTrick: newTrick,
-                    currentPlayerIndex: prev.currentPlayerIndex,
                     trickLeaderLanded: false,
                     leaderIndex: prev.currentPlayerIndex,
                     showTurnModal: true,
                     gamePhase: "attempting",
                     roundNumber: prev.roundNumber + 1,
+                    players: newState.players.map((p) =>
+                        p.id === currentPlayer.id
+                            ? { ...p, hasAttemptedCurrentTrick: false, extraTries: 0 }
+                            : { ...p, hasAttemptedCurrentTrick: false }
+                    ),
                 };
-            });
-        } else if (cardId === "extra-try") {
-            setGameState((prev) => ({
-                ...prev,
-                players: prev.players.map((p) =>
-                    p.id === currentPlayer.id
-                        ? { ...p, skillCards: p.skillCards.filter((card) => card.id !== cardId), extraTries: 1 } // Changed to 1 extra try
-                        : p
-                ),
-                showTurnModal: true, // Keep modal open for first attempt
-            }));
-        } else if (cardId === "peek-choose") {
-            const available = trickCards.filter((t) => !usedTricks.includes(t.id));
-            const nextThree = available.slice(0, 3);
-            if (nextThree.length === 0) {
-                console.warn("No available tricks to peek at.");
-                return;
+            } else if (cardId === "extra-try") {
+                newState = {
+                    ...newState,
+                    showTurnModal: true,
+                    players: newState.players.map((p) =>
+                        p.id === currentPlayer.id
+                            ? { ...p, extraTries: (p.extraTries ?? 0) + 1 }
+                            : p
+                    ),
+                };
+            } else if (cardId === "peek-choose") {
+                const available = trickCards.filter((t) => !usedTricks.includes(t.id));
+                const nextThree = available.slice(0, 3);
+                if (nextThree.length === 0) {
+                    console.warn("No available tricks to peek at.");
+                    return prev; // Don't update state if no tricks available
+                }
+
+                newState = {
+                    ...newState,
+                    showTurnModal: false,
+                    showTrickPicker: true,
+                    trickPickerOptions: nextThree,
+                };
             }
-            setGameState((prev) => ({
-                ...prev,
-                showTurnModal: false,
-                showTrickPicker: true,
-                trickPickerOptions: nextThree,
-                players: prev.players.map((p) =>
-                    p.id === currentPlayer.id
-                        ? { ...p, skillCards: p.skillCards.filter((c) => c.id !== cardId) }
-                        : p
-                ),
-            }));
-        }
-    };
+
+            return newState;
+        });
+    }, [gameState.players, gameState.currentPlayerIndex, gameState.gamePhase, gameState.currentTrick, usedTricks]);
 
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
     const activePlayers = gameState.players.filter((p) => !p.isEliminated);
     const playersToAttempt = activePlayers.filter((p) => !p.hasAttemptedCurrentTrick);
 
-    const handleSkillCardClick = (cardId: string) => {
+    const handleSkillCardClick = useCallback((cardId: string) => {
         setGameState((prev) => ({ ...prev, showTurnModal: false }));
         useSkillCard(cardId);
-    };
+    }, [useSkillCard]);
 
     return {
         gameState,
