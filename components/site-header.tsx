@@ -16,7 +16,7 @@ export function SiteHeader() {
             <div className="flex h-16 items-center justify-between pl-9 pr-3">
                 <div className="flex items-center space-x-4">
                     <Link href="/" className="flex items-center space-x-2">
-                        <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+                        <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent">
                             Skate Deck
                         </span>
                     </Link>
