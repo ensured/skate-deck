@@ -341,35 +341,37 @@ export default function SkateboardCardGame() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        onClick={missTrick}
-                        className="h-14 text-base border-destructive/50 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                      >
-                        Missed
-                      </Button>
+
                       <Button
                         size="lg"
+                        variant="success"
                         onClick={landTrick}
-                        className="h-14 text-base bg-emerald-600 hover:bg-emerald-700"
+                        className="h-14 text-base"
                       >
                         Landed
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="lg"
+                        onClick={missTrick}
+                        className="h-14 text-base"
+                      >
+                        Missed
                       </Button>
                     </div>
                   </CardContent>
 
                   <div className="border-t border-border/50 p-4 bg-muted/20">
                     <div className="flex flex-col items-center space-y-3">
-                      <div className="w-full">
+                      {/* <div className="w-full">
                         <p className="text-sm text-muted-foreground text-center mb-2">
                           {5 - currentPlayer.letters.length} letter{5 - currentPlayer.letters.length === 1 ? '' : 's'} remaining
                         </p>
-                      </div>
+                      </div> */}
 
                       {/* SKATE letters */}
                       <div className="w-full">
-                        <div className="flex justify-center gap-1.5 mb-3">
+                        <div className="flex justify-center gap-1 ">
                           {SKATE_LETTERS.map((letter, index) => (
                             <div
                               key={letter}
@@ -498,7 +500,7 @@ export default function SkateboardCardGame() {
                           </div>
 
                           {/* SKATE Letters */}
-                          <div className="flex gap-1.5 mb-3">
+                          <div className="flex gap-1 mb-2.5">
                             {SKATE_LETTERS.map((letter, index) => (
                               <div
                                 key={letter}
