@@ -5,11 +5,11 @@ export interface GameState {
   currentTrick: Trick | null;
   gamePhase: "setting" | "attempting" | "game-over";
   winner: string | null;
-  showTurnModal: boolean;
+  showTurnModal?: boolean;
   roundNumber: number;
-  trickLeaderLanded: boolean;
+  trickLeaderLanded?: boolean;
   leaderIndex: number | null;
-  justUsedHardPass?: boolean;
+  usedTricks: number[];
 
   // for the peek-choose/Drop In skill card
   showTrickPicker?: boolean;
