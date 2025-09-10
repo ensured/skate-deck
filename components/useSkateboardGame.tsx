@@ -370,9 +370,20 @@ export const useSkateboardGame = () => {
         if (!currentPlayer) return;
 
         const hasExtraTries = (currentPlayer.extraTries || 0) > 0;
-        const newLetters = hasExtraTries
-            ? currentPlayer.letters
-            : [...currentPlayer.letters, SKATE_LETTERS[currentPlayer.letters.length]];
+        let newLetters = currentPlayer.letters;
+        let shouldConsumeExtraTry = false;
+        
+        if (hasExtraTries) {
+            // If player has extra tries, consume one and don't add a letter
+            shouldConsumeExtraTry = true;
+            const remainingTries = (currentPlayer.extraTries || 0) - 1;
+            console.log(`Using extra try! Remaining: ${remainingTries}`);
+        } else {
+            // No extra tries, add a letter
+            newLetters = [...currentPlayer.letters, SKATE_LETTERS[currentPlayer.letters.length]];
+            console.log(`No extra tries left. Adding letter: ${newLetters[newLetters.length - 1]}`);
+        }
+        
         const isEliminated = newLetters.length >= 5;
 
         // Start transition
@@ -389,7 +400,7 @@ export const useSkateboardGame = () => {
                             isEliminated,
                             consecutiveTricks: 0,
                             hasAttemptedCurrentTrick: true,
-                            extraTries: hasExtraTries ? (p.extraTries || 0) - 1 : 0,
+                            extraTries: shouldConsumeExtraTry ? (p.extraTries || 0) - 1 : (p.extraTries || 0),
                         }
                         : p
                 );
@@ -588,8 +599,14 @@ export const useSkateboardGame = () => {
                 return newState;
 
             } else if (cardId === "extra-try") {
-                // Add an extra try to the current player
-                newState.players[currentPlayerIndex].extraTries = (newState.players[currentPlayerIndex].extraTries || 0) + 1;
+                // Add an extra try to the current player (max 2 extra tries)
+                const currentTries = newState.players[currentPlayerIndex].extraTries || 0;
+                if (currentTries < 2) {
+                    newState.players[currentPlayerIndex].extraTries = currentTries + 1;
+                    console.log(`Extra try added! Total extra tries: ${currentTries + 1}`);
+                } else {
+                    console.log('Maximum extra tries (2) already reached');
+                }
                 newState.showTurnModal = true;
 
                 // Remove the used card
