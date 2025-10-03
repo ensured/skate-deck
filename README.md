@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# G.R.I.N.D - Game Rules
 
-## Getting Started
+## Overview
 
-First, run the development server:
+A trick-taking game where players take turns as leaders and followers, performing tricks to avoid collecting letters from the word "G.R.I.N.D". The last player remaining wins!
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Setup
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Players**: 2+ players
+- **Cards**: 98 unique trick cards
+- **Game Word**: G.R.I.N.D (5 letters = 5 strikes to elimination)
+- **Initial Leader/player**: Player 0
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Card Deck
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- 98 unique trick cards of varying difficulties
+- Shuffled using Fisher-Yates algorithm
+- Reshuffled when there are no more cards in the draw pile to draw from.
 
-## Learn More
+## Gameplay
 
-To learn more about Next.js, take a look at the following resources:
+### Turn Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Leader's Turn**:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   - Leader draws a random card
+   - Attempts to set the trick for others to perform
+   - If successful:
+     - All other players must attempt the same trick
+     - Leader earns +1 successful consecutive streak
+     - If leader reaches 3 successful consecutive trick land streak, leadership passes to the next players index
+   - If failed:
+     - Leader receives a letter from "G.R.I.N.D"
+     - Leadership passes to the next players index
 
-## Deploy on Vercel
+2. **Followers' Turns**:
+   - Must attempt the leader's trick in turn order
+   - Success: No penalty
+   - Failure: Receive a letter from "G.R.I.N.D"
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Special Rules
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Three Streak Rule**: Leader can only have 3 successful consecutive streaks before passing leadership after the current round ends.
+- **Elimination**: Players are eliminated from the game when they accumulate all 5 letters 'G.R.I.N.D'.
+
+## Winning
+
+- Last remaining player wins!
+- cannot be a tie game!
