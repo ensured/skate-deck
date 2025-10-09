@@ -353,7 +353,7 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                           {player.id === gameState.currentLeaderId &&
                             gameState.leaderConsecutiveWins > 0 && (
                               <span className="text-sm text-orange-600 dark:text-orange-400 font-medium">
-                                🔥 {gameState.leaderConsecutiveWins}
+                                🔥{gameState.leaderConsecutiveWins}
                               </span>
                             )}
                         </div>
