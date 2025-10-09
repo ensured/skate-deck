@@ -9,41 +9,58 @@ A trick-taking game where players take turns as leaders and followers, performin
 - **Players**: 2+ players
 - **Cards**: 98 unique trick cards
 - **Game Word**: G.R.I.N.D (5 letters = 5 strikes to elimination)
-- **Initial Leader/player**: Player 0
+- **Initial Leader**: Player 0
 
 ## Card Deck
 
 - 98 unique trick cards of varying difficulties
-- Shuffled using Fisher-Yates algorithm
-- Reshuffled when there are no more cards in the draw pile to draw from.
+- Deck is shuffled initially using Fisher-Yates algorithm
+- Cards are drawn sequentially until deck is empty
 
 ## Gameplay
 
 ### Turn Structure
 
-1. **Leader's Turn**:
+Each round consists of:
+1. Leader draws and attempts a trick
+2. All other players attempt the same trick in turn order
+3. Round ends when all players have attempted the trick
 
-   - Leader draws a random card
-   - Attempts to set the trick for others to perform
-   - If successful:
-     - All other players must attempt the same trick
-     - Leader earns +1 successful consecutive streak
-     - If leader reaches 3 successful consecutive trick land streak, leadership passes to the next players index
-   - If failed:
-     - Leader receives a letter from "G.R.I.N.D"
-     - Leadership passes to the next players index
+**Round increments when:**
+- Any player misses a trick (new card drawn, new round starts)
+- All players complete the leader's trick (round ends, leadership may rotate)
 
-2. **Followers' Turns**:
-   - Must attempt the leader's trick in turn order
-   - Success: No penalty
-   - Failure: Receive a letter from "G.R.I.N.D"
+### Leader's Role
 
-### Special Rules
+- **Leader draws a card** and sets the trick for all players to attempt
+- **Successful attempt**: Leader gets +1 to consecutive streak
+- **Failed attempt**: Leader gets a letter from "G.R.I.N.D" and leadership passes immediately
 
-- **Three Streak Rule**: Leader can only have 3 successful consecutive streaks before passing leadership after the current round ends.
-- **Elimination**: Players are eliminated from the game when they accumulate all 5 letters 'G.R.I.N.D'.
+**Leadership Rotation:**
+- **Leader fails**: Leadership passes immediately to next player
+- **Leader succeeds 3 times**: Leadership passes after current round ends (all players attempt the trick)
+- **Rotation is automatic** - happens without player input
 
-## Winning
+### Followers' Turns
 
-- Last remaining player wins!
-- cannot be a tie game!
+- **Must attempt the leader's trick** in turn order
+- **Success**: No penalty, earn points for the trick
+- **Failure**: Receive a letter from "G.R.I.N.D"
+
+### Elimination & Letters
+
+**Letter System:**
+- Each miss gives 1 letter: G → R → I → N → D
+- Progress shown as "Player got letter 'R' (2/5)"
+- Visual indicators show current letter progress
+
+**Elimination:**
+- Players are eliminated when they collect all 5 letters (G.R.I.N.D)
+- Game ends immediately when only 1 player remains
+- Eliminated players are removed from gameplay
+
+### Winning
+
+- **Last remaining player wins**
+- Game ends automatically when only 1 active player remains
+- Cannot be a tie game

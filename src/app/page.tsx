@@ -15,9 +15,7 @@ export default async function Home() {
     </div>;
   }
 
-  if (!userId) {
-    return <div>Loading user information...</div>;
-  }
+
 
   try {
     const user = await getUserByClerkId(userId);

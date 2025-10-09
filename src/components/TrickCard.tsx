@@ -2,6 +2,7 @@
 
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 import { Check, X, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { difficultyColors } from "@/types/tricks";
@@ -17,6 +18,10 @@ interface TrickCardProps {
   currentPlayer: string;
   user: ClerkUser;
   isLeader: boolean;
+  gameStatus?: 'lobby' | 'active' | 'ended';
+  round?: number;
+  cardsRemaining?: number;
+  totalCards?: number;
 }
 
 export function TrickCard({
@@ -29,6 +34,10 @@ export function TrickCard({
   currentPlayer,
   user,
   isLeader,
+  gameStatus = 'active',
+  round = 1,
+  cardsRemaining = 0,
+  totalCards = 0,
 }: TrickCardProps) {
   const difficultyStyle = difficultyColors[difficulty] || difficultyColors.Beginner;
 
@@ -39,53 +48,44 @@ export function TrickCard({
   };
 
   return (
-    <Card className={cn("w-full max-w-md mx-auto p-6 relative", className)}>
-      <div className={cn(
-        "absolute top-2 right-2 text-white text-xs p-1 px-2 rounded font-medium flex items-center gap-1",
-        currentPlayer === user.id ? 'bg-green-600' : 'bg-muted-foreground/50',
-        isLeader && 'ring-2 ring-yellow-400'
-      )}>
-        {isLeader && '👑 '}
-        {currentPlayer === user.id
-          ? 'Your Turn!'
-          : `Waiting for ${currentPlayer === user.id ? 'you' : 'player'}...`}
-      </div>
+    <Card className={cn("w-full max-w-sm mx-auto p-4 relative shadow-lg hover:shadow-xl transition-all duration-300 border-0", className)}>
 
-      <div className="w-full mb-4">
-        <div className={`${difficultyStyle.bg} ${difficultyStyle.text} px-3 py-1 rounded-full text-sm font-medium w-fit mb-2`}>
+
+      <div className="w-full mb-3">
+        <div className={`${difficultyStyle.bg} ${difficultyStyle.text} px-2 py-1 rounded-full text-xs font-medium w-fit mb-2 shadow-sm`}>
           {difficulty}
         </div>
-        <div className="flex items-center gap-2 text-muted-foreground text-sm mb-4">
-          <Award className="h-4 w-4 text-amber-500" />
-          <span>{points} points</span>
+        <div className="flex items-center gap-1.5 text-muted-foreground text-xs mb-3">
+          <Award className="h-3.5 w-3.5 text-amber-500 drop-shadow-sm" />
+          <span className="font-medium">{points} points</span>
         </div>
       </div>
 
-      <h3 className="text-2xl font-bold mb-2 text-center">{trickName}</h3>
+      <h3 className="text-xl font-bold mb-1.5 text-center text-foreground">{trickName}</h3>
       {description && (
-        <p className="text-muted-foreground text-center mb-6">{description}</p>
+        <p className="text-muted-foreground text-sm text-center mb-4 line-clamp-2 leading-relaxed">{description}</p>
       )}
 
-      <div className="flex justify-between mt-4 space-x-2">
+      <div className="flex gap-2 px-2">
         <Button
-          variant="outline"
+          variant="ghost"
           className={cn(
-            "flex-1 bg-green-500 hover:bg-green-600 text-white transition-colors",
+            "flex-1 bg-gradient-to-r from-green-500/80 to-green-600/80 dark:from-green-600/80 dark:to-green-700/80 hover:from-green-600 hover:to-green-700 dark:hover:from-green-700 dark:hover:to-green-800 transition-all duration-200 h-12 text-sm font-medium text-white shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]",
           )}
           onClick={() => handleButtonClick('landed')}
         >
-          <Check className="mr-2 h-4 w-4" />
-          Landed It! (+{points})
+          <Check className="mr-1.5 h-3.5 w-3.5" />
+          Landed (+{points})
         </Button>
         <Button
-          variant="outline"
+          variant="ghost"
           className={cn(
-            "flex-1 bg-red-500 hover:bg-red-600 text-white transition-colors",
+            "flex-1 bg-gradient-to-r from-red-500/70 to-red-600/70 dark:from-red-500/50 dark:to-red-600/50 hover:from-red-600/80 hover:to-red-700/80 dark:hover:from-red-700 dark:hover:to-red-800 transition-all duration-200 h-12 text-sm font-medium text-white shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]",
           )}
           onClick={() => handleButtonClick('missed')}
         >
-          <X className="mr-2 h-4 w-4" />
-          Missed (Get a Letter)
+          <X className="mr-1.5 h-3.5 w-3.5" />
+          Missed
         </Button>
       </div>
     </Card>
