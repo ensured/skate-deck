@@ -16,6 +16,7 @@ A trick-taking game where players take turns as leaders and followers, performin
 - 98 unique trick cards of varying difficulties
 - Deck is shuffled initially using Fisher-Yates algorithm
 - Cards are drawn sequentially until deck is empty
+- if no cards left, it reinitializes a new shuffled deck
 
 ## Gameplay
 
