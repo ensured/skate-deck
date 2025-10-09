@@ -293,7 +293,7 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                     {gameState.players.map((player) => (
                       <Card
                         key={player.id}
-                        className={`p-3 h-24 transition-all duration-200 ${
+                        className={`p-2 h-16 transition-all duration-200 ${
                           player.isEliminated
                             ? "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-60"
                             : player.id === gameState.currentPlayerId
@@ -301,12 +301,13 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                             : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:shadow-sm"
                         }`}
                       >
-                        <div className="flex items-start justify-between h-full">
+                        <div className="flex items-start justify-between h-full gap-1">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1 mb-2">
                               {player.isLeader && (
                                 <Crown className="w-3 h-3 text-yellow-500 flex-shrink-0" />
                               )}
+
                               <span
                                 className={`text-sm font-medium truncate ${
                                   player.isEliminated
@@ -318,11 +319,8 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                               </span>
                             </div>
                             <div className="flex items-center gap-1 mb-1">
-                              <span className="text-xs font-medium text-muted-foreground">
-                                GRIND:
-                              </span>
                               <div className="flex gap-0.5 flex-1">
-                                {"GRIND".split("").map((letter, index) => (
+                                {"SKATE".split("").map((letter, index) => (
                                   <div
                                     key={index}
                                     className={`text-xs px-1.5 py-0.5 rounded-sm flex-1 min-w-0 text-center font-medium ${
@@ -345,14 +343,14 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                               <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
                                 {player.score}
                               </span>
-                              {player.isLeader &&
-                                gameState.leaderConsecutiveWins > 0 && (
-                                  <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">
-                                    🔥{gameState.leaderConsecutiveWins}
-                                  </span>
-                                )}
                             </div>
                           </div>
+                          {player.id === gameState.currentLeaderId &&
+                            gameState.leaderConsecutiveWins > 0 && (
+                              <span className="text-sm text-orange-600 dark:text-orange-400 font-medium">
+                                🔥 {gameState.leaderConsecutiveWins}
+                              </span>
+                            )}
                         </div>
                       </Card>
                     ))}

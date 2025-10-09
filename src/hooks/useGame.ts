@@ -488,7 +488,7 @@ export const useGame = () => {
         shouldRotateLeadershipAfterRound: false,
         gameLog: [
           ...prev.gameLog,
-          `${currentPlayer.name} missed and got letter "${"GRIND".charAt(
+          `${currentPlayer.name} missed and got letter "${"SKATE".charAt(
             currentLetters
           )}" (${newLetters}/5)${isEliminated ? " - ELIMINATED!" : ""}`,
         ],
@@ -512,6 +512,11 @@ export const useGame = () => {
       // when the turn goes back to the leader, increment the round
       const isEndOfRound = gameState.currentLeaderId === currentPlayer.id;
       const newRound = isEndOfRound ? gameState.round + 1 : gameState.round;
+      const newTrick = drawCard();
+      if (!newTrick) {
+        toast.error("No more cards in the deck! fix this edge case");
+        return;
+      }
 
       setGameState((prev) => ({
         ...prev,
@@ -523,6 +528,10 @@ export const useGame = () => {
             : p
         ),
         round: newRound,
+        currentTrick:
+          gameState.currentLeaderId && gameState.leaderConsecutiveWins >= 3
+            ? newTrick
+            : gameState.currentTrick,
         leaderConsecutiveWins:
           gameState.currentLeaderId === currentPlayer.id
             ? gameState.leaderConsecutiveWins + 1
