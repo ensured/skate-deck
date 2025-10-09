@@ -502,9 +502,9 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                         </DialogHeader>
                         <div className="py-4">
                           <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                            This will reset all players' scores and letters back
-                            to zero, and start a new game with a fresh deck.
-                            This action cannot be undone.
+                            This will reset all players&apos; scores and letters
+                            back to zero, and start a new game with a fresh
+                            deck. This action cannot be undone.
                           </p>
                         </div>
                         <div className="flex gap-3 justify-end">
