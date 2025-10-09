@@ -513,8 +513,9 @@ export const useGame = () => {
       const isEndOfRound = gameState.currentLeaderId === currentPlayer.id;
       const newRound = isEndOfRound ? gameState.round + 1 : gameState.round;
       const newTrick = drawCard();
+
       if (!newTrick) {
-        toast.error("No more cards in the deck! fix this edge case");
+        initializeDeck();
         return;
       }
 

@@ -124,7 +124,7 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
   );
 
   return (
-    <div className="w-full h-screen flex flex-col">
+    <div className="w-full h-[calc(100vh-6rem)] flex flex-col">
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Center Panel - Main Game Content */}
@@ -148,13 +148,18 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                         placeholder="Player name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        onKeyPress={(e) =>
+                        onKeyDown={(e) =>
                           e.key === "Enter" && handleAddPlayer()
                         }
                         className="player-input"
                         maxLength={20}
                       />
-                      <Button onClick={handleAddPlayer} disabled={!name.trim()}>
+                      <Button
+                        onClick={handleAddPlayer}
+                        disabled={
+                          !name.trim() || gameState.players.length === 0
+                        }
+                      >
                         Add Player
                       </Button>
                     </div>
@@ -457,10 +462,7 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
 
           {/* Game Controls Sheet */}
           <Sheet open={isGameControlsOpen} onOpenChange={setIsGameControlsOpen}>
-            <SheetContent
-              side="bottom"
-              className="rounded-t-2xl max-h-[85vh] bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-950 border-t border-gray-200/50 dark:border-gray-700/50 shadow-2xl"
-            >
+            <SheetContent side="bottom" className="py-6 rounded-t-2xl">
               <SheetHeader className="pb-6 pt-2">
                 <SheetTitle className="text-xl font-bold text-center text-gray-900 dark:text-gray-100 flex items-center justify-center gap-2">
                   <Settings className="w-5 h-5 text-blue-600" />
@@ -631,13 +633,6 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                     </DialogContent>
                   </Dialog>
                 </div>
-              </div>
-
-              {/* Footer with close hint */}
-              <div className="mt-6 pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
-                <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                  Tap outside or use the button above to close
-                </p>
               </div>
             </SheetContent>
           </Sheet>

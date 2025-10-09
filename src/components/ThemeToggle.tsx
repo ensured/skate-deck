@@ -1,40 +1,46 @@
-'use client';
+"use client";
 
-import { Moon, Sun } from 'lucide-react';
-import { useTheme } from 'next-themes';
-import { Button } from './ui/button';
-import { useEffect, useState } from 'react';
+import { Loader2, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+import { Button } from "./ui/button";
+import { useEffect, useState } from "react";
+import { Skeleton } from "./ui/skeleton";
 
 export function ThemeToggle() {
-    const [mounted, setMounted] = useState(false);
-    const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const { theme, setTheme } = useTheme();
 
-    // Prevent hydration mismatch
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-    if (!mounted) {
-        return (
-            <Button variant="ghost" size="icon" className="w-9 h-9" aria-label="Toggle theme">
-                <Sun className="h-4 w-4" />
-            </Button>
-        );
-    }
-
+  if (!mounted) {
     return (
-        <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            className="w-9 h-9 cursor-pointer"
-            aria-label="Toggle theme"
-        >
-            {theme === 'light' ? (
-                <Moon className="h-4 w-4" />
-            ) : (
-                <Sun className="h-4 w-4" />
-            )}
-        </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="w-10 h-10 cursor-pointer"
+        aria-label="Toggle theme"
+      >
+        <Skeleton className="sm:size-6 size-5" />
+      </Button>
     );
+  }
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+      className="w-10 h-10 cursor-pointer"
+      aria-label="Toggle theme"
+    >
+      {theme === "light" ? (
+        <Moon className="sm:size-5 size-4.5" />
+      ) : (
+        <Sun className="sm:size-5 size-4.5" />
+      )}
+    </Button>
+  );
 }
