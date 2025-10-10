@@ -14,7 +14,6 @@ import {
   CardTitle,
 } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { ScrollArea } from "./ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -22,28 +21,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "./ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet";
 import {
   Crown,
   Trash2,
-  User,
   Trophy,
-  Target,
-  CheckCircle,
-  XCircle,
-  ChevronDown,
-  ChevronUp,
   Lock,
-  ChevronLeft,
-  ChevronRight,
-  ArrowDown,
   Settings,
+  ScrollText,
+  RefreshCw,
 } from "lucide-react";
 import { TrickCard } from "./TrickCard";
 
@@ -65,14 +51,67 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
     isLoaded,
     hasInitialized,
     getDeckStatus,
+    updatePlayerOrder,
   } = useGame();
 
   const nameRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState("p1");
   const [isGameControlsOpen, setIsGameControlsOpen] = useState(false);
-  const [isGameLogDialogOpen, setIsGameLogDialogOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [isLobbyConfirmOpen, setIsLobbyConfirmOpen] = useState(false);
+
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.setData("text/plain", index.toString());
+    setDraggedIndex(index);
+    e.currentTarget.classList.add("opacity-50");
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    // Only add the border if it's not the currently dragged item
+    if (e.currentTarget.getAttribute('data-index') !== e.dataTransfer.getData('text/plain')) {
+      e.currentTarget.classList.add("border-blue-500");
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.currentTarget.classList.remove("border-blue-500");
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    const dragIndex = parseInt(e.dataTransfer.getData("text/plain"));
+    
+    // Reset all drag states
+    const elements = document.querySelectorAll('.player-draggable');
+    elements.forEach(el => {
+      el.classList.remove('opacity-50', 'border-blue-500');
+    });
+    
+    // Only proceed if we have a valid drag index and it's different from drop index
+    if (isNaN(dragIndex) || dragIndex === dropIndex) {
+      setDraggedIndex(null);
+      return;
+    }
+
+    const newPlayers = [...gameState.players];
+    const [movedPlayer] = newPlayers.splice(dragIndex, 1);
+    newPlayers.splice(dropIndex, 0, movedPlayer);
+
+    updatePlayerOrder(newPlayers);
+    setDraggedIndex(null);
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    // Reset all drag states
+    const elements = document.querySelectorAll('.player-draggable');
+    elements.forEach(el => {
+      el.classList.remove('opacity-50', 'border-blue-500');
+    });
+    setDraggedIndex(null);
+  };
 
   // DOM Protection Setup
   const { updateProtectedContent } = useDOMProtection([
@@ -128,7 +167,7 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Center Panel - Main Game Content */}
-        <div className="flex-1 flex flex-col overflow-hidden justify-center items-center">
+        <div className="flex-1 max-w-xl mx-auto overflow-hidden justify-center items-center">
           {/* Game Content */}
           <div className="flex-1 p-2 sm:p-4 overflow-auto">
             {/* Lobby State */}
@@ -172,14 +211,25 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                       </div>
 
                       <div className="max-h-48 overflow-y-auto space-y-2 player-list">
-                        {gameState.players.map((player) => (
+                        {gameState.players.map((player, index) => (
                           <div
                             key={player.id}
-                            className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded"
+draggable
+                            data-index={index}
+                            onDragStart={(e) => handleDragStart(e, index)}
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={(e) => handleDrop(e, index)}
+                            onDragEnd={handleDragEnd}
+                            onDragExit={handleDragEnd}
+                            className={`player-draggable flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded border border-transparent ${
+                              draggedIndex === index ? "opacity-50" : ""
+                            } transition-all duration-200 cursor-move hover:bg-gray-100 dark:hover:bg-gray-700`}
                           >
                             <div className="flex items-center gap-2">
+                              <span className="text-gray-400 mr-1">⋮⋮</span>
                               {player.isCreator && (
-                                <Crown className="w-4 h-4 text-yellow-500" />
+                                <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />
                               )}
                               <span className="font-medium">{player.name}</span>
                               {player.id === gameState.currentPlayerId && (
@@ -191,7 +241,10 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => removePlayer(player.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removePlayer(player.id);
+                              }}
                               disabled={
                                 gameState.players.length <= 1 ||
                                 player.isCreator
@@ -201,6 +254,7 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                                   ? "Cannot remove game owner"
                                   : "Remove player"
                               }
+                              className="flex-shrink-0"
                             >
                               {player.isCreator ? (
                                 <Lock className="w-4 h-4" />
@@ -225,9 +279,68 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
               </div>
             )}
 
+            {/* Game Status Section */}
+            {gameState.status === "active" && (
+              <div className="flex flex-wrap justify-center items-center gap-2 mb-4 bg-accent dark:bg-accent-foreground/10 dark:hover:bg-accent-foreground/15 p-2 rounded shadow-md border border-border/50 mx-4 dark:shadow-stone-800">
+                <Badge variant="outline" className="text-sm hover:bg-accent/50">
+                  Players ({gameState.players.length})
+                </Badge>
+                <Badge variant="outline" className="text-sm hover:bg-accent/50">
+                  Status: {gameState.status.toUpperCase()}
+                </Badge>
+                <Badge variant="outline" className="text-sm hover:bg-accent/50">
+                  Round {gameState.round}
+                </Badge>
+                <Badge variant="outline" className="text-sm hover:bg-accent/50">
+                  {getDeckStatus().remaining}/{getDeckStatus().total} cards
+                </Badge>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 gap-1 text-sm hover:bg-accent/50"
+                    >
+                      <ScrollText className="h-3.5 w-3.5" />
+                      Log ({gameState.gameLog.length})
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2">
+                        <ScrollText className="h-5 w-5" />
+                        Game Log
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="max-h-[60vh] overflow-y-auto space-y-2 p-1">
+                      {gameState.gameLog.length === 0 ? (
+                        <div className="text-center py-8">
+                          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                            <ScrollText className="w-8 h-8 text-muted-foreground" />
+                          </div>
+                          <p className="text-muted-foreground text-sm">
+                            No events yet...
+                          </p>
+                        </div>
+                      ) : (
+                        gameState.gameLog.slice(-50).map((log, index) => (
+                          <div
+                            key={index}
+                            className="text-sm p-3 bg-muted/50 rounded-lg border hover:bg-muted transition-colors"
+                          >
+                            {log}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            )}
+
             {/* Active Game State */}
             {gameState.status === "active" && (
-              <div className="max-w-4xl mx-auto">
+              <div className="w-full">
                 {/* Current Trick - Centered */}
                 {gameState.currentTrick && currentPlayer ? (
                   <TrickCard
@@ -274,27 +387,9 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
 
             {/* Players */}
             {gameState.status === "active" && (
-              <div className="w-full lg:w-80 xl:w-96 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-800 flex-shrink-0">
-                <div className="p-3">
-                  <h3 className="text-sm font-semibold mb-3 text-center lg:text-left">
-                    Players ({gameState.players.length})
-                  </h3>
-                  {/* Game Status Section */}
-                  {gameState.status === "active" && (
-                    <div className="flex flex-wrap justify-center gap-2 mb-4">
-                      <Badge variant="default" className="text-xs">
-                        Status: {gameState.status.toUpperCase()}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        Round {gameState.round}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {getDeckStatus().remaining}/{getDeckStatus().total}{" "}
-                        cards
-                      </Badge>
-                    </div>
-                  )}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-2 max-h-48 lg:max-h-none overflow-y-auto">
+              <div className="w-full flex-shrink-0">
+                <div className="p-4">
+                  <div className="border border-border-border/10 shadow-md sm:p-4 p-2 lg:p-6 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-48 lg:max-h-none overflow-y-auto rounded-xl">
                     {gameState.players.map((player) => (
                       <Card
                         key={player.id}
@@ -302,15 +397,17 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                           player.isEliminated
                             ? "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-60"
                             : player.id === gameState.currentPlayerId
-                            ? "bg-blue-50 border-blue-300 dark:bg-blue-900/20 dark:border-blue-700 shadow-md ring-1 ring-blue-200 dark:ring-blue-800"
-                            : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:shadow-sm"
+                            ? "shadow-md ring-1 ring-green-500 border-green-500 bg-green-100 dark:bg-green-800 dark:border-green-800"
+                            : "bg-background border-gray-200 dark:border-gray-700 hover:shadow-sm"
                         }`}
                       >
-                        <div className="flex items-start justify-between h-full gap-1">
+                        <div className="flex items-start justify-between h-full gap-1 relative">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1 mb-2">
                               {player.isLeader && (
-                                <Crown className="w-3 h-3 text-yellow-500 flex-shrink-0" />
+                                <Badge variant="outline">
+                                  <Crown className="w-3 h-3 text-yellow-500 flex-shrink-0" />
+                                </Badge>
                               )}
 
                               <span
@@ -323,21 +420,27 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                                 {player.name}
                               </span>
                             </div>
-                            <div className="flex items-center gap-1 mb-1">
-                              <div className="flex gap-0.5 flex-1">
+                            <div className="flex items-center gap-1 mb-1 w-full ">
+                              <div className="flex gap-1 flex-1 ">
                                 {"SKATE".split("").map((letter, index) => (
                                   <div
                                     key={index}
-                                    className={`text-xs px-1.5 py-0.5 rounded-sm flex-1 min-w-0 text-center font-medium ${
+                                    className={`flex-1 min-w-0 text-center font-medium text-sm border rounded px-1 ${
                                       player.letters > index
-                                        ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-                                        : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
+                                        ? "text-red-600 border-red-300 dark:text-red-400 dark:border-red-800/80 bg-red-200 dark:bg-red-900/40"
+                                        : "border-border"
                                     }`}
                                   >
                                     {letter}
                                   </div>
                                 ))}
                               </div>
+                              {player.id === gameState.currentLeaderId &&
+                                gameState.leaderConsecutiveWins > 0 && (
+                                  <div className="absolute right-0 text-sm text-orange-600 dark:text-orange-400 font-medium">
+                                    🔥{gameState.leaderConsecutiveWins}
+                                  </div>
+                                )}
                             </div>
                           </div>
                           <div className="flex flex-col items-end justify-between h-full flex-shrink-0 ml-2">
@@ -350,12 +453,6 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                               </span>
                             </div>
                           </div>
-                          {player.id === gameState.currentLeaderId &&
-                            gameState.leaderConsecutiveWins > 0 && (
-                              <span className="text-sm text-orange-600 dark:text-orange-400 font-medium">
-                                🔥{gameState.leaderConsecutiveWins}
-                              </span>
-                            )}
                         </div>
                       </Card>
                     ))}
@@ -451,13 +548,33 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
         <>
           {/* Toggle Button - Fixed at bottom center */}
           <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-            <Button
-              onClick={() => setIsGameControlsOpen(!isGameControlsOpen)}
-              size="lg"
-              className="rounded-full w-16 h-16 shadow-xl bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-3 border-white/20 dark:border-gray-700/50 backdrop-blur-sm transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
-            >
-              <Settings className="w-7 h-7" />
-            </Button>
+            <div className="relative group">
+              {/* Animated pulse effect when active */}
+              {isGameControlsOpen && (
+                <div className="absolute inset-0 bg-primary/30 rounded-full animate-ping opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+              )}
+              <Button
+                onClick={() => setIsGameControlsOpen(!isGameControlsOpen)}
+                size="lg"
+                variant="default"
+                className={`relative rounded-full w-16 h-16 shadow-lg bg-gradient-to-br from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-primary-foreground border-2 border-background/30 dark:border-foreground/20 backdrop-blur-sm transition-all duration-300 ${
+                  isGameControlsOpen
+                    ? "ring-4 ring-ring/30 transform -translate-y-1"
+                    : "hover:shadow-xl hover:-translate-y-0.5"
+                }`}
+              >
+                <Settings
+                  className={`w-7 h-7 transition-transform duration-300 ${
+                    isGameControlsOpen ? "rotate-180" : "group-hover:rotate-90"
+                  }`}
+                />
+              </Button>
+              {/* Subtle tooltip */}
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap shadow-lg border border-border">
+                Game Controls
+                <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-popover border-b border-r border-border rotate-45 -mt-1"></div>
+              </div>
+            </div>
           </div>
 
           {/* Game Controls Sheet */}
@@ -537,23 +654,22 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                         <Button
                           variant="outline"
                           size="lg"
-                          className="h-12 bg-white/80 dark:bg-gray-800/80 border-2 border-orange-200 dark:border-orange-800 hover:bg-orange-50 dark:hover:bg-orange-950 hover:border-orange-300 dark:hover:border-orange-700 text-orange-700 dark:text-orange-300 font-medium transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
+                          className="h-12 bg-white/80 dark:bg-gray-800/80 border-2 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:border-blue-300 dark:hover:border-blue-700 text-blue-700 dark:text-blue-300 font-medium transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer group"
                         >
-                          <ArrowDown className="w-4 h-4 mr-2" />
-                          Back to Lobby
+                          <RefreshCw className="w-5 h-5 mr-2 transition-transform group-hover:rotate-180 duration-700" />
+                          New Game
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 shadow-2xl">
                         <DialogHeader>
                           <DialogTitle className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                            Return to Lobby?
+                            New Game?
                           </DialogTitle>
                         </DialogHeader>
                         <div className="py-4">
                           <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                            This will end the current game and return to the
-                            lobby where you can add/remove players and start a
-                            new game.
+                            This goes back to the lobby where you can add
+                            players and start a fresh game.
                           </p>
                         </div>
                         <div className="flex gap-3 justify-end">
@@ -572,66 +688,12 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                             }}
                             className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg cursor-pointer"
                           >
-                            Back to Lobby
+                            Setup New Game
                           </Button>
                         </div>
                       </DialogContent>
                     </Dialog>
                   </div>
-                </div>
-
-                {/* Game Log Access */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-1 h-6 bg-green-600 rounded-full"></div>
-                    <h4 className="font-semibold text-base text-gray-900 dark:text-gray-100">
-                      Game History
-                    </h4>
-                  </div>
-                  <Dialog
-                    open={isGameLogDialogOpen}
-                    onOpenChange={setIsGameLogDialogOpen}
-                  >
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        className="w-full h-12 bg-white/80 dark:bg-gray-800/80 border-2 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950 hover:border-blue-300 dark:hover:border-blue-700 text-blue-700 dark:text-blue-300 font-medium transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
-                      >
-                        <ArrowDown className="w-4 h-4 mr-2" />
-                        Game Log ({gameState.gameLog.length})
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 shadow-2xl max-w-2xl">
-                      <DialogHeader>
-                        <DialogTitle className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                          <ArrowDown className="w-5 h-5 text-blue-600" />
-                          Game Log
-                        </DialogTitle>
-                      </DialogHeader>
-                      <div className="max-h-96 overflow-y-auto space-y-2 p-1">
-                        {gameState.gameLog.length === 0 ? (
-                          <div className="text-center py-8">
-                            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                              <ArrowDown className="w-8 h-8 text-gray-400" />
-                            </div>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm">
-                              No events yet...
-                            </p>
-                          </div>
-                        ) : (
-                          gameState.gameLog.slice(-50).map((log, index) => (
-                            <div
-                              key={index}
-                              className="text-sm p-3 bg-gray-50/80 dark:bg-gray-800/80 rounded-lg border border-gray-200/50 dark:border-gray-700/50 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
-                            >
-                              {log}
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </DialogContent>
-                  </Dialog>
                 </div>
               </div>
             </SheetContent>

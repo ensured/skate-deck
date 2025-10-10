@@ -98,6 +98,14 @@ export const useGame = () => {
     }));
   }, []);
 
+  const updatePlayerOrder = (newOrder: Player[]) => {
+    setGameState((prev) => ({
+      ...prev,
+      players: newOrder,
+    }));
+    // Add any additional logic you need when player order changes
+  };
+
   // Automatically add Clerk user as a player when they first load the page
   useEffect(() => {
     if (isLoaded && clerkUser && !hasInitialized) {
@@ -581,6 +589,7 @@ export const useGame = () => {
     drawnCards,
     hasInitialized,
     getDeckStatus,
+    updatePlayerOrder,
   } as const;
 };
 export default useGame;
