@@ -92,7 +92,7 @@ export function TrickCard({
         {description && (
           <div className="my-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-700/50">
             <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed italic">
-              "{description}"
+              &quot;{description}&quot;
             </p>
           </div>
         )}
