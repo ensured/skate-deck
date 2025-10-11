@@ -1116,7 +1116,7 @@ export const useGame = () => {
       const shouldGetNewTrick =
         isEndOfRound ||
         (gameState.currentLeaderId === currentPlayer.id &&
-          gameState.leaderConsecutiveWins >= 2);
+          gameState.leaderConsecutiveWins >= 3);
 
       let newTrick = gameState.currentTrick;
       let newTrickSetterId = gameState.currentTrickSetterId;

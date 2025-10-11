@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { TrickCard } from "@/types/tricks";
 import {
   Dialog,
@@ -62,32 +62,27 @@ export function PowerUpsDialog({
   const [selectedTrick, setSelectedTrick] = useState<TrickCardType | null>(
     null
   );
-  const isInitialMount = useRef(true);
 
-  // Only update trick options when the dialog opens
+  // Only update trick options when the dialog opens or when peekNextCards changes
   useEffect(() => {
-    if (open) {
+    if (open && peekNextCards) {
       const nextTricks = peekNextCards(3);
       setTrickOptions(nextTricks);
       setSelectedTrick(nextTricks[0] || null);
-    } else {
+    } else if (!open) {
       // Reset state when dialog closes
       setTrickOptions([]);
       setSelectedTrick(null);
       setShowTrickSelection(false);
     }
-    // We only want to run this effect when open changes
   }, [open, peekNextCards]);
 
-  // Handle initial prop sync
+  // Handle prop sync for selectedTrick
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      if (selectedTrickProp) {
-        setSelectedTrick(selectedTrickProp);
-      }
+    if (selectedTrickProp && selectedTrickProp.id !== selectedTrick?.id) {
+      setSelectedTrick(selectedTrickProp);
     }
-  }, [selectedTrickProp]);
+  }, [selectedTrickProp, selectedTrick?.id]);
 
   const handleUsePowerUp = useCallback(
     (powerUp: SkillCard) => {
