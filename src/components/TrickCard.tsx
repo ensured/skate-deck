@@ -11,11 +11,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { PowerUpsDialog } from "./PowerUpsDialog";
 import { SkillCard } from "@/types/game";
+import { TrickCard as TrickCardType } from "@/types/tricks";
 
 // First, update the TrickCardProps interface to include the shield functionality
 interface TrickCardProps {
   trickName: string;
-  onResult: (result: "landed" | "missed" | "use_shield") => void;
+  onResult: (
+    result: "landed" | "missed" | "use_shield" | "use_choose_trick",
+    selectedTrick?: TrickCardType
+  ) => void;
   className?: string;
   difficulty: keyof typeof difficultyColors;
   points: number;
@@ -28,6 +32,8 @@ interface TrickCardProps {
   cardsRemaining?: number;
   totalCards?: number;
   powerUps?: SkillCard[]; // Add power-ups array to props
+  peekNextCards?: (count: number) => TrickCardType[];
+  selectedTrick?: TrickCardType;
 }
 
 export function TrickCard({
@@ -39,6 +45,8 @@ export function TrickCard({
   description,
   currentPlayer,
   powerUps = [],
+  peekNextCards,
+  selectedTrick,
 }: TrickCardProps) {
   const [showButtons, setShowButtons] = useState(false);
   const [showPoints, setShowPoints] = useState(false);
@@ -46,7 +54,6 @@ export function TrickCard({
   const [powerUpPulse, setPowerUpPulse] = useState(false);
   const prevPowerUpsLength = useRef(powerUps.length);
 
-  // Trigger power-up animation when powerUps length changes
   useEffect(() => {
     if (powerUps.length > prevPowerUpsLength.current) {
       setPowerUpPulse(true);
@@ -57,17 +64,14 @@ export function TrickCard({
   }, [powerUps.length]);
 
   useEffect(() => {
-    // Show buttons after 3 seconds
     const buttonTimer = setTimeout(() => {
       setShowButtons(true);
-      // Show points 0.7 seconds after buttons appear
       const pointsTimer = setTimeout(() => {
         setShowPoints(true);
-      }, 700);
+      }, 500);
       return () => clearTimeout(pointsTimer);
-    }, 3000);
+    }, 1500);
 
-    // Reset states when trick changes
     setShowButtons(false);
     setShowPoints(false);
 
@@ -94,8 +98,9 @@ export function TrickCard({
             scale: 1,
             transition: {
               type: "spring",
-              stiffness: 300,
-              damping: 20,
+              stiffness: 500,
+              damping: 25,
+              mass: 0.5,
             },
           }}
           exit={{
@@ -104,6 +109,7 @@ export function TrickCard({
             scale: 0.95,
             transition: {
               duration: 0.2,
+              ease: "easeIn",
             },
           }}
         >
@@ -111,7 +117,12 @@ export function TrickCard({
             className="relative w-full h-full "
             initial={false}
             whileTap={{
-              transition: { type: "spring", stiffness: 300, damping: 10 },
+              transition: {
+                type: "spring",
+                stiffness: 500,
+                damping: 15,
+                mass: 0.4,
+              },
               scale: 0.995,
             }}
           >
@@ -128,7 +139,7 @@ export function TrickCard({
                     y: 0,
                     transition: {
                       type: "spring",
-                      stiffness: 300,
+                      stiffness: 500,
                       damping: 25,
                       mass: 0.8,
                     },
@@ -149,7 +160,7 @@ export function TrickCard({
                         transition={{
                           delay: index * 0.03,
                           type: "spring",
-                          stiffness: 300,
+                          stiffness: 500,
                           damping: 20,
                         }}
                         className="inline-block"
@@ -334,9 +345,13 @@ export function TrickCard({
         open={showPowerUps}
         onOpenChange={setShowPowerUps}
         powerUps={powerUps}
-        onUsePowerUp={(powerUp) => {
+        peekNextCards={peekNextCards || (() => [])}
+        selectedTrickProp={selectedTrick}
+        onUsePowerUp={(powerUp, selectedTrick) => {
           if (powerUp.type === "shield") {
             onResult("use_shield");
+          } else if (powerUp.type === "choose_trick" && selectedTrick) {
+            onResult("use_choose_trick", selectedTrick);
           }
           setShowPowerUps(false);
         }}

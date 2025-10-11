@@ -14,6 +14,89 @@ import { toast } from "sonner";
 // Re-export TrickCard type for convenience
 export type { TrickCard };
 
+const shieldCard: SkillCard = {
+  id: "shield",
+  type: "shield",
+  name: "Shield",
+  description: "Protect yourself from getting a letter on your next miss",
+  onUse: (gameState: GameState, playerId: number) => {
+    return {
+      ...gameState,
+      players: gameState.players.map((p) =>
+        p.id === playerId
+          ? {
+              ...p,
+              inventory: {
+                ...p.inventory,
+                skillCards: p.inventory.skillCards.map((c) =>
+                  c.id === "shield" ? { ...c, id: `${c.id}-${Date.now()}` } : c
+                ),
+              },
+            }
+          : p
+      ),
+      gameLog: [
+        ...gameState.gameLog,
+        `🛡️ ${
+          gameState.players.find((p) => p.id === playerId)?.name
+        } activated a Shield!`,
+      ],
+    };
+  },
+};
+
+const chooseTrickCard: SkillCard = {
+  id: "choose_trick",
+  type: "choose_trick",
+  name: "Trick Selector",
+  description: "Choose 1 of the next 3 cards in the deck",
+  onUse: (
+    gameState: GameState,
+    playerId: number,
+    selectedTrick?: TrickCard
+  ) => {
+    // If a trick was already selected in the UI, use it
+    if (selectedTrick) {
+      return {
+        ...gameState,
+        currentTrick: selectedTrick,
+        gameLog: [
+          ...gameState.gameLog,
+          `🎲 ${
+            gameState.players.find((p) => p.id === playerId)?.name
+          } selected a new trick!`,
+        ],
+        // Clear the trick options after selection
+        trickOptions: undefined,
+      };
+    }
+
+    // Otherwise, generate 3 random tricks that aren't the current trick
+    const availableTricks = trickCards.filter(
+      (trick) => trick.id !== gameState.currentTrick?.id
+    );
+
+    // Shuffle and pick 3 unique tricks
+    const shuffled = shuffleArray([...availableTricks]);
+    const trickOptions = shuffled.slice(0, 3);
+
+    // Set the current selected trick to the second option by default
+    const newTrick = trickOptions[0];
+
+    return {
+      ...gameState,
+      currentTrick: newTrick,
+      trickOptions,
+      gameLog: [
+        ...gameState.gameLog,
+        `🎲 ${
+          gameState.players.find((p) => p.id === playerId)?.name
+        } used Trick Selector!`,
+      ],
+    };
+  },
+};
+
 // Fisher-Yates shuffle algorithm
 const shuffleArray = <T>(array: T[]): T[] => {
   const newArray = [...array];
@@ -31,7 +114,6 @@ export const useGame = () => {
   // Deck state
   const [deck, setDeck] = useState<TrickCard[]>([]);
   const [drawnCards, setDrawnCards] = useState<TrickCard[]>([]);
-  const deckInitialized = useRef(false);
 
   // Rate limiting for player additions
   const lastPlayerAddition = useRef<number>(0);
@@ -51,13 +133,52 @@ export const useGame = () => {
 
     setDeck(shuffledDeck);
     setDrawnCards([]);
-    deckInitialized.current = true;
     return shuffledDeck;
   }, []);
+
+  // Peek at the next few cards in the deck without removing them
+  const peekNextCards = useCallback(
+    (count: number): TrickCard[] => {
+      if (deck.length === 0) {
+        console.log("🔄 Reshuffling deck...");
+        // If deck is empty but we have drawn cards, reshuffle them
+        if (drawnCards.length > 0) {
+          const reshuffled = shuffleArray([...drawnCards]);
+          setDeck(reshuffled);
+          setDrawnCards([]);
+          return reshuffled.slice(0, Math.min(count, reshuffled.length));
+        }
+        console.log("🚨 No cards left in deck!");
+        return [];
+      }
+      setDeck((prev) => prev.slice(count));
+      setDrawnCards((prev) => [...prev, ...deck.slice(0, count)]);
+      return deck.slice(0, Math.min(count, deck.length));
+    },
+    [deck, drawnCards]
+  );
 
   // Draw a card from the deck
   const drawCard = useCallback(() => {
     if (deck.length === 0) {
+      console.log("🔄 Reshuffling deck for draw...");
+      // If deck is empty but we have drawn cards, reshuffle them
+      if (drawnCards.length > 0) {
+        const reshuffled = shuffleArray([...drawnCards]);
+        setDeck(reshuffled);
+        setDrawnCards([]);
+
+        if (reshuffled.length === 0) {
+          console.log("🚨 No cards available to draw!");
+          return null;
+        }
+
+        const drawnCard = reshuffled[0];
+        setDeck(reshuffled.slice(1));
+        setDrawnCards([drawnCard]);
+        return drawnCard;
+      }
+
       console.log("🚨 No cards left in deck!");
       return null;
     }
@@ -72,7 +193,7 @@ export const useGame = () => {
     setDrawnCards((prevDrawn) => [...prevDrawn, drawnCard]);
 
     return drawnCard;
-  }, [deck]);
+  }, [deck, drawnCards]);
 
   // Define available skill cards with useMemo to prevent unnecessary re-renders
   const skillCards = useMemo<SkillCard[]>(
@@ -91,10 +212,8 @@ export const useGame = () => {
                     ...p,
                     inventory: {
                       ...p.inventory,
-                      skillCards: p.inventory.skillCards.map((c) =>
-                        c.id === "shield"
-                          ? { ...c, id: `${c.id}-${Date.now()}` }
-                          : c
+                      skillCards: p.inventory.skillCards.filter(
+                        (c) => c.id !== "shield"
                       ),
                     },
                   }
@@ -109,7 +228,57 @@ export const useGame = () => {
           };
         },
       },
-      // Add more skill cards here
+      {
+        id: "choose_trick",
+        type: "choose_trick",
+        name: "Trick Selector",
+        description: "Choose your next trick from 3 random options",
+        onUse: (
+          gameState: GameState,
+          playerId: number,
+          selectedTrick?: TrickCard
+        ) => {
+          // If a trick was already selected in the UI, use it
+          if (selectedTrick) {
+            return {
+              ...gameState,
+              currentTrick: selectedTrick,
+              gameLog: [
+                ...gameState.gameLog,
+                `🎲 ${
+                  gameState.players.find((p) => p.id === playerId)?.name
+                } selected a new trick!`,
+              ],
+              // Clear the trick options after selection
+              trickOptions: undefined,
+            };
+          }
+
+          // Otherwise, generate 3 random tricks that aren't the current trick
+          const availableTricks = trickCards.filter(
+            (trick) => trick.id !== gameState.currentTrick?.id
+          );
+
+          // Shuffle and pick 3 unique tricks
+          const shuffled = shuffleArray([...availableTricks]);
+          const trickOptions = shuffled.slice(0, 3);
+
+          // Set the current trick to the first option by default
+          const newTrick = trickOptions[0];
+
+          return {
+            ...gameState,
+            currentTrick: newTrick,
+            trickOptions,
+            gameLog: [
+              ...gameState.gameLog,
+              `🎲 ${
+                gameState.players.find((p) => p.id === playerId)?.name
+              } used Trick Selector!`,
+            ],
+          };
+        },
+      },
     ],
     []
   ); // Empty dependency array since skillCards doesn't depend on any props or state
@@ -131,48 +300,13 @@ export const useGame = () => {
     shouldRotateLeadershipAfterRound: false,
     totalDeckSize: 0,
     skillCardsInPlay: skillCards,
+    currentTrickSetterId: null,
+    currentRoundTurns: 0,
   });
-
-  // Removed unused initializeGame function
 
   // Automatically add Clerk user as a player when they first load the page
   useEffect(() => {
     if (isLoaded && clerkUser && !hasInitialized) {
-      // Create a shield card
-      const shieldCard: SkillCard = {
-        id: "shield",
-        type: "shield",
-        name: "Shield",
-        description: "Protect yourself from getting a letter on your next miss",
-
-        onUse: (gameState: GameState, playerId: number) => {
-          return {
-            ...gameState,
-            players: gameState.players.map((p) =>
-              p.id === playerId
-                ? {
-                    ...p,
-                    inventory: {
-                      ...p.inventory,
-                      skillCards: p.inventory.skillCards.map((c) =>
-                        c.id === "shield"
-                          ? { ...c, id: `${c.id}-${Date.now()}` }
-                          : c
-                      ),
-                    },
-                  }
-                : p
-            ),
-            gameLog: [
-              ...gameState.gameLog,
-              `🛡️ ${
-                gameState.players.find((p) => p.id === playerId)?.name
-              } activated a Shield!`,
-            ],
-          };
-        },
-      };
-
       setGameState((prev) => ({
         ...prev,
         players: [
@@ -185,11 +319,14 @@ export const useGame = () => {
             isLeader: true,
             score: 0,
             inventory: {
-              skillCards: [{ ...shieldCard, id: `shield-${Date.now()}` }],
+              skillCards: [
+                { ...shieldCard, id: `shield-${Date.now()}` },
+                { ...chooseTrickCard, id: `choose_trick-${Date.now()}` },
+              ],
             },
           },
         ],
-        skillCardsInPlay: [shieldCard],
+        skillCardsInPlay: [shieldCard, chooseTrickCard],
       }));
 
       setHasInitialized(true);
@@ -415,7 +552,57 @@ export const useGame = () => {
           isCreator: prev.players.length === 0, // First player is creator
           letters: newPlayer.letters || 0,
           inventory: {
-            skillCards: [shieldCard], // Add shield card to player's inventory
+            // Add both shield and trick selector cards to player's inventory
+            skillCards: [
+              shieldCard,
+              {
+                id: `choose_trick-${Date.now()}-${prev.players.length + 1}`,
+                type: "choose_trick",
+                name: "Choose Trick",
+                description:
+                  "Look at the next 3 tricks and choose one to attempt",
+                onUse: (gameState, playerId, selectedTrick?: TrickCard) => {
+                  const player = gameState.players.find(
+                    (p) => p.id === playerId
+                  );
+                  if (!player) return gameState;
+
+                  // If no trick is selected (shouldn't happen with proper UI flow)
+                  if (!selectedTrick) {
+                    return {
+                      ...gameState,
+                      message: `❌ No trick was selected.`,
+                    };
+                  }
+
+                  // Create a new game state with the selected trick
+                  const cardId = `choose_trick-${Date.now()}-${playerId}`;
+                  const newState = {
+                    ...gameState,
+                    currentTrick: selectedTrick,
+                    message: `🎲 ${player.name} used Choose Trick! New trick: ${selectedTrick.name}`,
+                    // Remove the used card
+                    players: gameState.players.map((p) =>
+                      p.id === playerId
+                        ? {
+                            ...p,
+                            inventory: {
+                              ...p.inventory,
+                              skillCards: p.inventory.skillCards.filter(
+                                (card) =>
+                                  !card.id.startsWith("choose_trick") ||
+                                  card.id === cardId
+                              ),
+                            },
+                          }
+                        : p
+                    ),
+                  };
+
+                  return newState;
+                },
+              },
+            ],
           },
         };
 
@@ -700,7 +887,64 @@ export const useGame = () => {
     [] // No dependencies needed as we use the callback form of setState
   );
 
-  const handlePlayerAction = (action: "landed" | "missed" | "use_shield") => {
+  const handlePlayerAction = (
+    action: "landed" | "missed" | "use_shield" | "use_choose_trick",
+    selectedTrick?: TrickCard
+  ) => {
+    if (action === "use_choose_trick") {
+      setGameState((prev) => {
+        const currentPlayer = prev.players.find(
+          (p: Player) => p.id === prev.currentPlayerId
+        );
+        if (!currentPlayer) return prev;
+
+        const chooseTrickCard = currentPlayer.inventory.skillCards.find(
+          (card: SkillCard) => card.type === "choose_trick"
+        );
+        if (!chooseTrickCard) return prev;
+
+        // If a trick was selected, update the current trick
+        if (selectedTrick) {
+          // Remove the selected trick from the deck if it's there
+          const updatedDeck = deck.filter(
+            (card) => card.id !== selectedTrick.id
+          );
+          setDeck(updatedDeck);
+
+          // Update the current trick and remove the used card
+          return {
+            ...prev,
+            currentTrick: selectedTrick,
+            players: prev.players.map((p) =>
+              p.id === prev.currentPlayerId
+                ? {
+                    ...p,
+                    inventory: {
+                      ...p.inventory,
+                      skillCards: p.inventory.skillCards.filter(
+                        (card) => card.id !== chooseTrickCard.id
+                      ),
+                    },
+                  }
+                : p
+            ),
+            gameLog: [
+              ...prev.gameLog,
+              `🃏 ${currentPlayer.name} used Trick Selector to change to: ${selectedTrick.name}`,
+            ],
+          };
+        }
+
+        // If no trick was selected yet, just set up the trick options
+        const nextThreeTricks = deck.slice(0, 3);
+        return {
+          ...prev,
+          trickOptions: nextThreeTricks,
+        };
+      });
+      return;
+    }
+
     if (action === "use_shield") {
       setGameState((prev) => {
         const currentPlayer = prev.players.find(
@@ -882,42 +1126,67 @@ export const useGame = () => {
         }
       }
     } else if (action === "landed") {
-      // when the turn goes back to the leader, increment the round
-      const isEndOfRound = gameState.currentLeaderId === currentPlayer.id;
-      const newRound = isEndOfRound ? gameState.round + 1 : gameState.round;
-      const newTrick = drawCard();
+      // Track turns in the current round
+      const currentRoundTurns = gameState.currentRoundTurns + 1;
 
-      if (!newTrick) {
-        initializeDeck();
-        return;
+      // Check if we've completed a full round (each player has had a turn)
+      const activePlayers = gameState.players.filter((p) => !p.isEliminated);
+      const isEndOfRound = currentRoundTurns >= activePlayers.length;
+
+      // Update round counter if needed
+      const newRound = isEndOfRound ? gameState.round + 1 : gameState.round;
+
+      // Determine if we need a new trick (end of round or leader has 3+ consecutive wins)
+      const shouldGetNewTrick =
+        isEndOfRound ||
+        (gameState.currentLeaderId === currentPlayer.id &&
+          gameState.leaderConsecutiveWins >= 2);
+
+      let newTrick = gameState.currentTrick;
+      let newTrickSetterId = gameState.currentTrickSetterId;
+
+      if (shouldGetNewTrick) {
+        // Draw a new trick and set the current player as the trick setter
+        newTrick = drawCard() || gameState.currentTrick;
+        newTrickSetterId = currentPlayer.id;
+
+        if (!newTrick) {
+          const newDeck = initializeDeck();
+          newTrick = newDeck[0];
+          setDeck(newDeck.slice(1));
+          setDrawnCards([newTrick]);
+        }
       }
 
       // Check for shield reward for the next player at the start of their turn
       checkForShieldReward(nextPlayer.id);
 
-      setGameState((prev) => ({
-        ...prev,
-        currentPlayerId: nextPlayer.id,
-        currentTurnIndex: nextIndex,
-        players: prev.players.map((p) =>
-          p.id === currentPlayer.id
-            ? { ...p, score: p.score + (gameState.currentTrick?.points || 0) }
-            : p
-        ),
-        round: newRound,
-        currentTrick:
-          gameState.currentLeaderId && gameState.leaderConsecutiveWins >= 3
-            ? newTrick
-            : gameState.currentTrick,
-        leaderConsecutiveWins:
-          gameState.currentLeaderId === currentPlayer.id
-            ? gameState.leaderConsecutiveWins + 1
-            : gameState.leaderConsecutiveWins,
-        shouldRotateLeadershipAfterRound:
-          gameState.currentLeaderId === currentPlayer.id
-            ? gameState.leaderConsecutiveWins + 1 >= 3
-            : gameState.shouldRotateLeadershipAfterRound,
-      }));
+      setGameState((prev) => {
+        const updatedState = {
+          ...prev,
+          currentPlayerId: nextPlayer.id,
+          currentTurnIndex: nextIndex,
+          players: prev.players.map((p) =>
+            p.id === currentPlayer.id
+              ? { ...p, score: p.score + (gameState.currentTrick?.points || 0) }
+              : p
+          ),
+          round: newRound,
+          currentRoundTurns: isEndOfRound ? 0 : currentRoundTurns,
+          currentTrick: newTrick,
+          currentTrickSetterId: newTrickSetterId,
+          leaderConsecutiveWins:
+            gameState.currentLeaderId === currentPlayer.id
+              ? gameState.leaderConsecutiveWins + 1
+              : gameState.leaderConsecutiveWins,
+          shouldRotateLeadershipAfterRound:
+            gameState.currentLeaderId === currentPlayer.id
+              ? gameState.leaderConsecutiveWins + 1 >= 3
+              : gameState.shouldRotateLeadershipAfterRound,
+        };
+
+        return updatedState;
+      });
     }
   };
 
@@ -947,6 +1216,54 @@ export const useGame = () => {
     });
   };
 
+  // Handle when a trick is selected from the PowerUpsDialog
+  const handleTrickSelection = (trick: TrickCard) => {
+    setGameState((prev) => {
+      if (!prev.trickOptions) return prev;
+
+      const currentPlayer = prev.players.find(
+        (p) => p.id === prev.currentPlayerId
+      );
+      if (!currentPlayer) return prev;
+
+      // Remove the used choose_trick card
+      const updatedPlayers = prev.players.map((p) =>
+        p.id === prev.currentPlayerId
+          ? {
+              ...p,
+              inventory: {
+                ...p.inventory,
+                skillCards: p.inventory.skillCards.filter(
+                  (card) => card.type !== "choose_trick"
+                ),
+              },
+            }
+          : p
+      );
+
+      // Remove the selected trick from the deck
+      const trickIndex = deck.findIndex((t) => t.name === trick.name);
+      const newDeck = [...deck];
+      if (trickIndex !== -1) {
+        newDeck.splice(trickIndex, 1);
+      }
+
+      // Update the deck state
+      setDeck(newDeck);
+
+      return {
+        ...prev,
+        currentTrick: trick,
+        trickOptions: undefined, // Clear the trick options
+        players: updatedPlayers,
+        gameLog: [
+          ...prev.gameLog,
+          `🎲 ${currentPlayer.name} used Choose Trick and selected: ${trick.name}`,
+        ],
+      };
+    });
+  };
+
   // Get deck status for UI display
   const getDeckStatus = () => {
     const remaining = deck.length;
@@ -954,29 +1271,28 @@ export const useGame = () => {
     return {
       remaining,
       total,
-      percentage: total > 0 ? Math.round((remaining / total) * 100) : 0,
     };
   };
 
   return {
     gameState,
+    setGameState,
     addPlayer,
-    startGame,
     removePlayer,
-    resetPlayers,
-    shufflePlayers,
-    drawTrick,
+    startGame,
     handlePlayerAction,
-    initializeDeck,
-    setGameStatus,
+    handleTrickSelection,
+    getDeckStatus,
     clerkUser,
-    isLoaded,
     drawnCards,
     hasInitialized,
-    getDeckStatus,
     reorderPlayers,
     useSkillCard,
     addSkillCardToPlayer,
+    deck,
+    setDeck,
+    resetPlayers,
+    peekNextCards,
   } as const;
 };
 

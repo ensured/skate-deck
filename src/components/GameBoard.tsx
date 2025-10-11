@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { useGame } from "@/hooks/useGame";
 import { useDOMProtection } from "@/hooks/useDOMProtection";
 import { CreateUsername } from "./CreateUsername";
@@ -33,6 +33,7 @@ import {
   RecycleIcon,
 } from "lucide-react";
 import { TrickCard } from "./TrickCard";
+import { TrickCard as TrickCardType } from "@/hooks/useGame";
 
 interface GameBoardProps {
   hasUsername: boolean;
@@ -41,13 +42,16 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
   const {
     addPlayer,
     removePlayer,
-    resetPlayers,
     startGame,
     handlePlayerAction,
     gameState,
-    setGameStatus,
     clerkUser,
     getDeckStatus,
+    deck,
+    setDeck,
+    resetPlayers,
+    peekNextCards,
+    setGameState,
   } = useGame();
 
   // All hooks must be called at the top level, before any conditional returns
@@ -63,6 +67,10 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
   const handleAddPlayer = () => {
     addPlayer(name);
     setName("");
+  };
+
+  const handleResetGame = () => {
+    resetPlayers();
   };
 
   // DOM Protection Setup for player list
@@ -131,9 +139,21 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
     return <CreateUsername userId={clerkUser?.id || ""} />;
   }
 
-  const handleTrickResult = (result: "landed" | "missed" | "use_shield") => {
-    handlePlayerAction(result);
-  };
+  const handleTrickResult = useCallback(
+    (
+      result: "landed" | "missed" | "use_shield" | "use_choose_trick",
+      selectedTrick?: TrickCardType
+    ) => {
+      if (result === "use_choose_trick" && selectedTrick) {
+        setGameState((prev) => ({
+          ...prev,
+          currentTrick: selectedTrick,
+        }));
+      }
+      handlePlayerAction(result, selectedTrick);
+    },
+    [handlePlayerAction]
+  );
 
   return (
     <div className="w-full h-[calc(100vh-6rem)] flex flex-col">
@@ -309,6 +329,7 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                 {/* Current Trick - Centered */}
                 {gameState.currentTrick && currentPlayer && (
                   <TrickCard
+                    peekNextCards={peekNextCards}
                     trickName={gameState.currentTrick.name}
                     difficulty={
                       gameState.currentTrick
@@ -632,11 +653,7 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                             Cancel
                           </Button>
                           <Button
-                            onClick={() => {
-                              setGameStatus("lobby");
-                              setIsLobbyConfirmOpen(false);
-                              setIsGameControlsOpen(false);
-                            }}
+                            onClick={() => handleResetGame()}
                             className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg cursor-pointer"
                           >
                             Setup New Game

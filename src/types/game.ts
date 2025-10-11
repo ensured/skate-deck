@@ -9,14 +9,15 @@ export type GameStatus =
   | "active" // Game is in progress
   | "ended"; // Game has ended
 
-export type SkillCardType = "shield";
+export type SkillCardType = "shield" | "choose_trick";
 
 export interface SkillCard {
   id: string;
   type: SkillCardType;
   name: string;
   description: string;
-  onUse: (gameState: GameState, playerId: number) => GameState;
+  trickOptions?: TrickCard[]; // For Trick Selector card
+  onUse: (gameState: GameState, playerId: number, selectedTrick?: TrickCard) => GameState;
 }
 
 export interface Player {
@@ -47,7 +48,10 @@ export interface GameState {
   leaderConsecutiveWins: number; // Number of consecutive wins by the current leader
   shouldRotateLeadershipAfterRound: boolean; // Flag to rotate leadership after current round ends
   gameLog: string[]; // Log of game events for UI display
-  totalDeckSize: number; // Total number of cards in the deck initially
-  winner?: Player; // The winner of the game (set when game ends)
+  totalDeckSize?: number; // Total number of cards in the deck at start
+  winner?: Player; // The winner of the game, if any
   skillCardsInPlay: SkillCard[]; // Available skill cards in the game
+  trickOptions?: TrickCard[]; // Available trick options for the Trick Selector power-up
+  currentTrickSetterId: number | null; // ID of the player who set the current trick
+  currentRoundTurns: number; // Number of turns taken in the current round
 }
