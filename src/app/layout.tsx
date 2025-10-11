@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 };
 
 import { config } from "dotenv";
-config({ path: ".env.local" });
+config({ path: ".env" });
 
 export default function RootLayout({
   children,
@@ -31,7 +31,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+    >
       <html lang="en" suppressHydrationWarning>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}

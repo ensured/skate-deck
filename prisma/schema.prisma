@@ -12,8 +12,8 @@ model User {
   id        String   @id @default(cuid())
   clerkId   String   @unique
   username  String   @unique
-  createdAt DateTime @default(now()) @map("createdat")
-  updatedAt DateTime @updatedAt @map("updatedat")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("users")
 }
