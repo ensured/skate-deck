@@ -30,6 +30,7 @@ import {
   Settings,
   ScrollText,
   RefreshCw,
+  RecycleIcon,
 } from "lucide-react";
 import { TrickCard } from "./TrickCard";
 
@@ -188,7 +189,7 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                             <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded w-full">
                               <div className="flex items-center gap-2">
                                 {player.isCreator && (
-                                  <Crown className="w-4 h-4 text-yellow-500" />
+                                  <Crown className="w-5 h-5 text-purple-500" />
                                 )}
                                 <span className="font-medium">
                                   {player.name}
@@ -341,11 +342,11 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
             {gameState.status === "active" && (
               <div className="w-full flex-shrink-0">
                 <div className="p-4">
-                  <div className="border border-border-border/10 shadow-md sm:p-4 p-2 lg:p-6 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-48 lg:max-h-none overflow-y-auto rounded-xl">
+                  <div className="border border-border-border/10 shadow-md sm:p-4 p-2 lg:p-6 grid grid-cols-2 sm:grid-cols-2 gap-2 max-h-48 lg:max-h-none overflow-y-auto rounded-xl">
                     {gameState.players.map((player) => (
                       <Card
                         key={player.id}
-                        className={`p-2 h-16 transition-all duration-200 ${
+                        className={`p-2 h-18 transition-all duration-200 ${
                           player.isEliminated
                             ? "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-60"
                             : player.id === gameState.currentPlayerId
@@ -357,13 +358,11 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1 mb-2">
                               {player.isLeader && (
-                                <Badge variant="outline">
-                                  <Crown className="size-4 text-purple-500 flex-shrink-0" />
-                                </Badge>
+                                <Crown className="!size-4.5 text-purple-500 flex-shrink-0" />
                               )}
 
                               <span
-                                className={`text-sm font-medium truncate ${
+                                className={` font-medium truncate ${
                                   player.isEliminated
                                     ? "line-through text-muted-foreground"
                                     : ""
@@ -379,7 +378,7 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                                     key={index}
                                     className={`flex-1 min-w-0 text-center font-medium text-sm border rounded px-1 ${
                                       player.letters > index
-                                        ? "text-red-600 border-red-300 dark:text-red-400 dark:border-red-800/80 bg-red-200 dark:bg-red-900/40"
+                                        ? "text-red-500/90 border-red-200 dark:text-red-300/90 dark:border-red-800/60 bg-red-100/70 dark:bg-red-900/20"
                                         : "border-border"
                                     }`}
                                   >
@@ -559,7 +558,7 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                           size="lg"
                           className="h-12 bg-white/80 dark:bg-gray-800/80 border-2 border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-950 hover:border-red-300 dark:hover:border-red-700 text-red-700 dark:text-red-300 font-medium transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
                         >
-                          <Crown className="w-4 h-4 mr-2" />
+                          <RecycleIcon className="w-4 h-4 mr-2" />
                           Reset Game
                         </Button>
                       </DialogTrigger>
