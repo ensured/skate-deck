@@ -77,7 +77,7 @@ export function PowerUpsDialog({
       setShowTrickSelection(false);
     }
     // We only want to run this effect when open changes
-  }, [open]); // Removed peekNextCards from deps
+  }, [open, peekNextCards]);
 
   // Handle initial prop sync
   useEffect(() => {
@@ -151,7 +151,7 @@ export function PowerUpsDialog({
           <div className="grid gap-4 py-4">
             {powerUps.length === 0 ? (
               <p className="text-center text-gray-500 py-4">
-                You don't have any power-ups yet!
+                You don&apos;t have any power-ups yet!
               </p>
             ) : (
               <div className="grid gap-3">

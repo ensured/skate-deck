@@ -758,8 +758,6 @@ export const useGame = () => {
     });
   }, [initializeDeck]);
 
-  const drawTrick = useCallback(() => {}, []);
-
   const startGame = useCallback(
     (players: Player[]) => {
       if (players.length < 2) {
@@ -807,85 +805,79 @@ export const useGame = () => {
   );
 
   // Check if current player should receive a shield (10% chance at start of turn)
-  const checkForShieldReward = useCallback(
-    (playerId: number) => {
-      setGameState((prev) => {
-        const player = prev.players.find((p) => p.id === playerId);
-        if (!player) return prev;
+  const chanceGrantShield = useCallback((playerId: number) => {
+    setGameState((prev) => {
+      const player = prev.players.find((p) => p.id === playerId);
+      if (!player) return prev;
 
-        const playerWithMostLetters = prev.players.reduce(
-          (prevPlayer, curr) => {
-            return curr.letters > prevPlayer.letters ? curr : prevPlayer;
+      const playerWithMostLetters = prev.players.reduce((prevPlayer, curr) => {
+        return curr.letters > prevPlayer.letters ? curr : prevPlayer;
+      }, prev.players[0]);
+
+      // 10% chance to get a shield if they don't already have 2 or more
+      if (
+        Math.random() < 0.1 &&
+        player.inventory.skillCards.filter((card) => card.type === "shield")
+          .length < 2 &&
+        player.id === playerWithMostLetters.id
+      ) {
+        const shieldCard: SkillCard = {
+          id: `shield-${Date.now()}-${playerId}`,
+          type: "shield",
+          name: "Shield",
+          description:
+            "Protect yourself from getting a letter on your next miss",
+          onUse: (gameState: GameState, playerId: number) => {
+            return {
+              ...gameState,
+              players: gameState.players.map((p) =>
+                p.id === playerId
+                  ? {
+                      ...p,
+                      inventory: {
+                        ...p.inventory,
+                        skillCards: p.inventory.skillCards.map((c) =>
+                          c.id === "shield"
+                            ? { ...c, id: `${c.id}-${Date.now()}` }
+                            : c
+                        ),
+                      },
+                    }
+                  : p
+              ),
+              gameLog: [
+                ...gameState.gameLog,
+                `🛡️ ${
+                  gameState.players.find((p) => p.id === playerId)?.name
+                } activated a Shield!`,
+              ],
+            };
           },
-          prev.players[0]
-        );
+        };
 
-        // 10% chance to get a shield if they don't already have 2 or more
-        if (
-          Math.random() < 0.1 &&
-          player.inventory.skillCards.filter((card) => card.type === "shield")
-            .length < 2 &&
-          player.id === playerWithMostLetters.id
-        ) {
-          const shieldCard: SkillCard = {
-            id: `shield-${Date.now()}-${playerId}`,
-            type: "shield",
-            name: "Shield",
-            description:
-              "Protect yourself from getting a letter on your next miss",
-            onUse: (gameState: GameState, playerId: number) => {
-              return {
-                ...gameState,
-                players: gameState.players.map((p) =>
-                  p.id === playerId
-                    ? {
-                        ...p,
-                        inventory: {
-                          ...p.inventory,
-                          skillCards: p.inventory.skillCards.map((c) =>
-                            c.id === "shield"
-                              ? { ...c, id: `${c.id}-${Date.now()}` }
-                              : c
-                          ),
-                        },
-                      }
-                    : p
-                ),
-                gameLog: [
-                  ...gameState.gameLog,
-                  `🛡️ ${
-                    gameState.players.find((p) => p.id === playerId)?.name
-                  } activated a Shield!`,
-                ],
-              };
-            },
-          };
-
-          return {
-            ...prev,
-            players: prev.players.map((p) =>
-              p.id === playerId
-                ? {
-                    ...p,
-                    inventory: {
-                      ...p.inventory,
-                      skillCards: [...p.inventory.skillCards, shieldCard],
-                    },
-                  }
-                : p
-            ),
-            gameLog: [
-              ...prev.gameLog,
-              `✨ ${player.name} found a Shield!`,
-              `💡 ${player.name} can use the Shield to protect themselves from getting a letter on their next miss.`,
-            ],
-          };
-        }
-        return prev;
-      });
-    },
-    [] // No dependencies needed as we use the callback form of setState
-  );
+        return {
+          ...prev,
+          players: prev.players.map((p) =>
+            p.id === playerId
+              ? {
+                  ...p,
+                  inventory: {
+                    ...p.inventory,
+                    skillCards: [...p.inventory.skillCards, shieldCard],
+                  },
+                }
+              : p
+          ),
+          gameLog: [
+            ...prev.gameLog,
+            `✨ ${player.name} found a Shield!`,
+            `💡 ${player.name} can use the Shield to protect themselves from getting a letter on their next miss.`,
+          ],
+        };
+      }
+      return prev;
+    });
+  }, []);
 
   const handlePlayerAction = (
     action: "landed" | "missed" | "use_shield" | "use_choose_trick",
@@ -1008,13 +1000,11 @@ export const useGame = () => {
     const activePlayers = gameState.players.filter((p) => !p.isEliminated);
     if (activePlayers.length === 0) return;
 
-    // Find the current player
     const currentPlayer = activePlayers.find(
       (p) => p.id === gameState.currentPlayerId
     );
     if (!currentPlayer) return;
 
-    // Find the next player in turn order
     const currentIndex = activePlayers.findIndex(
       (p) => p.id === gameState.currentPlayerId
     );
@@ -1022,12 +1012,10 @@ export const useGame = () => {
     const nextPlayer = activePlayers[nextIndex];
 
     if (action === "missed") {
-      // Calculate new letters for current player (increment by 1 if no shield)
       const currentLetters = currentPlayer.letters || 0;
       const newLetters = currentLetters + 1;
       const isEliminated = newLetters >= 5; // G.R.I.N.D = 5 letters
 
-      // Check if this miss will eliminate the current player and leave only one player
       const activePlayersBeforeMiss = gameState.players.filter(
         (p) => !p.isEliminated
       );
@@ -1035,7 +1023,6 @@ export const useGame = () => {
         activePlayersBeforeMiss.length === 2 && isEliminated;
 
       if (willBeOnlyOnePlayer) {
-        // add letter to current player andEnd game - last player without 5/5 letters wins
         const updatedPlayers = gameState.players.map((p) =>
           p.id === currentPlayer.id ? { ...p, letters: newLetters } : p
         );
@@ -1059,26 +1046,20 @@ export const useGame = () => {
         }
       }
 
-      // Draw a new card when someone misses
       const newTrick = drawCard();
 
-      // Increment round when someone misses a trick
       const newRound = gameState.round + 1;
 
-      // Check if the current player is the leader - if so, rotate leadership
       const shouldRotateOnMiss = gameState.currentLeaderId === currentPlayer.id;
 
-      // Update player with new letters and elimination status
       const updatedPlayers = gameState.players.map((p) =>
         p.id === currentPlayer.id
           ? { ...p, letters: newLetters, isEliminated }
           : p
       );
 
-      // Check for shield reward for the next player at the start of their turn
-      checkForShieldReward(nextPlayer.id);
+      chanceGrantShield(nextPlayer.id);
 
-      // Discard the previous trick if there was one and set the new trick
       setGameState((prev) => ({
         ...prev,
         players: updatedPlayers,
@@ -1107,13 +1088,12 @@ export const useGame = () => {
         ],
       }));
 
-      // Handle leadership rotation if leader missed
       if (shouldRotateOnMiss) {
         const nextLeader = handlePlayerRotate();
         if (nextLeader) {
           setGameState((prev) => ({
             ...prev,
-            currentPlayerId: nextLeader.id, // Update current player to new leader
+            currentPlayerId: nextLeader.id,
             gameLog: [
               ...prev.gameLog,
               `🔄 Leadership passed to ${nextLeader.name} because ${
@@ -1126,17 +1106,13 @@ export const useGame = () => {
         }
       }
     } else if (action === "landed") {
-      // Track turns in the current round
       const currentRoundTurns = gameState.currentRoundTurns + 1;
 
-      // Check if we've completed a full round (each player has had a turn)
       const activePlayers = gameState.players.filter((p) => !p.isEliminated);
       const isEndOfRound = currentRoundTurns >= activePlayers.length;
 
-      // Update round counter if needed
       const newRound = isEndOfRound ? gameState.round + 1 : gameState.round;
 
-      // Determine if we need a new trick (end of round or leader has 3+ consecutive wins)
       const shouldGetNewTrick =
         isEndOfRound ||
         (gameState.currentLeaderId === currentPlayer.id &&
@@ -1146,7 +1122,6 @@ export const useGame = () => {
       let newTrickSetterId = gameState.currentTrickSetterId;
 
       if (shouldGetNewTrick) {
-        // Draw a new trick and set the current player as the trick setter
         newTrick = drawCard() || gameState.currentTrick;
         newTrickSetterId = currentPlayer.id;
 
@@ -1158,8 +1133,7 @@ export const useGame = () => {
         }
       }
 
-      // Check for shield reward for the next player at the start of their turn
-      checkForShieldReward(nextPlayer.id);
+      chanceGrantShield(nextPlayer.id);
 
       setGameState((prev) => {
         const updatedState = {
@@ -1190,16 +1164,6 @@ export const useGame = () => {
     }
   };
 
-  const shufflePlayers = () => {};
-
-  const setGameStatus = (status: GameStatus) => {
-    setGameState((prev) => ({
-      ...prev,
-      status,
-    }));
-  };
-
-  // In your useGame hook
   const reorderPlayers = (activeId: number, overId: number) => {
     setGameState((prev) => {
       const oldIndex = prev.players.findIndex((p) => p.id === activeId);
@@ -1216,7 +1180,6 @@ export const useGame = () => {
     });
   };
 
-  // Handle when a trick is selected from the PowerUpsDialog
   const handleTrickSelection = (trick: TrickCard) => {
     setGameState((prev) => {
       if (!prev.trickOptions) return prev;
@@ -1264,7 +1227,6 @@ export const useGame = () => {
     });
   };
 
-  // Get deck status for UI display
   const getDeckStatus = () => {
     const remaining = deck.length;
     const total = gameState.totalDeckSize;
@@ -1289,8 +1251,6 @@ export const useGame = () => {
     reorderPlayers,
     useSkillCard,
     addSkillCardToPlayer,
-    deck,
-    setDeck,
     resetPlayers,
     peekNextCards,
   } as const;

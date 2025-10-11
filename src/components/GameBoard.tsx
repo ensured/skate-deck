@@ -47,11 +47,8 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
     gameState,
     clerkUser,
     getDeckStatus,
-    deck,
-    setDeck,
     resetPlayers,
     peekNextCards,
-    setGameState,
   } = useGame();
 
   // All hooks must be called at the top level, before any conditional returns
@@ -63,6 +60,17 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
   const [isGameControlsOpen, setIsGameControlsOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [isLobbyConfirmOpen, setIsLobbyConfirmOpen] = useState(false);
+
+  const handleTrickResult = useCallback(
+    (
+      result: "landed" | "missed" | "use_shield" | "use_choose_trick",
+      selectedTrick?: TrickCardType
+    ) => {
+      // Let handlePlayerAction manage all state updates
+      handlePlayerAction(result, selectedTrick);
+    },
+    [handlePlayerAction] // Only depends on handlePlayerAction
+  );
 
   const handleAddPlayer = () => {
     addPlayer(name);
@@ -138,22 +146,6 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
   if (!hasUsername) {
     return <CreateUsername userId={clerkUser?.id || ""} />;
   }
-
-  const handleTrickResult = useCallback(
-    (
-      result: "landed" | "missed" | "use_shield" | "use_choose_trick",
-      selectedTrick?: TrickCardType
-    ) => {
-      if (result === "use_choose_trick" && selectedTrick) {
-        setGameState((prev) => ({
-          ...prev,
-          currentTrick: selectedTrick,
-        }));
-      }
-      handlePlayerAction(result, selectedTrick);
-    },
-    [handlePlayerAction]
-  );
 
   return (
     <div className="w-full h-[calc(100vh-6rem)] flex flex-col">
