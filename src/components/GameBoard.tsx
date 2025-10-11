@@ -40,87 +40,43 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
   const {
     addPlayer,
     removePlayer,
-    shufflePlayers,
     resetPlayers,
     startGame,
     handlePlayerAction,
-    drawTrick,
     gameState,
     setGameStatus,
     clerkUser,
-    isLoaded,
-    hasInitialized,
     getDeckStatus,
-    updatePlayerOrder,
   } = useGame();
 
+  // All hooks must be called at the top level, before any conditional returns
   const nameRef = useRef<HTMLInputElement>(null);
+  const playerRef = useRef(null);
+
   const [name, setName] = useState("p1");
+
   const [isGameControlsOpen, setIsGameControlsOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [isLobbyConfirmOpen, setIsLobbyConfirmOpen] = useState(false);
 
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-
-  const handleDragStart = (e: React.DragEvent, index: number) => {
-    e.dataTransfer.setData("text/plain", index.toString());
-    setDraggedIndex(index);
-    e.currentTarget.classList.add("opacity-50");
+  const handleAddPlayer = () => {
+    addPlayer(name);
+    setName("");
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    // Only add the border if it's not the currently dragged item
-    if (e.currentTarget.getAttribute('data-index') !== e.dataTransfer.getData('text/plain')) {
-      e.currentTarget.classList.add("border-blue-500");
-    }
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.currentTarget.classList.remove("border-blue-500");
-  };
-
-  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
-    e.preventDefault();
-    const dragIndex = parseInt(e.dataTransfer.getData("text/plain"));
-    
-    // Reset all drag states
-    const elements = document.querySelectorAll('.player-draggable');
-    elements.forEach(el => {
-      el.classList.remove('opacity-50', 'border-blue-500');
-    });
-    
-    // Only proceed if we have a valid drag index and it's different from drop index
-    if (isNaN(dragIndex) || dragIndex === dropIndex) {
-      setDraggedIndex(null);
-      return;
-    }
-
-    const newPlayers = [...gameState.players];
-    const [movedPlayer] = newPlayers.splice(dragIndex, 1);
-    newPlayers.splice(dropIndex, 0, movedPlayer);
-
-    updatePlayerOrder(newPlayers);
-    setDraggedIndex(null);
-  };
-
-  const handleDragEnd = (e: React.DragEvent) => {
-    // Reset all drag states
-    const elements = document.querySelectorAll('.player-draggable');
-    elements.forEach(el => {
-      el.classList.remove('opacity-50', 'border-blue-500');
-    });
-    setDraggedIndex(null);
-  };
-
-  // DOM Protection Setup
-  const { updateProtectedContent } = useDOMProtection([
+  // DOM Protection Setup for player list
+  useDOMProtection([
     {
       targetSelector: ".player-list",
       protectedContent: "", // Will be updated dynamically
       checkInterval: 2000,
       onViolation: (element, original, current) => {
-        console.warn("🚨 Player list was modified externally!");
+        console.warn(
+          "🚨 Player list was modified externally!",
+          element,
+          original,
+          current
+        );
       },
     },
     {
@@ -128,7 +84,12 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
       protectedContent: "",
       checkInterval: 3000,
       onViolation: (element, original, current) => {
-        console.warn("🚨 Game status was modified externally!");
+        console.warn(
+          "🚨 Game status was modified externally!",
+          element,
+          original,
+          current
+        );
       },
     },
     {
@@ -136,7 +97,12 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
       protectedContent: "",
       checkInterval: 5000,
       onViolation: (element, original, current) => {
-        console.warn("🚨 Game controls were modified externally!");
+        console.warn(
+          "🚨 Game controls were modified externally!",
+          element,
+          original,
+          current
+        );
       },
     },
     {
@@ -144,23 +110,29 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
       protectedContent: "",
       checkInterval: 1000,
       onViolation: (element, original, current) => {
-        console.warn("🚨 Player input was modified externally!");
+        console.warn(
+          "🚨 Player input was modified externally!",
+          element,
+          original,
+          current
+        );
       },
     },
   ]);
 
+  // Get current player before any conditional returns
+  const currentPlayer = gameState.players.find(
+    (p) => p.id === gameState.currentPlayerId
+  );
+
+  // Early return for username setup
   if (!hasUsername) {
     return <CreateUsername userId={clerkUser?.id || ""} />;
   }
 
-  const handleAddPlayer = () => {
-    addPlayer(name);
-    setName("");
+  const handleTrickResult = (result: "landed" | "missed" | "use_shield") => {
+    handlePlayerAction(result);
   };
-
-  const currentPlayer = gameState.players.find(
-    (p) => p.id === gameState.currentPlayerId
-  );
 
   return (
     <div className="w-full h-[calc(100vh-6rem)] flex flex-col">
@@ -211,57 +183,49 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                       </div>
 
                       <div className="max-h-48 overflow-y-auto space-y-2 player-list">
-                        {gameState.players.map((player, index) => (
-                          <div
-                            key={player.id}
-draggable
-                            data-index={index}
-                            onDragStart={(e) => handleDragStart(e, index)}
-                            onDragOver={handleDragOver}
-                            onDragLeave={handleDragLeave}
-                            onDrop={(e) => handleDrop(e, index)}
-                            onDragEnd={handleDragEnd}
-                            onDragExit={handleDragEnd}
-                            className={`player-draggable flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded border border-transparent ${
-                              draggedIndex === index ? "opacity-50" : ""
-                            } transition-all duration-200 cursor-move hover:bg-gray-100 dark:hover:bg-gray-700`}
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="text-gray-400 mr-1">⋮⋮</span>
-                              {player.isCreator && (
-                                <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />
-                              )}
-                              <span className="font-medium">{player.name}</span>
-                              {player.id === gameState.currentPlayerId && (
-                                <Badge variant="outline" className="text-xs">
-                                  Current
-                                </Badge>
-                              )}
+                        {gameState.players.map((player) => (
+                          <div key={player.id} ref={playerRef}>
+                            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded w-full">
+                              <div className="flex items-center gap-2">
+                                {player.isCreator && (
+                                  <Crown className="w-4 h-4 text-yellow-500" />
+                                )}
+                                <span className="font-medium">
+                                  {player.name}
+                                </span>
+                                {player.id === gameState.currentPlayerId && (
+                                  <Badge variant="outline" className="text-xs">
+                                    Current
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    removePlayer(player.id);
+                                  }}
+                                  disabled={
+                                    gameState.players.length <= 1 ||
+                                    player.isCreator
+                                  }
+                                  title={
+                                    player.isCreator
+                                      ? "Cannot remove game owner"
+                                      : "Remove player"
+                                  }
+                                >
+                                  {player.isCreator ? (
+                                    <Lock className="w-4 h-4" />
+                                  ) : (
+                                    <Trash2 className="w-4 h-4" />
+                                  )}
+                                </Button>
+                              </div>
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removePlayer(player.id);
-                              }}
-                              disabled={
-                                gameState.players.length <= 1 ||
-                                player.isCreator
-                              }
-                              title={
-                                player.isCreator
-                                  ? "Cannot remove game owner"
-                                  : "Remove player"
-                              }
-                              className="flex-shrink-0"
-                            >
-                              {player.isCreator ? (
-                                <Lock className="w-4 h-4" />
-                              ) : (
-                                <Trash2 className="w-4 h-4" />
-                              )}
-                            </Button>
                           </div>
                         ))}
                       </div>
@@ -342,10 +306,9 @@ draggable
             {gameState.status === "active" && (
               <div className="w-full">
                 {/* Current Trick - Centered */}
-                {gameState.currentTrick && currentPlayer ? (
+                {gameState.currentTrick && currentPlayer && (
                   <TrickCard
                     trickName={gameState.currentTrick.name}
-                    onResult={handlePlayerAction}
                     difficulty={
                       gameState.currentTrick
                         .difficulty as keyof typeof import("@/types/tricks").difficultyColors
@@ -363,24 +326,13 @@ draggable
                     round={gameState.round}
                     cardsRemaining={getDeckStatus().remaining}
                     totalCards={getDeckStatus().total}
+                    powerUps={
+                      gameState.players.find(
+                        (p) => p.id === gameState.currentPlayerId
+                      )?.inventory.skillCards || []
+                    }
+                    onResult={handleTrickResult}
                   />
-                ) : (
-                  <Card className="border-2 border-orange-500 p-4 bg-orange-100 max-w-md mx-auto">
-                    <CardContent>
-                      <p className="text-orange-600 font-bold">
-                        DEBUG: TrickCard not rendering
-                      </p>
-                      <p>gameState.status: {gameState.status}</p>
-                      <p>
-                        gameState.currentTrick:{" "}
-                        {gameState.currentTrick ? "HAS TRICK" : "NO TRICK"}
-                      </p>
-                      <p>
-                        currentPlayer:{" "}
-                        {currentPlayer ? "HAS PLAYER" : "NO PLAYER"}
-                      </p>
-                    </CardContent>
-                  </Card>
                 )}
               </div>
             )}
@@ -397,7 +349,7 @@ draggable
                           player.isEliminated
                             ? "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-60"
                             : player.id === gameState.currentPlayerId
-                            ? "shadow-md ring-1 ring-green-500 border-green-500 bg-green-100 dark:bg-green-800 dark:border-green-800"
+                            ? "shadow-md ring-1 ring-green-500 border-green-500 bg-green-100 dark:bg-green-800/30 dark:border-green-800"
                             : "bg-background border-gray-200 dark:border-gray-700 hover:shadow-sm"
                         }`}
                       >
@@ -406,7 +358,7 @@ draggable
                             <div className="flex items-center gap-1 mb-2">
                               {player.isLeader && (
                                 <Badge variant="outline">
-                                  <Crown className="w-3 h-3 text-yellow-500 flex-shrink-0" />
+                                  <Crown className="size-4 text-purple-500 flex-shrink-0" />
                                 </Badge>
                               )}
 
@@ -472,7 +424,7 @@ draggable
                   </CardHeader>
                   <CardContent>
                     <div className="mb-4 flex flex-col items-center gap-1.5">
-                      <Trophy className="w-8 h-8 sm:w-12 sm:h-12 mx-auto text-yellow-500 mb-2" />
+                      <Trophy className="w-8 h-8 sm:w-12 sm:h-12 mx-auto text-purple-500 mb-2" />
                       <p className="text-base sm:text-lg font-medium mb-3">
                         {gameState.winner?.name || "Unknown"} won in{" "}
                         {gameState.round} Rounds!

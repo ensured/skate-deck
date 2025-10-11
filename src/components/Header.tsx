@@ -12,7 +12,6 @@ import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "./ui/button";
 import useUser from "@/hooks/useUser";
 import { Skeleton } from "./ui/skeleton";
-import { Loader2 } from "lucide-react";
 
 export function Header() {
   const { isLoaded } = useUser();

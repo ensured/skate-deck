@@ -9,6 +9,16 @@ export type GameStatus =
   | "active" // Game is in progress
   | "ended"; // Game has ended
 
+export type SkillCardType = "shield";
+
+export interface SkillCard {
+  id: string;
+  type: SkillCardType;
+  name: string;
+  description: string;
+  onUse: (gameState: GameState, playerId: number) => GameState;
+}
+
 export interface Player {
   id: number;
   name: string;
@@ -17,6 +27,9 @@ export interface Player {
   isCreator: boolean;
   isLeader: boolean;
   score: number;
+  inventory: {
+    skillCards: SkillCard[];
+  };
 }
 
 export interface GameState {
@@ -36,4 +49,5 @@ export interface GameState {
   gameLog: string[]; // Log of game events for UI display
   totalDeckSize: number; // Total number of cards in the deck initially
   winner?: Player; // The winner of the game (set when game ends)
+  skillCardsInPlay: SkillCard[]; // Available skill cards in the game
 }

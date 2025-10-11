@@ -1,8 +1,14 @@
 "use client";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import useUser from "./useUser";
 import { TrickCard, trickCards } from "@/types/tricks";
-import { GameState, Player, GameStatus } from "@/types/game";
+import {
+  GameState,
+  Player,
+  GameStatus,
+  SkillCard,
+  SkillCardType,
+} from "@/types/game";
 import { toast } from "sonner";
 
 // Re-export TrickCard type for convenience
@@ -68,6 +74,46 @@ export const useGame = () => {
     return drawnCard;
   }, [deck]);
 
+  // Define available skill cards with useMemo to prevent unnecessary re-renders
+  const skillCards = useMemo<SkillCard[]>(
+    () => [
+      {
+        id: "shield",
+        type: "shield",
+        name: "Shield",
+        description: "Protect yourself from getting a letter on your next miss",
+        onUse: (gameState: GameState, playerId: number) => {
+          return {
+            ...gameState,
+            players: gameState.players.map((p) =>
+              p.id === playerId
+                ? {
+                    ...p,
+                    inventory: {
+                      ...p.inventory,
+                      skillCards: p.inventory.skillCards.map((c) =>
+                        c.id === "shield"
+                          ? { ...c, id: `${c.id}-${Date.now()}` }
+                          : c
+                      ),
+                    },
+                  }
+                : p
+            ),
+            gameLog: [
+              ...gameState.gameLog,
+              `🛡️ ${
+                gameState.players.find((p) => p.id === playerId)?.name
+              } activated a Shield!`,
+            ],
+          };
+        },
+      },
+      // Add more skill cards here
+    ],
+    []
+  ); // Empty dependency array since skillCards doesn't depend on any props or state
+
   const [gameState, setGameState] = useState<GameState>({
     gameCreator: null,
     status: "lobby",
@@ -84,52 +130,167 @@ export const useGame = () => {
     currentAttempts: {},
     shouldRotateLeadershipAfterRound: false,
     totalDeckSize: 0,
+    skillCardsInPlay: skillCards,
   });
 
-  const initializeGame = useCallback((players: Player[]) => {
-    if (players.length === 0) {
-      console.error("Cannot start game with no players");
-      return;
-    }
-    setGameState((prev) => ({
-      ...prev,
-      players,
-      status: "active",
-    }));
-  }, []);
-
-  const updatePlayerOrder = (newOrder: Player[]) => {
-    setGameState((prev) => ({
-      ...prev,
-      players: newOrder,
-    }));
-    // Add any additional logic you need when player order changes
-  };
+  // Removed unused initializeGame function
 
   // Automatically add Clerk user as a player when they first load the page
   useEffect(() => {
     if (isLoaded && clerkUser && !hasInitialized) {
-      setGameState((prev) => {
-        // Add the Clerk user before any other players
+      // Create a shield card
+      const shieldCard: SkillCard = {
+        id: "shield",
+        type: "shield",
+        name: "Shield",
+        description: "Protect yourself from getting a letter on your next miss",
 
-        const newPlayer: Player = {
-          id: 0,
-          name: clerkUser.username,
-          letters: 0,
-          isEliminated: false,
-          isCreator: true,
-          isLeader: true,
-          score: 0,
-        };
+        onUse: (gameState: GameState, playerId: number) => {
+          return {
+            ...gameState,
+            players: gameState.players.map((p) =>
+              p.id === playerId
+                ? {
+                    ...p,
+                    inventory: {
+                      ...p.inventory,
+                      skillCards: p.inventory.skillCards.map((c) =>
+                        c.id === "shield"
+                          ? { ...c, id: `${c.id}-${Date.now()}` }
+                          : c
+                      ),
+                    },
+                  }
+                : p
+            ),
+            gameLog: [
+              ...gameState.gameLog,
+              `🛡️ ${
+                gameState.players.find((p) => p.id === playerId)?.name
+              } activated a Shield!`,
+            ],
+          };
+        },
+      };
 
-        return {
-          ...prev,
-          players: [newPlayer],
-        };
-      });
+      setGameState((prev) => ({
+        ...prev,
+        players: [
+          {
+            id: 0,
+            name: clerkUser.username,
+            letters: 0,
+            isEliminated: false,
+            isCreator: true,
+            isLeader: true,
+            score: 0,
+            inventory: {
+              skillCards: [{ ...shieldCard, id: `shield-${Date.now()}` }],
+            },
+          },
+        ],
+        skillCardsInPlay: [shieldCard],
+      }));
+
       setHasInitialized(true);
     }
   }, [clerkUser, isLoaded, hasInitialized]);
+
+  // Add the skill card functions before they're used
+  const useSkillCard = useCallback(
+    (playerId: number, cardType: SkillCardType) => {
+      setGameState((prev) => {
+        const player = prev.players.find((p) => p.id === playerId);
+        if (!player) return prev;
+
+        const card = player.inventory.skillCards.find(
+          (card) => card.type === cardType
+        );
+        if (!card) {
+          toast.error("You don't have this skill card!");
+          return prev;
+        }
+
+        // Remove the used card from player's inventory
+        const updatedPlayers = prev.players.map((p) =>
+          p.id === playerId
+            ? {
+                ...p,
+                inventory: {
+                  ...p.inventory,
+                  skillCards: p.inventory.skillCards.filter(
+                    (c) => c.id !== card.id
+                  ),
+                },
+              }
+            : p
+        );
+
+        // Apply the card's effect
+        let newState = card.onUse(
+          { ...prev, players: updatedPlayers },
+          playerId
+        );
+
+        // After applying the card's effect, move to the next player if it's a shield
+        if (cardType === "shield") {
+          const activePlayers = newState.players.filter((p) => !p.isEliminated);
+          const currentPlayerIndex = activePlayers.findIndex(
+            (p) => p.id === playerId
+          );
+          if (currentPlayerIndex !== -1) {
+            const nextPlayerIndex =
+              (currentPlayerIndex + 1) % activePlayers.length;
+            const nextPlayer = activePlayers[nextPlayerIndex];
+
+            newState = {
+              ...newState,
+              currentPlayerId: nextPlayer.id,
+              gameLog: [
+                ...newState.gameLog,
+                `🔄 Turn passed to ${nextPlayer.name}`,
+              ],
+            };
+          }
+        }
+
+        return newState;
+      });
+    },
+    []
+  );
+
+  const addSkillCardToPlayer = useCallback(
+    (playerId: number, cardType: SkillCardType) => {
+      const card = skillCards.find((c) => c.type === cardType);
+      if (!card) return;
+
+      setGameState((prev) => ({
+        ...prev,
+        players: prev.players.map((p) =>
+          p.id === playerId
+            ? {
+                ...p,
+                inventory: {
+                  ...p.inventory,
+                  skillCards: [
+                    ...p.inventory.skillCards,
+                    { ...card, id: `${cardType}-${Date.now()}` },
+                  ],
+                },
+              }
+            : p
+        ),
+        gameLog: [
+          ...prev.gameLog,
+          `🎁 ${prev.players.find((p) => p.id === playerId)?.name} received a ${
+            card.name
+          } card!`,
+        ],
+      }));
+    },
+    [skillCards]
+  );
 
   const addPlayer = useCallback(
     (name: string) => {
@@ -209,6 +370,41 @@ export const useGame = () => {
           score: 0,
         };
 
+        // Create a shield card for the new player using the existing shieldCard definition
+        const shieldCard: SkillCard = {
+          id: `shield-${Date.now()}-${prev.players.length + 1}`,
+          type: "shield",
+          name: "Shield",
+          description:
+            "Protect yourself from getting a letter on your next miss",
+          onUse: (gameState: GameState, playerId: number) => {
+            return {
+              ...gameState,
+              players: gameState.players.map((p) =>
+                p.id === playerId
+                  ? {
+                      ...p,
+                      inventory: {
+                        ...p.inventory,
+                        skillCards: p.inventory.skillCards.map((c) =>
+                          c.id === "shield"
+                            ? { ...c, id: `${c.id}-${Date.now()}` }
+                            : c
+                        ),
+                      },
+                    }
+                  : p
+              ),
+              gameLog: [
+                ...gameState.gameLog,
+                `🛡️ ${
+                  gameState.players.find((p) => p.id === playerId)?.name
+                } activated a Shield!`,
+              ],
+            };
+          },
+        };
+
         const updatedPlayer: Player = {
           ...newPlayer,
           id: prev.players.length + 1, // Simple numeric ID
@@ -218,6 +414,9 @@ export const useGame = () => {
           isLeader: prev.players.length === 0, // First player is leader
           isCreator: prev.players.length === 0, // First player is creator
           letters: newPlayer.letters || 0,
+          inventory: {
+            skillCards: [shieldCard], // Add shield card to player's inventory
+          },
         };
 
         // If this is the first player, set them as the current player and leader
@@ -281,7 +480,10 @@ export const useGame = () => {
         ...player,
         isLeader: player.id === nextLeader.id,
       })),
-      gameLog: [...prev.gameLog, `Leadership passed to ${nextLeader.name}`],
+      gameLog: [
+        ...prev.gameLog,
+        `🔄 Leadership passed to ${nextLeader.name} (${nextLeader.score} points, ${nextLeader.letters}/5 letters)`,
+      ],
     }));
 
     return nextLeader;
@@ -308,7 +510,7 @@ export const useGame = () => {
           currentPlayerId: nextLeader.id, // Update current player to new leader
           gameLog: [
             ...prev.gameLog,
-            `Leadership passed to ${nextLeader.name} after ${prev.leaderConsecutiveWins} consecutive wins!`,
+            `👑 ${nextLeader.name} has earned the lead after ${prev.leaderConsecutiveWins} consecutive wins! (Score: ${nextLeader.score}, Letters: ${nextLeader.letters}/5)`,
           ],
           shouldRotateLeadershipAfterRound: false,
           leaderConsecutiveWins: 0,
@@ -352,7 +554,7 @@ export const useGame = () => {
         discardedTricks: [],
         round: 1,
         leaderConsecutiveWins: 0,
-        gameLog: ["Game reset - all players and scores cleared!"],
+        gameLog: ["🔄 Game reset - all players and scores have been cleared!"],
         roundComplete: false,
         currentAttempts: {},
         shouldRotateLeadershipAfterRound: false,
@@ -371,46 +573,194 @@ export const useGame = () => {
 
   const drawTrick = useCallback(() => {}, []);
 
-  const startGame = useCallback((players: Player[]) => {
-    if (players.length < 2) {
-      toast.error("Need at least 2 players to start the game");
+  const startGame = useCallback(
+    (players: Player[]) => {
+      if (players.length < 2) {
+        toast.error("Need at least 2 players to start the game");
+        return;
+      }
+
+      console.log("🎮 Starting game with players:", players.length);
+
+      // Initialize deck and get the shuffled deck synchronously
+      const shuffledDeck = initializeDeck();
+
+      setGameState((prev) => {
+        const newState = {
+          ...prev,
+          status: "active" as GameStatus,
+          players,
+          currentLeaderId: 0, // First player starts as leader
+          currentPlayerId: 0,
+          currentTurnIndex: 0,
+          currentTrick: shuffledDeck[0], // Use the first card from initialized deck
+          discardedTricks: [],
+          round: 1,
+          leaderConsecutiveWins: 0,
+          gameLog: [
+            `🎮 Game started with ${players.length} players! First player is ${
+              players[0]?.name || "unknown"
+            }.`,
+          ],
+          roundComplete: false,
+          currentAttempts: {},
+          shouldRotateLeadershipAfterRound: false,
+        };
+
+        // Update deck state to remove the first card that was used as current trick
+        setDeck(shuffledDeck.slice(1));
+
+        // Add the first drawn card to drawnCards state for consistency
+        setDrawnCards([shuffledDeck[0]]);
+
+        return newState;
+      });
+    },
+    [initializeDeck]
+  );
+
+  // Check if current player should receive a shield (10% chance at start of turn)
+  const checkForShieldReward = useCallback(
+    (playerId: number) => {
+      setGameState((prev) => {
+        const player = prev.players.find((p) => p.id === playerId);
+        if (!player) return prev;
+
+        const playerWithMostLetters = prev.players.reduce(
+          (prevPlayer, curr) => {
+            return curr.letters > prevPlayer.letters ? curr : prevPlayer;
+          },
+          prev.players[0]
+        );
+
+        // 10% chance to get a shield if they don't already have 2 or more
+        if (
+          Math.random() < 0.1 &&
+          player.inventory.skillCards.filter((card) => card.type === "shield")
+            .length < 2 &&
+          player.id === playerWithMostLetters.id
+        ) {
+          const shieldCard: SkillCard = {
+            id: `shield-${Date.now()}-${playerId}`,
+            type: "shield",
+            name: "Shield",
+            description:
+              "Protect yourself from getting a letter on your next miss",
+            onUse: (gameState: GameState, playerId: number) => {
+              return {
+                ...gameState,
+                players: gameState.players.map((p) =>
+                  p.id === playerId
+                    ? {
+                        ...p,
+                        inventory: {
+                          ...p.inventory,
+                          skillCards: p.inventory.skillCards.map((c) =>
+                            c.id === "shield"
+                              ? { ...c, id: `${c.id}-${Date.now()}` }
+                              : c
+                          ),
+                        },
+                      }
+                    : p
+                ),
+                gameLog: [
+                  ...gameState.gameLog,
+                  `🛡️ ${
+                    gameState.players.find((p) => p.id === playerId)?.name
+                  } activated a Shield!`,
+                ],
+              };
+            },
+          };
+
+          return {
+            ...prev,
+            players: prev.players.map((p) =>
+              p.id === playerId
+                ? {
+                    ...p,
+                    inventory: {
+                      ...p.inventory,
+                      skillCards: [...p.inventory.skillCards, shieldCard],
+                    },
+                  }
+                : p
+            ),
+            gameLog: [
+              ...prev.gameLog,
+              `✨ ${player.name} found a Shield!`,
+              `💡 ${player.name} can use the Shield to protect themselves from getting a letter on their next miss.`,
+            ],
+          };
+        }
+        return prev;
+      });
+    },
+    [] // No dependencies needed as we use the callback form of setState
+  );
+
+  const handlePlayerAction = (action: "landed" | "missed" | "use_shield") => {
+    if (action === "use_shield") {
+      setGameState((prev) => {
+        const currentPlayer = prev.players.find(
+          (p) => p.id === prev.currentPlayerId
+        );
+        if (!currentPlayer) return prev;
+
+        const shieldCard = currentPlayer.inventory.skillCards.find(
+          (card: SkillCard) => card.type === "shield"
+        );
+        if (!shieldCard) return prev;
+
+        // Apply the shield effect
+        const updatedState = shieldCard.onUse(
+          {
+            ...prev,
+            players: prev.players.map((p) =>
+              p.id === prev.currentPlayerId
+                ? {
+                    ...p,
+                    inventory: {
+                      ...p.inventory,
+                      skillCards: p.inventory.skillCards.filter(
+                        (c: SkillCard) => c.id !== shieldCard.id
+                      ),
+                    },
+                  }
+                : p
+            ),
+          },
+          prev.currentPlayerId
+        );
+
+        // Move to next player after using shield
+        const activePlayersList = updatedState.players.filter(
+          (p) => !p.isEliminated
+        );
+        const currentPlayerIdx = activePlayersList.findIndex(
+          (p) => p.id === prev.currentPlayerId
+        );
+
+        if (currentPlayerIdx !== -1) {
+          const nextPlayerIdx =
+            (currentPlayerIdx + 1) % activePlayersList.length;
+          const nextPlayer = activePlayersList[nextPlayerIdx];
+
+          return {
+            ...updatedState,
+            currentPlayerId: nextPlayer.id,
+            gameLog: [
+              ...updatedState.gameLog,
+              `🔄 Turn passed to ${nextPlayer.name}`,
+            ],
+          };
+        }
+
+        return updatedState;
+      });
       return;
     }
-
-    console.log("🎮 Starting game with players:", players.length);
-
-    // Initialize deck and get the shuffled deck synchronously
-    const shuffledDeck = initializeDeck();
-
-    setGameState((prev) => {
-      const newState = {
-        ...prev,
-        status: "active" as GameStatus,
-        players,
-        currentLeaderId: 0, // First player starts as leader
-        currentPlayerId: 0,
-        currentTurnIndex: 0,
-        currentTrick: shuffledDeck[0], // Use the first card from initialized deck
-        discardedTricks: [],
-        round: 1,
-        leaderConsecutiveWins: 0,
-        gameLog: [`Game started with ${players.length} players!`],
-        roundComplete: false,
-        currentAttempts: {},
-        shouldRotateLeadershipAfterRound: false,
-      };
-
-      // Update deck state to remove the first card that was used as current trick
-      setDeck(shuffledDeck.slice(1));
-
-      // Add the first drawn card to drawnCards state for consistency
-      setDrawnCards([shuffledDeck[0]]);
-
-      return newState;
-    });
-  }, []);
-
-  const handlePlayerAction = (action: "landed" | "missed") => {
     const activePlayers = gameState.players.filter((p) => !p.isEliminated);
     if (activePlayers.length === 0) return;
 
@@ -428,7 +778,7 @@ export const useGame = () => {
     const nextPlayer = activePlayers[nextIndex];
 
     if (action === "missed") {
-      // Calculate new letters for current player (increment by 1)
+      // Calculate new letters for current player (increment by 1 if no shield)
       const currentLetters = currentPlayer.letters || 0;
       const newLetters = currentLetters + 1;
       const isEliminated = newLetters >= 5; // G.R.I.N.D = 5 letters
@@ -456,7 +806,9 @@ export const useGame = () => {
             players: updatedPlayers,
             gameLog: [
               ...prev.gameLog,
-              `${currentPlayer.name} was eliminated! ${winner.name} wins with ${winner.letters}/5 letters and ${winner.score} points!`,
+              `🏆 GAME OVER! ${winner.name} wins with ${winner.score} points and only ${winner.letters}/5 letters!`,
+              `🎉 Congratulations to ${winner.name} for winning the game!`,
+              `🏁 Final score: ${winner.score} points`,
             ],
           }));
           return; // Exit early, don't continue with normal miss logic
@@ -479,6 +831,9 @@ export const useGame = () => {
           : p
       );
 
+      // Check for shield reward for the next player at the start of their turn
+      checkForShieldReward(nextPlayer.id);
+
       // Discard the previous trick if there was one and set the new trick
       setGameState((prev) => ({
         ...prev,
@@ -496,9 +851,15 @@ export const useGame = () => {
         shouldRotateLeadershipAfterRound: false,
         gameLog: [
           ...prev.gameLog,
-          `${currentPlayer.name} missed and got letter "${"SKATE".charAt(
+          `❌ ${currentPlayer.name} missed the ${
+            prev.currentTrick?.name || "trick"
+          } and received letter "${"SKATE".charAt(
             currentLetters
-          )}" (${newLetters}/5)${isEliminated ? " - ELIMINATED!" : ""}`,
+          )}" (${newLetters}/5)${
+            isEliminated
+              ? ` - ${currentPlayer.name} is ELIMINATED with a score of ${currentPlayer.score}! 👋`
+              : ""
+          }`,
         ],
       }));
 
@@ -511,7 +872,11 @@ export const useGame = () => {
             currentPlayerId: nextLeader.id, // Update current player to new leader
             gameLog: [
               ...prev.gameLog,
-              `Leadership passed to ${nextLeader.name} because ${currentPlayer.name} failed to set the trick!`,
+              `🔄 Leadership passed to ${nextLeader.name} because ${
+                currentPlayer.name
+              } couldn't set the ${
+                gameState.currentTrick?.name || "trick"
+              }. New leader has ${nextLeader.score} points.`,
             ],
           }));
         }
@@ -526,6 +891,9 @@ export const useGame = () => {
         initializeDeck();
         return;
       }
+
+      // Check for shield reward for the next player at the start of their turn
+      checkForShieldReward(nextPlayer.id);
 
       setGameState((prev) => ({
         ...prev,
@@ -562,6 +930,23 @@ export const useGame = () => {
     }));
   };
 
+  // In your useGame hook
+  const reorderPlayers = (activeId: number, overId: number) => {
+    setGameState((prev) => {
+      const oldIndex = prev.players.findIndex((p) => p.id === activeId);
+      const newIndex = prev.players.findIndex((p) => p.id === overId);
+
+      const newPlayers = [...prev.players];
+      const [movedPlayer] = newPlayers.splice(oldIndex, 1);
+      newPlayers.splice(newIndex, 0, movedPlayer);
+
+      return {
+        ...prev,
+        players: newPlayers,
+      };
+    });
+  };
+
   // Get deck status for UI display
   const getDeckStatus = () => {
     const remaining = deck.length;
@@ -589,7 +974,10 @@ export const useGame = () => {
     drawnCards,
     hasInitialized,
     getDeckStatus,
-    updatePlayerOrder,
+    reorderPlayers,
+    useSkillCard,
+    addSkillCardToPlayer,
   } as const;
 };
+
 export default useGame;

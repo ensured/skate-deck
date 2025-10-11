@@ -48,7 +48,7 @@ export function CreateUsername({ userId }: { userId: string }) {
       setError("No user ID provided");
       setIsLoading(false);
     }
-  }, [userId]);
+  }, [userId, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

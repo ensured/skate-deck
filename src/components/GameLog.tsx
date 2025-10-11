@@ -2,17 +2,15 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, X } from "lucide-react";
 
 interface GameLogProps {
   logs: string[];
-  className?: string;
 }
 
-export function GameLog({ logs, className = "" }: GameLogProps) {
+export function GameLog({ logs }: GameLogProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const displayLogs = isExpanded ? logs : logs.slice(-5);
@@ -21,7 +19,7 @@ export function GameLog({ logs, className = "" }: GameLogProps) {
   // Auto-scroll to bottom when new logs are added
   useEffect(() => {
     if (isExpanded) {
-      const container = document.getElementById('game-log-container');
+      const container = document.getElementById("game-log-container");
       if (container) {
         container.scrollTop = container.scrollHeight;
       }
@@ -44,7 +42,7 @@ export function GameLog({ logs, className = "" }: GameLogProps) {
           <MessageSquare className="h-4 w-4" />
           {hasLogs && (
             <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] rounded-full h-4 w-4 flex items-center justify-center">
-              {logs.length > 9 ? '9+' : logs.length}
+              {logs.length > 9 ? "9+" : logs.length}
             </span>
           )}
         </Button>
@@ -92,7 +90,7 @@ export function GameLog({ logs, className = "" }: GameLogProps) {
               No game events yet
             </p>
           ) : (
-            <div 
+            <div
               id="game-log-container"
               className="max-h-60 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent"
             >
