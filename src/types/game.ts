@@ -54,4 +54,7 @@ export interface GameState {
   trickOptions?: TrickCard[]; // Available trick options for the Trick Selector power-up
   currentTrickSetterId: number | null; // ID of the player who set the current trick
   currentRoundTurns: number; // Number of turns taken in the current round
+  settings: {
+    powerUpChance: number; // 0 to 1 (0% to 100%), chance to get a power-up when landing a trick
+  };
 }

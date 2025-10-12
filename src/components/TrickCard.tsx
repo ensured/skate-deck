@@ -52,15 +52,58 @@ export function TrickCard({
   const [showPoints, setShowPoints] = useState(false);
   const [showPowerUps, setShowPowerUps] = useState(false);
   const [powerUpPulse, setPowerUpPulse] = useState(false);
+  const [newPowerUp, setNewPowerUp] = useState<SkillCard | null>(null);
   const prevPowerUpsLength = useRef(powerUps.length);
+  const powerUpTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Helper function to get power-up display name and icon
+  const getPowerUpInfo = (type: string) => {
+    switch (type) {
+      case 'shield':
+        return { name: 'Shield', icon: '🛡️' };
+      case 'choose_trick':
+        return { name: 'Choose Trick', icon: '🎯' };
+      case 'reroll':
+        return { name: 'Reroll', icon: '🔄' };
+      default:
+        return { name: type, icon: '✨' };
+    }
+  };
 
   useEffect(() => {
     if (powerUps.length > prevPowerUpsLength.current) {
+      // Find the new power-up that was just added
+      const addedPowerUp = powerUps.find(
+        (_, index) => index >= prevPowerUpsLength.current
+      );
+      
+      if (addedPowerUp) {
+        setNewPowerUp(addedPowerUp);
+        
+        // Show the new power-up for 1.5 seconds
+        powerUpTimeoutRef.current = setTimeout(() => {
+          setNewPowerUp(null);
+          // Then show the pulse animation on the power-up count
+          setPowerUpPulse(true);
+          const timer = setTimeout(() => setPowerUpPulse(false), 1000);
+          return () => clearTimeout(timer);
+        }, 1500);
+      }
+    } else if (powerUps.length < prevPowerUpsLength.current) {
+      // If a power-up was used, just show the pulse
       setPowerUpPulse(true);
       const timer = setTimeout(() => setPowerUpPulse(false), 1000);
       return () => clearTimeout(timer);
     }
+    
     prevPowerUpsLength.current = powerUps.length;
+    
+    return () => {
+      if (powerUpTimeoutRef.current) {
+        clearTimeout(powerUpTimeoutRef.current);
+        powerUpTimeoutRef.current = null;
+      }
+    };
   }, [powerUps.length]);
 
   useEffect(() => {
@@ -112,7 +155,29 @@ export function TrickCard({
               ease: "easeIn",
             },
           }}
+          className="relative"
         >
+          {/* New Power-up Notification */}
+          <AnimatePresence>
+            {newPowerUp && (
+              <motion.div
+                initial={{ opacity: 0, y: -20, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -20, scale: 0.9 }}
+                className="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full z-10"
+              >
+                <div className="bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 whitespace-nowrap">
+                  <span className="text-sm">
+                    {getPowerUpInfo(newPowerUp.type).icon}
+                  </span>
+                  <span>New: {getPowerUpInfo(newPowerUp.type).name}!</span>
+                  <span className="text-xs opacity-80">+1</span>
+                </div>
+                <div className="absolute bottom-0 left-1/2 w-2 h-2 bg-purple-500 transform -translate-x-1/2 translate-y-1/2 rotate-45"></div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <motion.div
             className="relative w-full h-full "
             initial={false}

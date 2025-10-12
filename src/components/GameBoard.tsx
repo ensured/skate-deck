@@ -6,6 +6,8 @@ import { useDOMProtection } from "@/hooks/useDOMProtection";
 import { CreateUsername } from "./CreateUsername";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { Switch } from "./ui/switch";
+import { Label } from "./ui/label";
 import {
   Card,
   CardContent,
@@ -33,6 +35,7 @@ import {
   RecycleIcon,
 } from "lucide-react";
 import { TrickCard } from "./TrickCard";
+import type { GameState, Player } from "@/types/game";
 import { TrickCard as TrickCardType } from "@/hooks/useGame";
 
 interface GameBoardProps {
@@ -47,8 +50,15 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
     gameState,
     clerkUser,
     getDeckStatus,
-    resetPlayers,
+    reset,
+    newGame,
     peekNextCards,
+    isClerkUserLoaded,
+    shufflePlayers,
+    toggleShufflePlayers,
+    updateShieldChance,
+    updateChooseTrickChance,
+    updatePowerUpChance,
   } = useGame();
 
   // All hooks must be called at the top level, before any conditional returns
@@ -77,9 +87,18 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
     setName("");
   };
 
-  const handleResetGame = () => {
-    resetPlayers();
-  };
+  const handleNewGame = useCallback(() => {
+    newGame();
+    // Close all dialogs and sheets
+    setIsLobbyConfirmOpen(false);
+    setIsResetConfirmOpen(false);
+    setIsGameControlsOpen(false);
+  }, [newGame]);
+
+  const handleResetGame = useCallback(() => {
+    reset();
+    setIsResetConfirmOpen(false);
+  }, [reset]);
 
   // DOM Protection Setup for player list
   useDOMProtection([
@@ -195,28 +214,33 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                         </h3>
                       </div>
 
-                      <div className="max-h-48 overflow-y-auto space-y-2 player-list">
+                      <div className="max-h-48 overflow-y-auto border-t border-r border-l border-border rounded-md player-list shadow-sm">
                         {gameState.players.map((player) => (
-                          <div key={player.id} ref={playerRef}>
-                            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded w-full">
-                              <div className="flex items-center gap-2">
-                                {player.isCreator && (
-                                  <Crown className="w-5 h-5 text-purple-500" />
-                                )}
-                                <span className="font-medium">
+                          <div
+                            key={player.id}
+                            ref={playerRef}
+                            className="border-b border-border"
+                          >
+                            <div className="flex items-center justify-between py-0.5 px-2 w-full ">
+                              <div className="flex items-center gap-1.5">
+                                <div className="flex font-medium">
                                   {player.name}
-                                </span>
-                                {player.id === gameState.currentPlayerId && (
-                                  <Badge variant="outline" className="text-xs">
-                                    Current
-                                  </Badge>
-                                )}
+                                </div>
+                                <div className="flex font-medium mt-1">
+                                  {player.isCreator && (
+                                    <Crown className=" text-purple-500 bg-purple-500/10 rounded-full p-1" />
+                                  )}
+                                </div>
                               </div>
                               <div className="flex items-center gap-2">
                                 <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                  variant={"ghost"}
+                                  size="icon"
+                                  className={`transition-all duration-100 ${
+                                    player.isCreator
+                                      ? "cursor-not-allowed text-black/50 dark:text-white/50"
+                                      : "cursor-pointer hover:text-red-400/90 dark:hover:text-red-600/60"
+                                  }`}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     removePlayer(player.id);
@@ -232,9 +256,9 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                                   }
                                 >
                                   {player.isCreator ? (
-                                    <Lock className="w-4 h-4" />
+                                    <Lock className="w-4 h-4 " />
                                   ) : (
-                                    <Trash2 className="w-4 h-4" />
+                                    <Trash2 className="w-4 h-4 " />
                                   )}
                                 </Button>
                               </div>
@@ -244,13 +268,28 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                       </div>
                     </div>
 
-                    <Button
-                      onClick={() => startGame(gameState.players)}
-                      disabled={gameState.players.length < 2}
-                      className="w-full"
-                    >
-                      Start Game
-                    </Button>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label
+                          htmlFor="shuffle-toggle"
+                          className="text-sm font-medium leading-none"
+                        >
+                          Shuffle Players
+                        </Label>
+                        <Switch
+                          id="shuffle-toggle"
+                          checked={shufflePlayers}
+                          onCheckedChange={toggleShufflePlayers}
+                        />
+                      </div>
+                      <Button
+                        onClick={() => startGame(gameState.players)}
+                        disabled={gameState.players.length < 2}
+                        className="w-full"
+                      >
+                        Start Game
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -496,7 +535,7 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                         })()}
                       </div>
                     </div>
-                    <Button onClick={resetPlayers} className="w-full">
+                    <Button onClick={reset} className="w-full">
                       Play Again
                     </Button>
                   </CardContent>
@@ -552,6 +591,38 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
               </SheetHeader>
 
               <div className="space-y-6 max-h-[60vh] overflow-y-auto px-1">
+                {/* Power-up Chance Control */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label
+                      htmlFor="power-up-chance"
+                      className="text-sm font-medium"
+                    >
+                      Power-up Chance:{" "}
+                      {Math.round(gameState.settings.powerUpChance * 100)}%
+                    </Label>
+                    <span className="text-xs text-muted-foreground">
+                      {Math.round(gameState.settings.powerUpChance * 100)}%
+                    </span>
+                  </div>
+                  <input
+                    id="power-up-chance"
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="5"
+                    value={gameState.settings.powerUpChance * 100}
+                    onChange={(e) =>
+                      updatePowerUpChance(Number(e.target.value) / 100)
+                    }
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Chance for players with more letters to get a random
+                    power-up (shield or choose trick)
+                  </p>
+                </div>
+
                 {/* Game Controls */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 mb-3">
@@ -560,7 +631,7 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                       Game Actions
                     </h4>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
                     <Dialog
                       open={isResetConfirmOpen}
                       onOpenChange={setIsResetConfirmOpen}
@@ -598,7 +669,7 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                           </Button>
                           <Button
                             onClick={() => {
-                              resetPlayers();
+                              reset();
                               setIsResetConfirmOpen(false);
                               setIsGameControlsOpen(false);
                             }}
@@ -619,6 +690,7 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                           variant="outline"
                           size="lg"
                           className="h-12 bg-white/80 dark:bg-gray-800/80 border-2 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:border-blue-300 dark:hover:border-blue-700 text-blue-700 dark:text-blue-300 font-medium transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer group"
+                          onClick={() => setIsResetConfirmOpen(true)}
                         >
                           <RefreshCw className="w-5 h-5 mr-2 transition-transform group-hover:rotate-180 duration-700" />
                           New Game
@@ -632,20 +704,21 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                         </DialogHeader>
                         <div className="py-4">
                           <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                            This goes back to the lobby where you can add
-                            players and start a fresh game.
+                            This will reset all players&apos; scores and letters back
+                            to zero, and start a new game with a fresh deck.
+                            This action cannot be undone.
                           </p>
                         </div>
-                        <div className="flex gap-3 justify-end">
+                        <div className="flex justify-end gap-3 pt-2">
                           <Button
                             variant="outline"
-                            onClick={() => setIsLobbyConfirmOpen(false)}
-                            className="bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
+                            onClick={() => setIsResetConfirmOpen(false)}
+                            className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
                           >
                             Cancel
                           </Button>
                           <Button
-                            onClick={() => handleResetGame()}
+                            onClick={handleNewGame}
                             className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg cursor-pointer"
                           >
                             Setup New Game

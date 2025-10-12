@@ -1,3 +1,4 @@
+import TTS from "@/components/TTS";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 // import AIChat from "@/components/AIChat";
@@ -11,7 +12,9 @@ export default async function AIPage() {
           <TabsTrigger value="text-to-speach">Text to Speach</TabsTrigger>
         </TabsList>
         <TabsContent value="chat">{/* <AIChat /> */}</TabsContent>
-        <TabsContent value="text-to-speach">{/* <TTS /> */}</TabsContent>
+        <TabsContent value="text-to-speach">
+          <TTS />
+        </TabsContent>
       </Tabs>
     </div>
   );

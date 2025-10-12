@@ -108,7 +108,7 @@ const shuffleArray = <T>(array: T[]): T[] => {
 };
 
 export const useGame = () => {
-  const { clerkUser, isLoaded } = useUser();
+  const { clerkUser, isLoaded: isClerkUserLoaded } = useUser();
   const [hasInitialized, setHasInitialized] = useState(false);
 
   // Deck state
@@ -298,11 +298,24 @@ export const useGame = () => {
     skillCardsInPlay: skillCards,
     currentTrickSetterId: null,
     currentRoundTurns: 0,
+    settings: {
+      powerUpChance: 0.05, // 5% default chance to get a power-up when landing a trick
+    },
   });
+
+  const updatePowerUpChance = useCallback((chance: number) => {
+    setGameState((prev) => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        powerUpChance: chance,
+      },
+    }));
+  }, []);
 
   // Automatically add Clerk user as a player when they first load the page
   useEffect(() => {
-    if (isLoaded && clerkUser && !hasInitialized) {
+    if (isClerkUserLoaded && clerkUser && !hasInitialized) {
       setGameState((prev) => ({
         ...prev,
         players: [
@@ -327,7 +340,7 @@ export const useGame = () => {
 
       setHasInitialized(true);
     }
-  }, [clerkUser, isLoaded, hasInitialized]);
+  }, [clerkUser, isClerkUserLoaded, hasInitialized]);
 
   // Add the skill card functions before they're used
   const useSkillCard = useCallback(
@@ -686,7 +699,40 @@ export const useGame = () => {
     handlePlayerRotate,
   ]);
 
-  const resetPlayers = useCallback(() => {
+  const newGame = useCallback(() => {
+    setGameState((prev) => ({
+      ...prev,
+      status: "lobby" as GameStatus,
+      currentTrick: undefined,
+      discardedTricks: [],
+      round: 1,
+      leaderConsecutiveWins: 0,
+      gameLog: ["🔄 New game started - players remain in the lobby"],
+      roundComplete: false,
+      currentAttempts: {},
+      shouldRotateLeadershipAfterRound: false,
+      winner: undefined,
+      trickOptions: undefined,
+      currentTrickSetterId: null,
+      currentRoundTurns: 0,
+      // Keep players but reset their game state
+      players: prev.players.map((player) => ({
+        ...player,
+        letters: 0,
+        isEliminated: false,
+        score: 0,
+        inventory: {
+          ...player.inventory,
+          skillCards: [],
+        },
+      })),
+    }));
+
+    // Reinitialize the deck for the new game
+    initializeDeck();
+  }, [initializeDeck]);
+
+  const reset = useCallback(() => {
     console.log("🔄 Resetting game...");
 
     // Initialize deck and get the shuffled deck synchronously
@@ -713,7 +759,7 @@ export const useGame = () => {
         discardedTricks: [],
         round: 1,
         leaderConsecutiveWins: 0,
-        gameLog: ["🔄 Game reset - all players and scores have been cleared!"],
+        gameLog: ["🔄 Game reset - all players and scores have been reset!"],
         roundComplete: false,
         currentAttempts: {},
         shouldRotateLeadershipAfterRound: false,
@@ -730,125 +776,10 @@ export const useGame = () => {
     });
   }, [initializeDeck]);
 
-  const startGame = useCallback(
-    (players: Player[]) => {
-      if (players.length < 2) {
-        toast.error("Need at least 2 players to start the game");
-        return;
-      }
+  const [shufflePlayers, setShufflePlayers] = useState(false);
 
-      console.log("🎮 Starting game with players:", players.length);
-
-      // Initialize deck and get the shuffled deck synchronously
-      const shuffledDeck = initializeDeck();
-
-      setGameState((prev) => {
-        const newState = {
-          ...prev,
-          status: "active" as GameStatus,
-          players,
-          currentLeaderId: 0, // First player starts as leader
-          currentPlayerId: 0,
-          currentTurnIndex: 0,
-          currentTrick: shuffledDeck[0], // Use the first card from initialized deck
-          discardedTricks: [],
-          round: 1,
-          leaderConsecutiveWins: 0,
-          gameLog: [
-            `🎮 Game started with ${players.length} players! First player is ${
-              players[0]?.name || "unknown"
-            }.`,
-          ],
-          roundComplete: false,
-          currentAttempts: {},
-          shouldRotateLeadershipAfterRound: false,
-        };
-
-        // Update deck state to remove the first card that was used as current trick
-        setDeck(shuffledDeck.slice(1));
-
-        // Add the first drawn card to drawnCards state for consistency
-        setDrawnCards([shuffledDeck[0]]);
-
-        return newState;
-      });
-    },
-    [initializeDeck]
-  );
-
-  // Check if current player should receive a shield (10% chance at start of turn)
-  const chanceGrantShield = useCallback((playerId: number) => {
-    setGameState((prev) => {
-      const player = prev.players.find((p) => p.id === playerId);
-      if (!player) return prev;
-
-      const playerWithMostLetters = prev.players.reduce((prevPlayer, curr) => {
-        return curr.letters > prevPlayer.letters ? curr : prevPlayer;
-      }, prev.players[0]);
-
-      // 10% chance to get a shield if they don't already have 2 or more
-      if (
-        Math.random() < 0.1 &&
-        player.inventory.skillCards.filter((card) => card.type === "shield")
-          .length < 2 &&
-        player.id === playerWithMostLetters.id
-      ) {
-        const shieldCard: SkillCard = {
-          id: `shield-${Date.now()}-${playerId}`,
-          type: "shield",
-          name: "Shield",
-          description:
-            "Protect yourself from getting a letter on your next miss",
-          onUse: (gameState: GameState, playerId: number) => {
-            return {
-              ...gameState,
-              players: gameState.players.map((p) =>
-                p.id === playerId
-                  ? {
-                      ...p,
-                      inventory: {
-                        ...p.inventory,
-                        skillCards: p.inventory.skillCards.map((c) =>
-                          c.id === "shield"
-                            ? { ...c, id: `${c.id}-${Date.now()}` }
-                            : c
-                        ),
-                      },
-                    }
-                  : p
-              ),
-              gameLog: [
-                ...gameState.gameLog,
-                `🛡️ ${
-                  gameState.players.find((p) => p.id === playerId)?.name
-                } activated a Shield!`,
-              ],
-            };
-          },
-        };
-
-        return {
-          ...prev,
-          players: prev.players.map((p) =>
-            p.id === playerId
-              ? {
-                  ...p,
-                  inventory: {
-                    ...p.inventory,
-                    skillCards: [...p.inventory.skillCards, shieldCard],
-                  },
-                }
-              : p
-          ),
-          gameLog: [
-            ...prev.gameLog,
-            `✨ ${player.name} found a Shield!`,
-            `💡 ${player.name} can use the Shield to protect themselves from getting a letter on their next miss.`,
-          ],
-        };
-      }
-      return prev;
-    });
+  const toggleShufflePlayers = useCallback(() => {
+    setShufflePlayers((prev) => !prev);
   }, []);
 
   const handlePlayerAction = (
@@ -1030,7 +961,8 @@ export const useGame = () => {
           : p
       );
 
-      chanceGrantShield(nextPlayer.id);
+      // Check for a random power-up
+      chanceGrantPowerUp(nextPlayer.id);
 
       setGameState((prev) => ({
         ...prev,
@@ -1105,7 +1037,8 @@ export const useGame = () => {
         }
       }
 
-      chanceGrantShield(nextPlayer.id);
+      // Check for a random power-up
+      chanceGrantPowerUp(nextPlayer.id);
 
       setGameState((prev) => {
         const updatedState = {
@@ -1176,15 +1109,28 @@ export const useGame = () => {
           : p
       );
 
-      // Remove the selected trick from the deck
-      const trickIndex = deck.findIndex((t) => t.name === trick.name);
-      const newDeck = [...deck];
-      if (trickIndex !== -1) {
-        newDeck.splice(trickIndex, 1);
+      // Get the current trick and unselected tricks
+      const currentTrick = prev.currentTrick;
+      const unselectedTricks =
+        prev.trickOptions?.filter((t) => t.name !== trick.name) || [];
+
+      // Create a new deck with the current trick and unselected tricks added back
+      const cardsToAddBack: TrickCard[] = [];
+
+      // Only add currentTrick if it exists
+      if (currentTrick) {
+        cardsToAddBack.push(currentTrick);
       }
 
-      // Update the deck state
-      setDeck(newDeck);
+      // Add all unselected tricks
+      cardsToAddBack.push(...unselectedTricks);
+
+      // Create new deck with the cards added back and shuffle it
+      const newDeck = [...deck, ...cardsToAddBack];
+      const shuffledDeck = shuffleArray(newDeck);
+
+      // Update the deck state with the shuffled deck
+      setDeck(shuffledDeck);
 
       return {
         ...prev,
@@ -1208,23 +1154,231 @@ export const useGame = () => {
     };
   };
 
+  const updateShieldChance = useCallback((chance: number) => {
+    setGameState((prev) => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        shieldChance: Math.min(1, Math.max(0, chance)), // Clamp between 0 and 1
+      },
+    }));
+  }, []);
+
+  // Check if current player should receive a random power-up at start of turn
+  const chanceGrantPowerUp = useCallback((playerId: number) => {
+    setGameState((prev) => {
+      const player = prev.players.find((p) => p.id === playerId);
+      if (!player) return prev;
+
+      // Find the maximum number of letters any player has
+      const maxLetters = Math.max(...prev.players.map((p) => p.letters));
+      const playersWithMostLetters = prev.players.filter(
+        (p) => p.letters === maxLetters
+      );
+
+      // Only proceed if player is among those with most letters
+      if (!playersWithMostLetters.some((p) => p.id === playerId)) {
+        return prev;
+      }
+
+      // Check if we should grant a power-up based on the single power-up chance
+      if (Math.random() >= prev.settings.powerUpChance) {
+        return prev;
+      }
+
+      // Store the current time to trigger the animation
+      const now = Date.now();
+      
+      // Check if we should grant a shield (if player has less than 2)
+      if (
+        player.inventory.skillCards.filter((card) => card.type === "shield")
+          .length < 2
+      ) {
+        // Create a unique ID with timestamp to ensure re-render and animation trigger
+        const shieldCard: SkillCard = {
+          id: `shield-${Date.now()}-${playerId}`,
+          type: "shield",
+          name: "Shield",
+          description: "Prevents a letter on your next failed trick",
+          onUse: (gameState: GameState, playerId: number) => ({
+            ...gameState,
+            players: gameState.players.map((p) =>
+              p.id === playerId
+                ? {
+                    ...p,
+                    inventory: {
+                      ...p.inventory,
+                      skillCards: p.inventory.skillCards.filter(
+                        (c) => c.id !== "shield"
+                      ),
+                    },
+                  }
+                : p
+            ),
+          }),
+        };
+
+        return {
+          ...prev,
+          players: prev.players.map((p) =>
+            p.id === playerId
+              ? {
+                  ...p,
+                  inventory: {
+                    ...p.inventory,
+                    skillCards: [...p.inventory.skillCards, shieldCard],
+                  },
+                }
+              : p
+          ),
+          gameLog: [
+            ...prev.gameLog,
+            `🛡️ ${player.name} received a Shield card!`,
+          ],
+        };
+      }
+      // Then check for choose_trick (only if shield wasn't granted)
+      else if (
+        player.inventory.skillCards.filter(
+          (card) => card.type === "choose_trick"
+        ).length < 2
+      ) {
+        const chooseTrickCard: SkillCard = {
+          id: `choose_trick-${Date.now()}-${playerId}`,
+          type: "choose_trick",
+          name: "Choose Trick",
+          description: "Choose a trick to play on your next turn",
+          onUse: (gameState: GameState, playerId: number) => ({
+            ...gameState,
+            players: gameState.players.map((p) =>
+              p.id === playerId
+                ? {
+                    ...p,
+                    inventory: {
+                      ...p.inventory,
+                      skillCards: p.inventory.skillCards.map((c) =>
+                        c.id === "choose_trick"
+                          ? { ...c, id: `${c.id}-${Date.now()}` }
+                          : c
+                      ),
+                    },
+                  }
+                : p
+            ),
+          }),
+        };
+
+        return {
+          ...prev,
+          players: prev.players.map((p) =>
+            p.id === playerId
+              ? {
+                  ...p,
+                  inventory: {
+                    ...p.inventory,
+                    skillCards: [...p.inventory.skillCards, chooseTrickCard],
+                  },
+                }
+              : p
+          ),
+          gameLog: [
+            ...prev.gameLog,
+            `🎯 ${player.name} received a Choose Trick card!`,
+          ],
+        };
+      }
+
+      return prev;
+    });
+  }, []);
+
+  const updateChooseTrickChance = useCallback((chance: number) => {
+    setGameState((prev) => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        choose_trick_chance: Math.min(1, Math.max(0, chance)), // Clamp between 0 and 1
+      },
+    }));
+  }, []);
+
+  const startGame = useCallback(
+    (players: Player[], shouldShuffle: boolean = false) => {
+      if (players.length < 2) {
+        toast.error("Need at least 2 players to start the game");
+        return;
+      }
+
+      console.log("🎮 Starting game with players:", players.length);
+
+      // Shuffle players if the option is enabled
+      const playersToUse = shouldShuffle
+        ? shuffleArray([...players])
+        : [...players];
+
+      // Initialize deck and get the shuffled deck synchronously
+      const shuffledDeck = initializeDeck();
+
+      setGameState((prev) => {
+        const newState = {
+          ...prev,
+          status: "active" as GameStatus,
+          players: playersToUse,
+          currentLeaderId: playersToUse[0]?.id ?? 0, // First player starts as leader
+          currentPlayerId: playersToUse[0]?.id ?? 0,
+          currentTurnIndex: 0,
+          currentTrick: shuffledDeck[0], // Use the first card from initialized deck
+          discardedTricks: [],
+          round: 1,
+          leaderConsecutiveWins: 0,
+          gameLog: [
+            `🎮 Game started with ${
+              playersToUse.length
+            } players! First player is ${playersToUse[0]?.name || "unknown"}.`,
+            shouldShuffle ? "🔀 Players were shuffled randomly!" : "",
+          ].filter(Boolean),
+          roundComplete: false,
+          currentAttempts: {},
+          shouldRotateLeadershipAfterRound: false,
+        };
+
+        // Update deck state to remove the first card that was used as current trick
+        setDeck(shuffledDeck.slice(1));
+
+        // Add the first drawn card to drawnCards state for consistency
+        setDrawnCards([shuffledDeck[0]]);
+
+        // Grant initial power-up chance to first player
+        chanceGrantPowerUp(playersToUse[0]?.id);
+
+        return newState;
+      });
+    },
+    [initializeDeck, chanceGrantPowerUp]
+  );
   return {
     gameState,
     setGameState,
     addPlayer,
     removePlayer,
-    startGame,
+    startGame: (players: Player[]) => startGame(players, shufflePlayers),
     handlePlayerAction,
     handleTrickSelection,
     getDeckStatus,
+    reset,
+    newGame,
+    peekNextCards,
+    isClerkUserLoaded,
     clerkUser,
-    drawnCards,
-    hasInitialized,
-    reorderPlayers,
+    shufflePlayers,
+    toggleShufflePlayers,
     useSkillCard,
     addSkillCardToPlayer,
-    resetPlayers,
-    peekNextCards,
+    reorderPlayers,
+    updateShieldChance,
+    updateChooseTrickChance,
+    chanceGrantPowerUp,
+    updatePowerUpChance,
   } as const;
 };
 

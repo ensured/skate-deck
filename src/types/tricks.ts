@@ -5,6 +5,14 @@ export type TrickCard = {
   points: number;
   description: string;
 };
+export const DIFFICULTY_ORDER = {
+  Beginner: 1,
+  Intermediate: 2,
+  Advanced: 3,
+  Pro: 4,
+} as const;
+
+export type Difficulty = keyof typeof DIFFICULTY_ORDER;
 
 export const difficultyColors: Record<
   TrickCard["difficulty"],
@@ -526,14 +534,14 @@ export const trickCards: TrickCard[] = [
     description: "Nose stall",
   },
   {
-    id: 66,
+    id: 67,
     name: "Nose Stall FS Revert",
     difficulty: "Intermediate",
     points: 22,
     description: "Nose stall",
   },
   {
-    id: 67,
+    id: 68,
     name: "Nose Stall BS Revert",
     difficulty: "Intermediate",
     points: 22,
