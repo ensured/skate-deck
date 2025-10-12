@@ -34,7 +34,7 @@ import {
   RefreshCw,
   RecycleIcon,
 } from "lucide-react";
-import { TrickCard } from "./TrickCard";
+import { TrickCard } from "./tricks/TrickCard";
 import type { GameState, Player } from "@/types/game";
 import { TrickCard as TrickCardType } from "@/hooks/useGame";
 
@@ -582,7 +582,7 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
 
           {/* Game Controls Sheet */}
           <Sheet open={isGameControlsOpen} onOpenChange={setIsGameControlsOpen}>
-            <SheetContent side="bottom" className="py-6 rounded-t-2xl">
+            <SheetContent side="bottom" className="py-6 rounded-t-2xl ">
               <SheetHeader className="pb-6 pt-2">
                 <SheetTitle className="text-xl font-bold text-center text-gray-900 dark:text-gray-100 flex items-center justify-center gap-2">
                   <Settings className="w-5 h-5 text-blue-600" />
@@ -590,7 +590,7 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                 </SheetTitle>
               </SheetHeader>
 
-              <div className="space-y-6 max-h-[60vh] overflow-y-auto px-1">
+              <div className="space-y-6 max-h-[60vh] overflow-y-auto px-1 lg:w-[50%] sm:w-[60%] w-[90%] mx-auto">
                 {/* Power-up Chance Control */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -704,9 +704,9 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                         </DialogHeader>
                         <div className="py-4">
                           <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                            This will reset all players&apos; scores and letters back
-                            to zero, and start a new game with a fresh deck.
-                            This action cannot be undone.
+                            This will reset all players&apos; scores and letters
+                            back to zero, and start a new game with a fresh
+                            deck. This action cannot be undone.
                           </p>
                         </div>
                         <div className="flex justify-end gap-3 pt-2">

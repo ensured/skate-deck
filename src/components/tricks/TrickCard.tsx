@@ -1,15 +1,15 @@
 "use client";
 
-import { Button } from "./ui/button";
-import { Skeleton } from "./ui/skeleton";
-import { Badge } from "./ui/badge";
+import { Button } from "../ui/button";
+import { Skeleton } from "../ui/skeleton";
+import { Badge } from "../ui/badge";
 import { Check, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { difficultyColors } from "@/types/tricks";
 import { ClerkUser } from "@/types/user";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
-import { PowerUpsDialog } from "./PowerUpsDialog";
+import { PowerUpsDialog } from "../PowerUpsDialog";
 import { SkillCard } from "@/types/game";
 import { TrickCard as TrickCardType } from "@/types/tricks";
 
@@ -59,14 +59,14 @@ export function TrickCard({
   // Helper function to get power-up display name and icon
   const getPowerUpInfo = (type: string) => {
     switch (type) {
-      case 'shield':
-        return { name: 'Shield', icon: '🛡️' };
-      case 'choose_trick':
-        return { name: 'Choose Trick', icon: '🎯' };
-      case 'reroll':
-        return { name: 'Reroll', icon: '🔄' };
+      case "shield":
+        return { name: "Shield", icon: "🛡️" };
+      case "choose_trick":
+        return { name: "Choose Trick", icon: "🎯" };
+      case "reroll":
+        return { name: "Reroll", icon: "🔄" };
       default:
-        return { name: type, icon: '✨' };
+        return { name: type, icon: "✨" };
     }
   };
 
@@ -76,10 +76,10 @@ export function TrickCard({
       const addedPowerUp = powerUps.find(
         (_, index) => index >= prevPowerUpsLength.current
       );
-      
+
       if (addedPowerUp) {
         setNewPowerUp(addedPowerUp);
-        
+
         // Show the new power-up for 1.5 seconds
         powerUpTimeoutRef.current = setTimeout(() => {
           setNewPowerUp(null);
@@ -95,9 +95,9 @@ export function TrickCard({
       const timer = setTimeout(() => setPowerUpPulse(false), 1000);
       return () => clearTimeout(timer);
     }
-    
+
     prevPowerUpsLength.current = powerUps.length;
-    
+
     return () => {
       if (powerUpTimeoutRef.current) {
         clearTimeout(powerUpTimeoutRef.current);
