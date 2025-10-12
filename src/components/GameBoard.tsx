@@ -65,7 +65,7 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
   const nameRef = useRef<HTMLInputElement>(null);
   const playerRef = useRef(null);
 
-  const [name, setName] = useState("p1");
+  const [name, setName] = useState("p2");
 
   const [isGameControlsOpen, setIsGameControlsOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
@@ -94,11 +94,6 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
     setIsResetConfirmOpen(false);
     setIsGameControlsOpen(false);
   }, [newGame]);
-
-  const handleResetGame = useCallback(() => {
-    reset();
-    setIsResetConfirmOpen(false);
-  }, [reset]);
 
   // DOM Protection Setup for player list
   useDOMProtection([
@@ -269,12 +264,19 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                     </div>
 
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-center flex-wrap gap-2">
+                        <Button
+                          onClick={() => startGame(gameState.players)}
+                          disabled={gameState.players.length < 2}
+                          className="w-full"
+                        >
+                          Start Game
+                        </Button>
                         <Label
                           htmlFor="shuffle-toggle"
                           className="text-sm font-medium leading-none"
                         >
-                          Shuffle Players
+                          Shuffle?
                         </Label>
                         <Switch
                           id="shuffle-toggle"
@@ -282,13 +284,6 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                           onCheckedChange={toggleShufflePlayers}
                         />
                       </div>
-                      <Button
-                        onClick={() => startGame(gameState.players)}
-                        disabled={gameState.players.length < 2}
-                        className="w-full"
-                      >
-                        Start Game
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
