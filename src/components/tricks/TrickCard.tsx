@@ -197,7 +197,7 @@ export function TrickCard({
               <div className="mb-2">
                 <motion.div
                   key={`turn-${currentPlayer}`}
-                  className="font-mono font-bold uppercase tracking-wider text-muted-foreground text-xs"
+                  className="font-mono font-bold uppercase tracking-wider text-muted-foreground"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{
                     opacity: 1,

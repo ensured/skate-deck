@@ -170,9 +170,9 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
       {/* Main Content Area */}
       <div className=" pt-12 flex flex-col lg:flex-row overflow-hidden">
         {/* Center Panel - Main Game Content */}
-        <div className="flex-1 px-2 sm:px-4 md:px-6 lg:px-8  overflow-hidden justify-center items-center">
+        <div className="flex-1  overflow-hidden justify-center items-center">
           {/* Game Content */}
-          <div className="overflow-auto">
+          <div className="overflow-auto w-full max-w-[44em] mx-auto">
             {/* Lobby State */}
             {gameState.status === "lobby" && (
               <div className="max-w-md mx-auto ">
