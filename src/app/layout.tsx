@@ -6,6 +6,7 @@ import { ThemeProvider } from "next-themes";
 import { Header } from "@/components/Header";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
+import { FloatingActionButton } from "@/components/ui/FloatingActionButton";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,6 +49,7 @@ export default function RootLayout({
             <Header />
             <Toaster />
             <Analytics />
+            <FloatingActionButton />
             {children}
           </ThemeProvider>
         </body>

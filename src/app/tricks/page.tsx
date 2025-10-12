@@ -1,7 +1,6 @@
 import { trickCards } from "@/types/tricks";
 import { TrickRow } from "@/components/tricks/TrickRow";
 import type { Difficulty } from "@/components/tricks/TrickRow";
-import { BackToTop } from "@/components/ui/BackToTop";
 
 const DIFFICULTY_ORDER: Record<Difficulty, number> = {
   'Beginner': 1,
@@ -49,7 +48,6 @@ export default function TricksPage() {
           </tbody>
         </table>
       </div>
-      <BackToTop />
     </div>
   );
 }

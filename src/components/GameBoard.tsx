@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useGame } from "@/hooks/useGame";
 import { useDOMProtection } from "@/hooks/useDOMProtection";
 import { CreateUsername } from "./CreateUsername";
@@ -33,10 +33,14 @@ import {
   ScrollText,
   RefreshCw,
   RecycleIcon,
+  HelpCircle,
+  ListChecks,
+  BookOpen,
 } from "lucide-react";
 import { TrickCard } from "./tricks/TrickCard";
 import type { GameState, Player } from "@/types/game";
 import { TrickCard as TrickCardType } from "@/hooks/useGame";
+import HowToPlayDialog from "./HowToPlayDialog";
 
 interface GameBoardProps {
   hasUsername: boolean;
@@ -65,7 +69,9 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
   const nameRef = useRef<HTMLInputElement>(null);
   const playerRef = useRef(null);
 
-  const [name, setName] = useState("p2");
+  const [name, setName] = useState("");
+
+  const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
 
   const [isGameControlsOpen, setIsGameControlsOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
@@ -161,23 +167,40 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
     return <CreateUsername userId={clerkUser?.id || ""} />;
   }
 
+  useEffect(() => {
+    if (clerkUser) {
+      setName("p2");
+    }
+  }, [clerkUser]);
+
   return (
-    <div className="w-full h-[calc(100vh-6rem)] flex flex-col">
+    <div className="w-full h-[calc(100vh-5rem)] flex flex-col">
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+      <div className=" pt-12 flex flex-col lg:flex-row overflow-hidden">
         {/* Center Panel - Main Game Content */}
-        <div className="flex-1 max-w-xl mx-auto overflow-hidden justify-center items-center">
+        <div className="flex-1 px-2 sm:px-4 md:px-6 lg:px-8  overflow-hidden justify-center items-center">
           {/* Game Content */}
-          <div className="flex-1 p-2 sm:p-4 overflow-auto">
+          <div className="overflow-auto">
             {/* Lobby State */}
             {gameState.status === "lobby" && (
-              <div className="max-w-md mx-auto mt-8">
+              <div className="max-w-md mx-auto ">
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Game Lobby</CardTitle>
-                    <CardDescription>
-                      Add players to start the game
-                    </CardDescription>
+                  <CardHeader className="flex gap-1 justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <CardTitle>Game Lobby</CardTitle>
+                    </div>
+                    <Button
+                      variant="link"
+                      onClick={() => setIsHowToPlayOpen(true)}
+                      className="flex items-center gap-2 border"
+                    >
+                      <BookOpen />
+                      How to Play
+                    </Button>
+                    <HowToPlayDialog
+                      open={isHowToPlayOpen}
+                      onOpenChange={setIsHowToPlayOpen}
+                    />
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex gap-2">
@@ -204,12 +227,12 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
 
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
-                        <h3 className="text-sm font-medium">
+                        <h3 className="text-xs font-medium">
                           Players ({gameState.players.length})
                         </h3>
                       </div>
 
-                      <div className="max-h-48 overflow-y-auto border-t border-r border-l border-border rounded-md player-list shadow-sm">
+                      <div className="max-h-72 overflow-y-auto border-t border-r border-l border-border rounded-md player-list ">
                         {gameState.players.map((player) => (
                           <div
                             key={player.id}

@@ -30,15 +30,15 @@ export function BackToTop() {
   }, []);
 
   return (
-    <div className="fixed bottom-8 right-8 z-50">
+    <div className="fixed bottom-20 right-6 z-50">
       <Button
         onClick={scrollToTop}
         className={`${
           isVisible
             ? "opacity-100 scale-100 cursor-pointer"
             : "opacity-0 scale-50 pointer-events-none cursor-default"
-        } transition-all bg-accent/20 duration-300 ease-in-out rounded-full w-12 h-12 p-0 flex items-center justify-center shadow-lg`}
-        variant="outline"
+        } transition-all   duration-300 ease-in-out rounded-full w-12 h-12 p-0 flex items-center justify-center shadow-lg backdrop-blur-sm`}
+        variant="default"
         size="icon"
         aria-label="Back to top"
       >

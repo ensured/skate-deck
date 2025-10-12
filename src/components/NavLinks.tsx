@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 const navLinks = [
   { name: "SKATE DECK", path: "/" },
   { name: "Tricks", path: "/tricks" },
-  { name: "How to Play", path: "/how-to-play" },
 ];
 
 export function NavLinks() {
