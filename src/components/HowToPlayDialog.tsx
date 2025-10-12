@@ -34,7 +34,7 @@ const HowToPlayDialog = ({
               <CardTitle className="text-2xl">Objective</CardTitle>
               <CardDescription>
                 Be the last player remaining by avoiding collecting all letters
-                in "S.K.A.T.E"
+                in &quot;S.K.A.T.E&quot;
               </CardDescription>
             </CardHeader>
           </Card>
@@ -105,7 +105,8 @@ const HowToPlayDialog = ({
                     <strong>Success:</strong> No penalty, earn points
                   </li>
                   <li>
-                    <strong>Failure:</strong> Receive a letter from "S.K.A.T.E"
+                    <strong>Failure:</strong> Receive a letter from
+                    &quot;S.K.A.T.E&quot;
                   </li>
                 </ul>
               </div>

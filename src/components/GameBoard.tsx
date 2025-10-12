@@ -8,13 +8,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Switch } from "./ui/switch";
 import { Label } from "./ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import {
   Dialog,
@@ -33,8 +27,6 @@ import {
   ScrollText,
   RefreshCw,
   RecycleIcon,
-  HelpCircle,
-  ListChecks,
   BookOpen,
 } from "lucide-react";
 import { TrickCard } from "./tricks/TrickCard";
@@ -162,16 +154,16 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
     (p) => p.id === gameState.currentPlayerId
   );
 
-  // Early return for username setup
-  if (!hasUsername) {
-    return <CreateUsername userId={clerkUser?.id || ""} />;
-  }
-
   useEffect(() => {
     if (clerkUser) {
       setName("p2");
     }
   }, [clerkUser]);
+
+  // Early return for username setup
+  if (!hasUsername) {
+    return <CreateUsername userId={clerkUser?.id || ""} />;
+  }
 
   return (
     <div className="w-full h-[calc(100vh-5rem)] flex flex-col">
