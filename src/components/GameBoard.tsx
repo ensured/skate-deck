@@ -157,9 +157,9 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
           <div className="flex-1 p-2 sm:p-4 overflow-auto">
             {/* Lobby State */}
             {gameState.status === "lobby" && (
-              <div className="max-w-md mx-auto">
+              <div className="max-w-md mx-auto mt-8">
                 <Card>
-                  <CardHeader className="pb-3">
+                  <CardHeader>
                     <CardTitle>Game Lobby</CardTitle>
                     <CardDescription>
                       Add players to start the game

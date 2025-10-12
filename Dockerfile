@@ -1,6 +1,8 @@
 # Stage 1: Build the application
 FROM node:20-alpine AS builder
 
+
+
 # Install dependencies for native modules
 RUN apk add --no-cache libc6-compat openssl
 
@@ -20,19 +22,22 @@ RUN npx prisma generate
 # Copy the rest of the application
 COPY . .
 
-# Set the environment variable for the build
+# Set environment variables for build
 ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 ARG CLERK_SECRET_KEY
 ENV CLERK_SECRET_KEY=$CLERK_SECRET_KEY
 ARG DATABASE_URL
 ENV DATABASE_URL=$DATABASE_URL
+ARG HF_TOKEN
+ENV HF_TOKEN=$HF_TOKEN
 
 # Build the application
 RUN npm run build
 
 # Stage 2: Production image
 FROM node:20-alpine AS runner
+
 WORKDIR /app
 
 # Install dependencies for production only
@@ -44,10 +49,6 @@ RUN apk add --no-cache openssl
 # Copy package files and install only production dependencies
 COPY package.json package-lock.json* ./
 RUN npm install --production
-
-# Copy Prisma schema and generate client
-COPY prisma ./prisma/
-RUN npx prisma generate
 
 # Copy built application from builder
 COPY --from=builder /app/next.config.* ./

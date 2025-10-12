@@ -63,26 +63,37 @@ export function PowerUpsDialog({
     null
   );
 
-  // Only update trick options when the dialog opens or when peekNextCards changes
+  // Only update trick options when the dialog opens or peekNextCards changes
   useEffect(() => {
-    if (open && peekNextCards) {
+    if (!peekNextCards) return;
+
+    if (open) {
       const nextTricks = peekNextCards(3);
       setTrickOptions(nextTricks);
-      setSelectedTrick(nextTricks[0] || null);
-    } else if (!open) {
+      // Only update selectedTrick if it's not already set or if it's different from the first option
+      setSelectedTrick((prev) => {
+        if (!prev || !nextTricks.some((t) => t.id === prev.id)) {
+          return nextTricks[0] || null;
+        }
+        return prev;
+      });
+    } else {
       // Reset state when dialog closes
       setTrickOptions([]);
       setSelectedTrick(null);
       setShowTrickSelection(false);
     }
-  }, [open, peekNextCards]);
+  }, [open]);
 
-  // Handle prop sync for selectedTrick
+  // Handle initial prop sync for selectedTrick
   useEffect(() => {
-    if (selectedTrickProp && selectedTrickProp.id !== selectedTrick?.id) {
+    if (
+      selectedTrickProp &&
+      (!selectedTrick || selectedTrickProp.id !== selectedTrick.id)
+    ) {
       setSelectedTrick(selectedTrickProp);
     }
-  }, [selectedTrickProp, selectedTrick?.id]);
+  }, [selectedTrickProp]);
 
   const handleUsePowerUp = useCallback(
     (powerUp: SkillCard) => {

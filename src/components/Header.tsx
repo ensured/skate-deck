@@ -17,8 +17,8 @@ export function Header() {
   const { isLoaded } = useUser();
   return (
     <header className="w-full border-b shadow-lg">
-      <div className="w-full px-6 h-16 flex items-center justify-between">
-        <div className="flex-1">
+      <div className="w-full px-6 h-16 flex items-center justify-between gap-4 bg-accent/20 backdrop-blur-sm">
+        <div className="flex-1 ">
           <Link href="/" className="group">
             <h1 className="text-2xl font-bold tracking-tight font-mono">
               <span className="inline-block transition-transform group-hover:scale-110">

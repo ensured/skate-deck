@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import useUser from "./useUser";
 import { TrickCard, trickCards } from "@/types/tricks";
 import {
@@ -114,10 +114,6 @@ export const useGame = () => {
   // Deck state
   const [deck, setDeck] = useState<TrickCard[]>([]);
   const [drawnCards, setDrawnCards] = useState<TrickCard[]>([]);
-
-  // Rate limiting for player additions
-  const lastPlayerAddition = useRef<number>(0);
-  const PLAYER_ADDITION_COOLDOWN = 1000; // 1 second cooldown
 
   // Initialize and shuffle the deck
   const initializeDeck = useCallback(() => {
@@ -431,14 +427,6 @@ export const useGame = () => {
 
   const addPlayer = useCallback(
     (name: string) => {
-      // Rate limiting check
-      const now = Date.now();
-      if (now - lastPlayerAddition.current < PLAYER_ADDITION_COOLDOWN) {
-        toast.error("Please wait before adding another player");
-        return;
-      }
-      lastPlayerAddition.current = now;
-
       // Enhanced input validation and sanitization
       const trimmedName = name?.trim();
 
@@ -479,22 +467,6 @@ export const useGame = () => {
 
         if (nameExists) {
           toast.error(`A player named "${trimmedName}" already exists`);
-          return prev;
-        }
-
-        // Check for suspiciously similar names (basic protection against near-duplicates)
-        const similarNameExists = prev.players.some((p) => {
-          const existingNormalized = p.name.toLowerCase().trim();
-          // Check if names are very similar (levenshtein distance of 1-2)
-          return (
-            Math.abs(existingNormalized.length - normalizedName.length) <= 2 &&
-            (existingNormalized.includes(normalizedName) ||
-              normalizedName.includes(existingNormalized))
-          );
-        });
-
-        if (similarNameExists) {
-          toast.error(`A similar player name "${trimmedName}" already exists`);
           return prev;
         }
 
