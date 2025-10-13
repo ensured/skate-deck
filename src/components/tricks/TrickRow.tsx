@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Info } from "lucide-react";
+import { useWindowSize } from "@uidotdev/usehooks";
 
 export type Difficulty = "Beginner" | "Intermediate" | "Advanced" | "Pro";
 
@@ -19,40 +21,41 @@ type Trick = {
   description: string;
 };
 
-const TrickDescription = ({ description }: { description: string }) => (
-  <Dialog>
-    <DialogTrigger asChild>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-6 w-6 p-0 ml-2 hover:bg-transparent"
-        aria-label="View description"
-      >
-        <Info className="h-4 w-4 text-muted-foreground" />
-      </Button>
-    </DialogTrigger>
-    <DialogContent className="sm:max-w-[425px]">
-      <DialogHeader>
-        <DialogTitle>Description</DialogTitle>
-      </DialogHeader>
-      <div className="py-4">
-        <p>{description}</p>
-      </div>
-    </DialogContent>
-  </Dialog>
-);
-
 export const TrickRow = ({ trick }: { trick: Trick }) => {
   const difficulty = trick.difficulty as Difficulty;
   const { bg, text } = difficultyColors[difficulty];
 
+  const { width, height } = useWindowSize();
+
   return (
-    <tr className="hover:bg-accent border-border border-t">
-      <td className="px-4 py-3 font-medium">
-        <div className="flex items-center">
-          <span className="hidden sm:inline">{trick.name}</span>
-          <span className="sm:hidden">{trick.name}</span>
-          <TrickDescription description={trick.description} />
+    <tr className="hover:bg-accent border-border border-t w-full ">
+      <td className="px-4 py-3 font-medium ">
+        <div className="flex items-center w-full ">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                size={"sm"}
+                className="cursor-pointer w-full"
+                aria-label="View description"
+              >
+                <span className="text-lg">
+                  {width && width < 640 && trick.name.length > 15
+                    ? `${trick.name.slice(0, 15)}...`
+                    : trick.name}
+                </span>
+                <Info className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>{trick.name}</DialogTitle>
+              </DialogHeader>
+              <div className="py-4 text-xl sm:text-2xl flex w-full">
+                <p>{trick.description}</p>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </td>
       <td className="px-4 py-3">

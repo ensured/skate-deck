@@ -6,7 +6,6 @@ import { useDOMProtection } from "@/hooks/useDOMProtection";
 import { CreateUsername } from "./CreateUsername";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Switch } from "./ui/switch";
 import { Label } from "./ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -30,7 +29,6 @@ import {
   BookOpen,
 } from "lucide-react";
 import { TrickCard } from "./tricks/TrickCard";
-import type { GameState, Player } from "@/types/game";
 import { TrickCard as TrickCardType } from "@/hooks/useGame";
 import HowToPlayDialog from "./HowToPlayDialog";
 
@@ -49,11 +47,8 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
     reset,
     newGame,
     peekNextCards,
-    isClerkUserLoaded,
     shufflePlayers,
     toggleShufflePlayers,
-    updateShieldChance,
-    updateChooseTrickChance,
     updatePowerUpChance,
   } = useGame();
 
@@ -287,17 +282,21 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                         >
                           Start Game
                         </Button>
-                        <Label
-                          htmlFor="shuffle-toggle"
-                          className="text-sm font-medium leading-none"
-                        >
-                          Shuffle?
-                        </Label>
-                        <Switch
-                          id="shuffle-toggle"
-                          checked={shufflePlayers}
-                          onCheckedChange={toggleShufflePlayers}
-                        />
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id="shuffle-toggle"
+                            checked={shufflePlayers}
+                            onChange={toggleShufflePlayers}
+                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          />
+                          <label
+                            htmlFor="shuffle-toggle"
+                            className="text-sm font-medium leading-none"
+                          >
+                            Shuffle players
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -570,14 +569,14 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                 onClick={() => setIsGameControlsOpen(!isGameControlsOpen)}
                 size="lg"
                 variant="default"
-                className={`relative rounded-full w-16 h-16 shadow-lg bg-gradient-to-br from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-primary-foreground border-2 border-background/30 dark:border-foreground/20 backdrop-blur-sm transition-all duration-300 ${
+                className={`cursor-pointer relative rounded-full w-16 h-16 shadow-lg bg-gradient-to-br from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-primary-foreground border-2 border-background/30 dark:border-foreground/20 backdrop-blur-sm transition-all duration-300 ${
                   isGameControlsOpen
                     ? "ring-4 ring-ring/30 transform -translate-y-1"
                     : "hover:shadow-xl hover:-translate-y-0.5"
                 }`}
               >
                 <Settings
-                  className={`w-7 h-7 transition-transform duration-300 ${
+                  className={`!w-6.5 !h-6.5 transition-transform duration-300  ${
                     isGameControlsOpen ? "rotate-180" : "group-hover:rotate-90"
                   }`}
                 />
@@ -594,27 +593,30 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
           <Sheet open={isGameControlsOpen} onOpenChange={setIsGameControlsOpen}>
             <SheetContent side="bottom" className="py-6 rounded-t-2xl ">
               <SheetHeader className="pb-6 pt-2">
-                <SheetTitle className="text-xl font-bold text-center text-gray-900 dark:text-gray-100 flex items-center justify-center gap-2">
-                  <Settings className="w-5 h-5 text-blue-600" />
+                <SheetTitle className="text-xl font-bold text-center  flex items-center justify-center gap-2">
+                  <Settings className="!w-6 !h-6" />
                   Game Controls
                 </SheetTitle>
               </SheetHeader>
 
               <div className="space-y-6 max-h-[60vh] overflow-y-auto px-1 lg:w-[50%] sm:w-[60%] w-[90%] mx-auto">
                 {/* Power-up Chance Control */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                <div className=" grid grid-cols-2 gap-1 items-center border border-border/95 rounded-md p-4">
+                  <div className="flex items-center justify-between col-span-1 p-2">
                     <Label
                       htmlFor="power-up-chance"
-                      className="text-sm font-medium"
+                      className="text-sm font-medium flex items-center  w-full justify-between"
                     >
-                      Power-up Chance:{" "}
-                      {Math.round(gameState.settings.powerUpChance * 100)}%
+                      <span>Power-up Chance: </span>
+                      <span>
+                        {Math.round(gameState.settings.powerUpChance * 100)}%
+                      </span>
                     </Label>
-                    <span className="text-xs text-muted-foreground">
-                      {Math.round(gameState.settings.powerUpChance * 100)}%
-                    </span>
                   </div>
+                  <p className="text-xs text-muted-foreground col-span-1 items-center p-2">
+                    Chance for players with more letters to get a random
+                    power-up (shield or choose trick)
+                  </p>
                   <input
                     id="power-up-chance"
                     type="range"
@@ -627,10 +629,6 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                     }
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Chance for players with more letters to get a random
-                    power-up (shield or choose trick)
-                  </p>
                 </div>
 
                 {/* Game Controls */}

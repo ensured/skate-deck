@@ -18,14 +18,14 @@ export default function TricksPage() {
   );
 
   return (
-    <div className="mx-auto px-3 py-4 max-w-[44em] md:max-w-[88vw] transition-all duration-500 ease-in-out">
-      <div className="mb-4 text-center">
+    <div className="mx-auto px-3 py-4 max-w-[44em] md:max-w-[88vw] overflow-x-auto stransition-all duration-500 ease-in-out">
+      <div className="mb-4 text-center overflow-x-auto">
         <h1 className="text-2xl  font-bold mb-2 text-primary/80 dark:text-primary">
           ({sortedTricks.length}) Skateboard Tricks
         </h1>
       </div>
 
-      <div className="rounded-md border border-primary/20 overflow-hidden">
+      <div className="rounded-md border border-primary/20 overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-primary/20">
