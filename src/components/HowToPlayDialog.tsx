@@ -28,7 +28,7 @@ const HowToPlayDialog = ({
           </p>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">Objective</CardTitle>
@@ -117,7 +117,7 @@ const HowToPlayDialog = ({
             <CardHeader>
               <CardTitle className="text-2xl">Scoring & Elimination</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent>
               <ul className="list-disc pl-5 space-y-2">
                 <li>Each miss gives 1 letter: S → K → A → T → E</li>
                 <li>Collect all 5 letters and you&apos;re out!</li>
@@ -126,8 +126,8 @@ const HowToPlayDialog = ({
             </CardContent>
           </Card>
 
-          <div className="sticky bottom-0 pt-4 pb-6 -mx-6 px-6 mt-8">
-            <div className="flex justify-end">
+          <div className="sticky bottom-0">
+            <div className="flex justify-center">
               <Button
                 asChild
                 size="lg"

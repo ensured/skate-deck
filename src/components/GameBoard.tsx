@@ -27,10 +27,15 @@ import {
   RefreshCw,
   RecycleIcon,
   BookOpen,
+  Users2,
+  UserPlus,
+  Play,
+  ArrowDown,
 } from "lucide-react";
 import { TrickCard } from "./tricks/TrickCard";
 import { TrickCard as TrickCardType } from "@/hooks/useGame";
 import HowToPlayDialog from "./HowToPlayDialog";
+import { Checkbox } from "./ui/checkbox";
 
 interface GameBoardProps {
   hasUsername: boolean;
@@ -57,12 +62,13 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
   const playerRef = useRef(null);
 
   const [name, setName] = useState("");
-
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
 
   const [isGameControlsOpen, setIsGameControlsOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [isLobbyConfirmOpen, setIsLobbyConfirmOpen] = useState(false);
+
+  const [scrolledAtTop, setScrolledAtTop] = useState(true);
 
   const handleTrickResult = useCallback(
     (
@@ -161,65 +167,120 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
   }
 
   return (
-    <div className="w-full h-[calc(100vh-5rem)] flex flex-col">
+    <div className="w-full h-full pb-4 flex flex-col">
       {/* Main Content Area */}
-      <div className=" pt-12 flex flex-col lg:flex-row overflow-hidden">
+      <div className="pt-6 px-2 flex flex-col lg:flex-row overflow-hidden">
         {/* Center Panel - Main Game Content */}
         <div className="flex-1  overflow-hidden justify-center items-center">
           {/* Game Content */}
-          <div className="overflow-auto w-full max-w-[44em] mx-auto">
+          <div className="overflow-auto w-full max-w-[48em] mx-auto">
             {/* Lobby State */}
             {gameState.status === "lobby" && (
-              <div className="max-w-md mx-auto ">
-                <Card>
-                  <CardHeader className="flex gap-1 justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <CardTitle>Game Lobby</CardTitle>
-                    </div>
-                    <Button
-                      variant="link"
-                      onClick={() => setIsHowToPlayOpen(true)}
-                      className="flex items-center gap-2 border"
-                    >
-                      <BookOpen />
-                      How to Play
-                    </Button>
-                    <HowToPlayDialog
-                      open={isHowToPlayOpen}
-                      onOpenChange={setIsHowToPlayOpen}
-                    />
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex gap-2">
-                      <Input
-                        ref={nameRef}
-                        placeholder="Player name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        onKeyDown={(e) =>
-                          e.key === "Enter" && handleAddPlayer()
-                        }
-                        className="player-input"
-                        maxLength={20}
+              <div className="max-w-lg mx-auto animate-fade-in">
+                <Card className="border-2 border-primary/20 shadow-lg">
+                  <CardHeader className="bg-gradient-to-r from-primary/5 to-background border-b items-center pt-8">
+                    <div className="flex justify-between items-center gap-2">
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 bg-primary/10 rounded-full">
+                          <Users2 className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                            Game Lobby
+                          </CardTitle>
+                          <p className="text-sm text-muted-foreground">
+                            {gameState.players.length === 0
+                              ? "Add players to get started"
+                              : `${gameState.players.length} player${
+                                  gameState.players.length !== 1 ? "s" : ""
+                                } in lobby`}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsHowToPlayOpen(true)}
+                        className="flex items-center gap-2 border-primary/20 hover:bg-primary/5 hover:border-primary/40 transition-colors"
+                      >
+                        <BookOpen className="w-4 h-4" />
+                        How to Play
+                      </Button>
+                      <HowToPlayDialog
+                        open={isHowToPlayOpen}
+                        onOpenChange={setIsHowToPlayOpen}
                       />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="px-6 space-y-2">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <div className="flex-1">
+                        <Input
+                          ref={nameRef}
+                          placeholder="Enter player name"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          onKeyDown={(e) =>
+                            e.key === "Enter" && handleAddPlayer()
+                          }
+                          className=" text-base"
+                          maxLength={20}
+                        />
+                      </div>
                       <Button
                         onClick={handleAddPlayer}
-                        disabled={
-                          !name.trim() || gameState.players.length === 0
-                        }
+                        disabled={!name.trim()}
+                        className="cursor-pointer px-6 text-base font-medium bg-gradient-to-r dark:from-primary from-primary/85 to-purple-600 hover:opacity-90 transition-opacity"
                       >
+                        <UserPlus className="w-4 h-4 mr-2" />
                         Add Player
                       </Button>
                     </div>
+                    {gameState.players.length === 0 && clerkUser && (
+                      <p className="mt-3 text-sm text-muted-foreground text-center">
+                        Add at least 2 players to start the game
+                      </p>
+                    )}
 
                     <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-xs font-medium">
-                          Players ({gameState.players.length})
-                        </h3>
+                      <div className="flex justify-end gap-4 items-center">
+                        {gameState.players.length > 1 && (
+                          <>
+                            <div className="flex items-center space-x-1">
+                              <Checkbox
+                                className="cursor-pointer size-5"
+                                checked={shufflePlayers}
+                                id="shuffle-toggle"
+                                onCheckedChange={toggleShufflePlayers}
+                              />
+                              <Label
+                                htmlFor="shuffle-toggle"
+                                className="text-sm font-medium leading-none cursor-pointer"
+                              >
+                                Shuffle players
+                              </Label>
+                            </div>
+                            <div>
+                              <Button
+                                onClick={() => startGame(gameState.players)}
+                                size="lg"
+                                className="cursor-pointer bg-gradient-to-r from-green-500 to-emerald-600 hover:opacity-90 transition-opacity shadow-md hover:shadow-lg"
+                              >
+                                <Play className="w-4 h-4 mr-2" />
+                                Start Game
+                              </Button>
+                            </div>
+                          </>
+                        )}
                       </div>
 
-                      <div className="max-h-72 overflow-y-auto border-t border-r border-l border-border rounded-md player-list ">
+                      <div
+                        className=" border rounded-lg max-h-[25.61em] overflow-y-auto shadow-sm relative"
+                        onScroll={(e) => {
+                          const target = e.target as HTMLDivElement;
+                          setScrolledAtTop(target.scrollTop === 0);
+                        }}
+                        ref={playerRef}
+                      >
                         {gameState.players.map((player) => (
                           <div
                             key={player.id}
@@ -270,32 +331,13 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
                             </div>
                           </div>
                         ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-center flex-wrap gap-2">
-                        <Button
-                          onClick={() => startGame(gameState.players)}
-                          disabled={gameState.players.length < 2}
-                          className="w-full"
-                        >
-                          Start Game
-                        </Button>
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id="shuffle-toggle"
-                            checked={shufflePlayers}
-                            onChange={toggleShufflePlayers}
-                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                          />
-                          <label
-                            htmlFor="shuffle-toggle"
-                            className="text-sm font-medium leading-none"
-                          >
-                            Shuffle players
-                          </label>
+                        <div className="absolute bottom-2 right-1/2 translate-x-1/2 ">
+                          {gameState.players.length > 10 && scrolledAtTop && (
+                            <p className="text-xs text-muted-foreground items-center gap-1 p-1 flex justify-center">
+                              <ArrowDown className="inline w-3 h-3 animate-[bounce_1.9s_ease-in-out_infinite]" />
+                              +{gameState.players.length - 10} more
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
