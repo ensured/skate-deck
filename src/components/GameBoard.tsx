@@ -183,7 +183,7 @@ const GameBoard = () => {
                           </CardTitle>
                           <div className="text-sm text-muted-foreground">
                             {gameState.players.length === 0 ? (
-                              <Skeleton className="h-4 w-24" />
+                              <Skeleton className="h-5 w-26" />
                             ) : (
                               `${gameState.players.length} player${
                                 gameState.players.length !== 1 ? "s" : ""
@@ -230,9 +230,6 @@ const GameBoard = () => {
                         Add Player
                       </Button>
                     </div>
-                    {gameState.players.length === 0 && clerkUser && (
-                      <Skeleton className="mt-3 h-4 w-24" />
-                    )}
 
                     <div className="space-y-2">
                       <div className="flex justify-end gap-4 items-center">
