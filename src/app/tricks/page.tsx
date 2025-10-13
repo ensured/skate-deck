@@ -3,10 +3,10 @@ import { TrickRow } from "@/components/tricks/TrickRow";
 import type { Difficulty } from "@/components/tricks/TrickRow";
 
 const DIFFICULTY_ORDER: Record<Difficulty, number> = {
-  'Beginner': 1,
-  'Intermediate': 2,
-  'Advanced': 3,
-  'Pro': 4,
+  Beginner: 1,
+  Intermediate: 2,
+  Advanced: 3,
+  Pro: 4,
 } as const;
 
 export default function TricksPage() {
@@ -18,9 +18,9 @@ export default function TricksPage() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-4">
-      <div className="mb-8 text-center">
-        <h1 className="text-4xl font-bold mb-2 text-primary/80 dark:text-primary">
+    <div className="mx-auto px-3 py-4 max-w-[44em] md:max-w-[88vw] transition-all duration-500 ease-in-out">
+      <div className="mb-4 text-center">
+        <h1 className="text-2xl  font-bold mb-2 text-primary/80 dark:text-primary">
           ({sortedTricks.length}) Skateboard Tricks
         </h1>
       </div>
@@ -36,13 +36,17 @@ export default function TricksPage() {
           </thead>
           <tbody>
             {sortedTricks.map((trick) => (
-              <TrickRow 
-                key={trick.id} 
-                trick={{ 
-                  ...trick, 
+              <TrickRow
+                key={trick.id}
+                trick={{
+                  ...trick,
                   id: trick.id.toString(),
-                  difficulty: trick.difficulty as 'Beginner' | 'Intermediate' | 'Advanced' | 'Pro'
-                }} 
+                  difficulty: trick.difficulty as
+                    | "Beginner"
+                    | "Intermediate"
+                    | "Advanced"
+                    | "Pro",
+                }}
               />
             ))}
           </tbody>

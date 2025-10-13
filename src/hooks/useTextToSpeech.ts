@@ -1,11 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 
-interface VoiceOption {
-  name: string;
-  lang: string;
-  voice: SpeechSynthesisVoice;
-}
-
 export const useTextToSpeech = () => {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoice, setSelectedVoice] =
@@ -32,10 +26,8 @@ export const useTextToSpeech = () => {
       }
     };
 
-    // Load voices immediately if they're available
     loadVoices();
 
-    // Set up the event listener for when voices are loaded
     window.speechSynthesis.onvoiceschanged = loadVoices;
 
     return () => {
@@ -52,10 +44,8 @@ export const useTextToSpeech = () => {
       console.log("Available voices:", allVoices);
     };
 
-    // Check immediately
     checkVoices();
 
-    // And check again when voices change
     window.speechSynthesis.onvoiceschanged = checkVoices;
 
     return () => {

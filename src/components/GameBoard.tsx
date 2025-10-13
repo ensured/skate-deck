@@ -307,25 +307,25 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
 
             {/* Game Status Section */}
             {gameState.status === "active" && (
-              <div className="flex flex-wrap justify-center items-center gap-2 mb-4 bg-accent dark:bg-accent-foreground/10 dark:hover:bg-accent-foreground/15 p-2 rounded shadow-md border border-border/50 mx-4 dark:shadow-stone-800">
-                <Badge variant="outline" className="text-sm hover:bg-accent/50">
+              <div className="flex flex-wrap justify-center items-center gap-2 -mb-1">
+                <Badge variant="default" className="text-sm">
                   Players ({gameState.players.length})
                 </Badge>
-                <Badge variant="outline" className="text-sm hover:bg-accent/50">
+                <Badge variant="default" className="text-sm">
                   Status: {gameState.status.toUpperCase()}
                 </Badge>
-                <Badge variant="outline" className="text-sm hover:bg-accent/50">
+                <Badge variant="default" className="text-sm">
                   Round {gameState.round}
                 </Badge>
-                <Badge variant="outline" className="text-sm hover:bg-accent/50">
+                <Badge variant="default" className="text-sm">
                   {getDeckStatus().remaining}/{getDeckStatus().total} cards
                 </Badge>
                 <Dialog>
-                  <DialogTrigger asChild>
+                  <DialogTrigger asChild className="cursor-pointer">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-7 gap-1 text-sm hover:bg-accent/50"
+                      className="h-7 gap-1 text-sm !bg-accent/95"
                     >
                       <ScrollText className="h-3.5 w-3.5" />
                       Log ({gameState.gameLog.length})

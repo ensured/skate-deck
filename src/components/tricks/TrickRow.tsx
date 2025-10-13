@@ -1,11 +1,15 @@
-'use client';
-
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Info } from "lucide-react";
 
-export type Difficulty = 'Beginner' | 'Intermediate' | 'Advanced' | 'Pro';
+export type Difficulty = "Beginner" | "Intermediate" | "Advanced" | "Pro";
 
 type Trick = {
   id: string;
@@ -47,11 +51,7 @@ export const TrickRow = ({ trick }: { trick: Trick }) => {
       <td className="px-4 py-3 font-medium">
         <div className="flex items-center">
           <span className="hidden sm:inline">{trick.name}</span>
-          <span className="sm:hidden">
-            {trick.name.length > 15
-              ? `${trick.name.substring(0, 12)}...`
-              : trick.name}
-          </span>
+          <span className="sm:hidden">{trick.name}</span>
           <TrickDescription description={trick.description} />
         </div>
       </td>
@@ -65,16 +65,23 @@ export const TrickRow = ({ trick }: { trick: Trick }) => {
           </Badge>
         </div>
       </td>
-      <td className="px-4 py-3 text-right font-medium">
-        {trick.points} pts
-      </td>
+      <td className="px-4 py-3 text-right font-medium">{trick.points} pts</td>
     </tr>
   );
 };
 
 const difficultyColors: Record<Difficulty, { bg: string; text: string }> = {
-  'Beginner': { bg: 'bg-green-500/20', text: 'text-green-600 dark:text-green-400' },
-  'Intermediate': { bg: 'bg-blue-500/20', text: 'text-blue-600 dark:text-blue-400' },
-  'Advanced': { bg: 'bg-purple-500/20', text: 'text-purple-600 dark:text-purple-400' },
-  'Pro': { bg: 'bg-red-500/20', text: 'text-red-600 dark:text-red-400' },
+  Beginner: {
+    bg: "bg-green-500/20",
+    text: "text-green-600 dark:text-green-400",
+  },
+  Intermediate: {
+    bg: "bg-blue-500/20",
+    text: "text-blue-600 dark:text-blue-400",
+  },
+  Advanced: {
+    bg: "bg-purple-500/20",
+    text: "text-purple-600 dark:text-purple-400",
+  },
+  Pro: { bg: "bg-red-500/20", text: "text-red-600 dark:text-red-400" },
 } as const;

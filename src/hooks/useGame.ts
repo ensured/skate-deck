@@ -1186,9 +1186,6 @@ export const useGame = () => {
         return prev;
       }
 
-      // Store the current time to trigger the animation
-      const now = Date.now();
-      
       // Check if we should grant a shield (if player has less than 2)
       if (
         player.inventory.skillCards.filter((card) => card.type === "shield")
