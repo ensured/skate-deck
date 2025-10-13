@@ -37,6 +37,7 @@ import { TrickCard as TrickCardType } from "@/hooks/useGame";
 import HowToPlayDialog from "./HowToPlayDialog";
 import { Checkbox } from "./ui/checkbox";
 import { Skeleton } from "./ui/skeleton";
+import { useWindowSize } from "@uidotdev/usehooks";
 
 const GameBoard = () => {
   const {
@@ -54,6 +55,8 @@ const GameBoard = () => {
     toggleShufflePlayers,
     updatePowerUpChance,
   } = useGame();
+
+  const { width } = useWindowSize();
 
   // All hooks must be called at the top level, before any conditional returns
   const nameRef = useRef<HTMLInputElement>(null);
@@ -601,14 +604,18 @@ const GameBoard = () => {
                 onClick={() => setIsGameControlsOpen(!isGameControlsOpen)}
                 size="lg"
                 variant="default"
-                className={`cursor-pointer relative rounded-full w-16 h-16 shadow-lg bg-gradient-to-br from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-primary-foreground border-2 border-background/30 dark:border-foreground/20 backdrop-blur-sm transition-all duration-300 ${
+                className={`${
+                  width && width < 520 ? "w-14 h-14" : "w-15 h-15"
+                } cursor-pointer relative rounded-full shadow-lg bg-gradient-to-br from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-primary-foreground border-2 border-background/30 dark:border-foreground/20 backdrop-blur-sm transition-all duration-300 ${
                   isGameControlsOpen
                     ? "ring-4 ring-ring/30 transform -translate-y-1"
                     : "hover:shadow-xl hover:-translate-y-0.5"
                 }`}
               >
                 <Settings
-                  className={`!w-6.5 !h-6.5 transition-transform duration-300  ${
+                  className={`${
+                    width && width < 520 ? "!w-6 !h-6" : "!w-6.5 !h-6.5"
+                  } transition-transform duration-300  ${
                     isGameControlsOpen ? "rotate-180" : "group-hover:rotate-90"
                   }`}
                 />
@@ -632,36 +639,42 @@ const GameBoard = () => {
               </SheetHeader>
 
               <div className="space-y-6 max-h-[60vh] overflow-y-auto px-1 lg:w-[50%] sm:w-[60%] w-[90%] mx-auto">
-                {/* Power-up Chance Control */}
-                <div className=" grid grid-cols-2 gap-1 items-center border border-border/95 rounded-md p-4">
-                  <div className="flex items-center justify-between col-span-1 p-2">
-                    <Label
-                      htmlFor="power-up-chance"
-                      className="text-sm font-medium flex items-center  w-full justify-between"
-                    >
-                      <span>Power-up Chance: </span>
-                      <span>
-                        {Math.round(gameState.settings.powerUpChance * 100)}%
-                      </span>
-                    </Label>
-                  </div>
-                  <p className="text-xs text-muted-foreground col-span-1 items-center p-2">
-                    Chance for players with more letters to get a random
-                    power-up (shield or choose trick)
-                  </p>
-                  <input
-                    id="power-up-chance"
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="5"
-                    value={gameState.settings.powerUpChance * 100}
-                    onChange={(e) =>
-                      updatePowerUpChance(Number(e.target.value) / 100)
-                    }
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600"
-                  />
-                </div>
+                {/* 
+                Power-up Chance Control (only shows at the beginning of the game until the first player makes a game action) 
+                */}
+                {gameState.round <= 1 &&
+                  gameState.currentPlayerId === gameState.players[0].id && (
+                    <div className=" grid grid-cols-2 gap-1 items-center border border-border/95 rounded-md p-4">
+                      <div className="flex items-center justify-between col-span-1 p-2">
+                        <Label
+                          htmlFor="power-up-chance"
+                          className="text-sm font-medium flex items-center  w-full justify-between"
+                        >
+                          <span>Power-up Chance: </span>
+                          <span>
+                            {Math.round(gameState.settings.powerUpChance * 100)}
+                            %
+                          </span>
+                        </Label>
+                      </div>
+                      <p className="text-xs text-muted-foreground col-span-1 items-center p-2">
+                        Chance for players with more letters to get a random
+                        power-up (shield or choose trick)
+                      </p>
+                      <input
+                        id="power-up-chance"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="5"
+                        value={gameState.settings.powerUpChance * 100}
+                        onChange={(e) =>
+                          updatePowerUpChance(Number(e.target.value) / 100)
+                        }
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600"
+                      />
+                    </div>
+                  )}
 
                 {/* Game Controls */}
                 <div className="space-y-4">
