@@ -46,7 +46,6 @@ export interface GameState {
   roundComplete: boolean;
   currentAttempts: Record<string, boolean>;
   leaderConsecutiveWins: number; // Number of consecutive wins by the current leader
-  shouldRotateLeadershipAfterRound: boolean; // Flag to rotate leadership after current round ends
   gameLog: string[]; // Log of game events for UI display
   totalDeckSize?: number; // Total number of cards in the deck at start
   winner?: Player; // The winner of the game, if any
