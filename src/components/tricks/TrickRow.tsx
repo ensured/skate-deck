@@ -34,9 +34,9 @@ export const TrickRow = ({ trick }: { trick: Trick }) => {
           <Dialog>
             <DialogTrigger asChild>
               <Button
-                variant="outline"
+                variant="ghost"
                 size={"sm"}
-                className="cursor-pointer w-full"
+                className="cursor-pointer w-full dark:hover:!bg-background/30 hover:!bg-background hover:border hover:border-border/40"
                 aria-label="View description"
               >
                 <span className="text-lg">
