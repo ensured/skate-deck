@@ -1,8 +1,9 @@
 // src/components/Header.tsx
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-import { Button } from "./ui/button";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { NavLinks } from "./NavLinks";
 import { ThemeToggle } from "./ThemeToggle";
+import ClerkSignInButton from "./ClerkSignInButton";
+import ClerkUserButtonClient from "./ClerkUserButtonClient";
 
 export async function Header() {
   return (
@@ -15,12 +16,10 @@ export async function Header() {
         <div className="flex-1 flex justify-end">
           <nav className="flex items-center gap-4">
             <SignedIn>
-              <UserButton />
+              <ClerkUserButtonClient />
             </SignedIn>
             <SignedOut>
-              <Button asChild variant="outline">
-                <SignInButton forceRedirectUrl={"/"} />
-              </Button>
+              <ClerkSignInButton />
             </SignedOut>
             <ThemeToggle />
           </nav>
