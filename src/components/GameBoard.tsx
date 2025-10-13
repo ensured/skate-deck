@@ -36,6 +36,7 @@ import { TrickCard } from "./tricks/TrickCard";
 import { TrickCard as TrickCardType } from "@/hooks/useGame";
 import HowToPlayDialog from "./HowToPlayDialog";
 import { Checkbox } from "./ui/checkbox";
+import { Skeleton } from "./ui/skeleton";
 
 const GameBoard = () => {
   const {
@@ -168,8 +169,8 @@ const GameBoard = () => {
           <div className="overflow-auto w-full max-w-[48em] mx-auto">
             {/* Lobby State */}
             {gameState.status === "lobby" && (
-              <div className="max-w-lg mx-auto animate-fade-in">
-                <Card className="border-2 border-primary/20 shadow-lg">
+              <div className="max-w-lg mx-auto animate-fade-in py-8 px-2">
+                <Card className="border border-primary/15 shadow-lg">
                   <CardHeader className="bg-gradient-to-r from-primary/5 to-background border-b items-center pt-8">
                     <div className="flex justify-between items-center gap-2">
                       <div className="flex items-center gap-4">
@@ -180,13 +181,15 @@ const GameBoard = () => {
                           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
                             Game Lobby
                           </CardTitle>
-                          <p className="text-sm text-muted-foreground">
-                            {gameState.players.length === 0
-                              ? "Add players to get started"
-                              : `${gameState.players.length} player${
-                                  gameState.players.length !== 1 ? "s" : ""
-                                } in lobby`}
-                          </p>
+                          <div className="text-sm text-muted-foreground">
+                            {gameState.players.length === 0 ? (
+                              <Skeleton className="h-4 w-24" />
+                            ) : (
+                              `${gameState.players.length} player${
+                                gameState.players.length !== 1 ? "s" : ""
+                              } in lobby`
+                            )}
+                          </div>
                         </div>
                       </div>
                       <Button
@@ -228,9 +231,7 @@ const GameBoard = () => {
                       </Button>
                     </div>
                     {gameState.players.length === 0 && clerkUser && (
-                      <p className="mt-3 text-sm text-muted-foreground text-center">
-                        Add at least 2 players to start the game
-                      </p>
+                      <Skeleton className="mt-3 h-4 w-24" />
                     )}
 
                     <div className="space-y-2">
