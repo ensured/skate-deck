@@ -50,6 +50,10 @@ RUN apk add --no-cache openssl
 COPY package.json package-lock.json* ./
 RUN npm install --production
 
+# Copy Prisma schema and generate client
+COPY prisma ./prisma/
+RUN npx prisma generate
+
 # Copy built application from builder
 COPY --from=builder /app/next.config.* ./
 COPY --from=builder /app/public ./public
