@@ -29,8 +29,7 @@ export default async function Home() {
       return <CreateUsername userId={userId} />;
     }
 
-    // Only show the GameBoard if user is authenticated and has a username
-    return <GameBoard hasUsername={user?.username ? true : false} />;
+    return <GameBoard />;
   } catch (error) {
     console.error("Error loading user:", error);
     return <div>Error loading user information. Please try again later.</div>;

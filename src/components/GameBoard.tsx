@@ -37,10 +37,7 @@ import { TrickCard as TrickCardType } from "@/hooks/useGame";
 import HowToPlayDialog from "./HowToPlayDialog";
 import { Checkbox } from "./ui/checkbox";
 
-interface GameBoardProps {
-  hasUsername: boolean;
-}
-const GameBoard = ({ hasUsername }: GameBoardProps) => {
+const GameBoard = () => {
   const {
     addPlayer,
     removePlayer,
@@ -160,11 +157,6 @@ const GameBoard = ({ hasUsername }: GameBoardProps) => {
       setName("p2");
     }
   }, [clerkUser]);
-
-  // Early return for username setup
-  if (!hasUsername) {
-    return <CreateUsername userId={clerkUser?.id || ""} />;
-  }
 
   return (
     <div className="w-full h-full pb-4 flex flex-col">
