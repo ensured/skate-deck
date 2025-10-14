@@ -1,9 +1,9 @@
-import { SkillCard } from "./game";
+import { Powerup } from "./game";
 import trickCards, { TrickCard } from "./tricks";
 import { GameState } from "./game";
 import { shuffleArray } from "@/lib/utils";
 
-export const chooseTrickSkill: SkillCard = {
+export const chooseTrick: Powerup = {
   id: "choose_trick",
   type: "choose_trick",
   name: "Trick Selector",
@@ -46,7 +46,7 @@ export const chooseTrickSkill: SkillCard = {
   },
 };
 
-export const shieldSkill: SkillCard = {
+export const shield: Powerup = {
   id: "shield",
   type: "shield",
   name: "Shield",
@@ -60,7 +60,7 @@ export const shieldSkill: SkillCard = {
               ...p,
               inventory: {
                 ...p.inventory,
-                skillCards: p.inventory.skillCards.filter(
+                powerups: p.inventory.powerups.filter(
                   (c) => c.type !== "shield"
                 ),
               },
@@ -77,4 +77,4 @@ export const shieldSkill: SkillCard = {
   },
 };
 
-export const startingSkillCards = [shieldSkill, chooseTrickSkill];
+export const startingPowerups = [shield, chooseTrick];

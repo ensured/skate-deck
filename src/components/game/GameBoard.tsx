@@ -32,8 +32,6 @@ import {
   ArrowDown,
   Zap,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { PowerUpNotification } from "../tricks/PowerUpNotification";
 import { TrickCard } from "../tricks/TrickCard";
 import { TrickCard as TrickCardType } from "@/types/tricks";
 import HowToPlayDialog from "./HowToPlayDialog";
@@ -429,7 +427,7 @@ export function GameBoard() {
                     powerUps={
                       gameState.players.find(
                         (p) => p.id === gameState.currentPlayerId
-                      )?.inventory.skillCards || []
+                      )?.inventory.powerups || []
                     }
                     onResult={handleTrickResult}
                   />
@@ -503,10 +501,10 @@ export function GameBoard() {
                                   </div>
                                 )}
 
-                                {player.inventory.skillCards.length > 0 && (
+                                {player.inventory.powerups.length > 0 && (
                                   <div className="flex gap-1 items-center text-xs sm:text-sm">
                                     <Zap className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
-                                    {player.inventory.skillCards.length}
+                                    {player.inventory.powerups.length}
                                   </div>
                                 )}
                               </div>

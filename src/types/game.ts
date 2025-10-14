@@ -9,11 +9,11 @@ export type GameStatus =
   | "active" // Game is in progress
   | "ended"; // Game has ended
 
-export type SkillCardType = "shield" | "choose_trick";
+export type PowerupType = "shield" | "choose_trick";
 
-export interface SkillCard {
+export interface Powerup {
   id: string;
-  type: SkillCardType;
+  type: PowerupType;
   name: string;
   description: string;
   trickOptions?: TrickCard[]; // Available trick options for the Trick Selector power-up
@@ -33,7 +33,7 @@ export interface Player {
   isLeader: boolean;
   score: number;
   inventory: {
-    skillCards: SkillCard[];
+    powerups: Powerup[];
   };
 }
 

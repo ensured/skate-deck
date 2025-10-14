@@ -6,13 +6,13 @@ import {
   GameState,
   Player,
   GameStatus,
-  SkillCard,
-  SkillCardType,
+  Powerup,
+  PowerupType,
 } from "@/types/game";
 import { toast } from "sonner";
 import { shuffleArray } from "@/lib/utils";
-import { chooseTrickSkill, shieldSkill } from "../types/skills";
-import { startingSkillCards } from "../types/skills";
+import { chooseTrick, shield } from "../types/powerups";
+import { startingPowerups } from "../types/powerups";
 
 export const useGame = () => {
   const { clerkUser, isLoaded: isClerkUserLoaded } = useUser();
@@ -68,7 +68,7 @@ export const useGame = () => {
     return drawnCard;
   }, [deck]);
 
-  const skillCards = useMemo<SkillCard[]>(
+  const powerups = useMemo<Powerup[]>(
     () => [
       {
         id: "shield",
@@ -84,7 +84,7 @@ export const useGame = () => {
                     ...p,
                     inventory: {
                       ...p.inventory,
-                      skillCards: p.inventory.skillCards.filter(
+                      powerups: p.inventory.powerups.filter(
                         (c) => c.type !== "shield"
                       ),
                     },
@@ -195,105 +195,13 @@ export const useGame = () => {
             isLeader: true,
             score: 0,
             inventory: {
-              skillCards: [...startingSkillCards],
+              powerups: [...startingPowerups],
             },
           },
         ],
       }));
     }
   }, [clerkUser, isClerkUserLoaded]);
-
-  const useSkillCard = useCallback(
-    (playerId: number, cardType: SkillCardType) => {
-      setGameState((prev) => {
-        const player = prev.players.find((p) => p.id === playerId);
-        if (!player) return prev;
-
-        const card = player.inventory.skillCards.find(
-          (card) => card.type === cardType
-        );
-        if (!card) {
-          toast.error("You don't have this skill card!");
-          return prev;
-        }
-
-        const updatedPlayers = prev.players.map((p) =>
-          p.id === playerId
-            ? {
-                ...p,
-                inventory: {
-                  ...p.inventory,
-                  skillCards: p.inventory.skillCards.filter(
-                    (c) => c.id !== card.id
-                  ),
-                },
-              }
-            : p
-        );
-
-        let newState = card.onUse(
-          { ...prev, players: updatedPlayers },
-          playerId
-        );
-
-        if (cardType === "shield") {
-          const activePlayers = newState.players.filter((p) => !p.isEliminated);
-          const currentPlayerIndex = activePlayers.findIndex(
-            (p) => p.id === playerId
-          );
-          if (currentPlayerIndex !== -1) {
-            const nextPlayerIndex =
-              (currentPlayerIndex + 1) % activePlayers.length;
-            const nextPlayer = activePlayers[nextPlayerIndex];
-
-            newState = {
-              ...newState,
-              currentPlayerId: nextPlayer.id,
-              gameLog: [
-                ...newState.gameLog,
-                `🔄 Turn passed to ${nextPlayer.name}`,
-              ],
-            };
-          }
-        }
-
-        return newState;
-      });
-    },
-    []
-  );
-
-  const addSkillCardToPlayer = useCallback(
-    (playerId: number, cardType: SkillCardType) => {
-      const card = skillCards.find((c) => c.type === cardType);
-      if (!card) return;
-
-      setGameState((prev) => ({
-        ...prev,
-        players: prev.players.map((p) =>
-          p.id === playerId
-            ? {
-                ...p,
-                inventory: {
-                  ...p.inventory,
-                  skillCards: [
-                    ...p.inventory.skillCards,
-                    { ...card, id: `${cardType}-${Date.now()}` },
-                  ],
-                },
-              }
-            : p
-        ),
-        gameLog: [
-          ...prev.gameLog,
-          `🎁 ${prev.players.find((p) => p.id === playerId)?.name} received a ${
-            card.name
-          } card!`,
-        ],
-      }));
-    },
-    [skillCards]
-  );
 
   const addPlayer = useCallback(
     (name: string) => {
@@ -345,7 +253,7 @@ export const useGame = () => {
         };
 
         const shieldCard = {
-          ...skillCards.find((card) => card.type === "shield")!,
+          ...powerups.find((card) => card.type === "shield")!,
           id: `shield-${Date.now()}-${prev.players.length + 1}`,
         };
 
@@ -359,7 +267,7 @@ export const useGame = () => {
           isCreator: prev.players.length === 0, // First player is creator
           letters: newPlayer.letters || 0,
           inventory: {
-            skillCards: [
+            powerups: [
               shieldCard,
               {
                 id: `choose_trick`,
@@ -392,7 +300,7 @@ export const useGame = () => {
                             ...p,
                             inventory: {
                               ...p.inventory,
-                              skillCards: p.inventory.skillCards.filter(
+                              powerups: p.inventory.powerups.filter(
                                 (card) =>
                                   !card.id.startsWith("choose_trick") ||
                                   card.id === cardId
@@ -571,7 +479,7 @@ export const useGame = () => {
         score: 0,
         inventory: {
           ...player.inventory,
-          skillCards: [...startingSkillCards],
+          powerups: [...startingPowerups],
         },
       }));
 
@@ -614,8 +522,8 @@ export const useGame = () => {
         );
         if (!currentPlayer) return prev;
 
-        const chooseTrickCard = currentPlayer.inventory.skillCards.find(
-          (card: SkillCard) => card.type === "choose_trick"
+        const chooseTrickCard = currentPlayer.inventory.powerups.find(
+          (card: Powerup) => card.type === "choose_trick"
         );
         if (!chooseTrickCard) return prev;
 
@@ -634,7 +542,7 @@ export const useGame = () => {
                     ...p,
                     inventory: {
                       ...p.inventory,
-                      skillCards: p.inventory.skillCards.filter(
+                      powerups: p.inventory.powerups.filter(
                         (card) => card.id !== chooseTrickCard.id
                       ),
                     },
@@ -665,8 +573,8 @@ export const useGame = () => {
         );
         if (!currentPlayer) return prev;
 
-        const shieldCard = currentPlayer.inventory.skillCards.find(
-          (card: SkillCard) => card.type === "shield"
+        const shieldCard = currentPlayer.inventory.powerups.find(
+          (card: Powerup) => card.type === "shield"
         );
         if (!shieldCard) return prev;
 
@@ -680,8 +588,8 @@ export const useGame = () => {
                     // remove shield card from inventory
                     inventory: {
                       ...p.inventory,
-                      skillCards: p.inventory.skillCards.filter(
-                        (c: SkillCard) => c.id !== shieldCard.id
+                      powerups: p.inventory.powerups.filter(
+                        (c: Powerup) => c.id !== shieldCard.id
                       ),
                     },
                   }
@@ -928,7 +836,7 @@ export const useGame = () => {
               ...p,
               inventory: {
                 ...p.inventory,
-                skillCards: p.inventory.skillCards.filter(
+                powerups: p.inventory.powerups.filter(
                   (card) => card.type !== "choose_trick"
                 ),
               },
@@ -992,7 +900,7 @@ export const useGame = () => {
         return prev;
       }
 
-      const randomCard = Math.random() < 0.5 ? shieldSkill : chooseTrickSkill;
+      const randomCard = Math.random() < 0.5 ? shield : chooseTrick;
 
       return {
         ...prev,
@@ -1002,7 +910,7 @@ export const useGame = () => {
                 ...p,
                 inventory: {
                   ...p.inventory,
-                  skillCards: [...p.inventory.skillCards, randomCard],
+                  powerups: [...p.inventory.powerups, randomCard],
                 },
               }
             : p
@@ -1088,8 +996,7 @@ export const useGame = () => {
     clerkUser,
     shufflePlayers,
     toggleShufflePlayers,
-    useSkillCard,
-    addSkillCardToPlayer,
+
     reorderPlayers,
     updateShieldChance,
     updateChooseTrickChance,
