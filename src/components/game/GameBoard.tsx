@@ -136,13 +136,14 @@ export function GameBoard() {
     }
   }, [clerkUser]);
 
-  useEffect(() => {
-    if (gameState.players.length < 16 && clerkUser) {
-      setTimeout(() => {
-        setName("p" + (gameState.players.length + 1));
-      }, 50);
-    }
-  }, [gameState.players.length]);
+  // for dev testing
+  // useEffect(() => {
+  //   if (gameState.players.length < 16 && clerkUser) {
+  //     setTimeout(() => {
+  //       setName("p" + (gameState.players.length + 1));
+  //     }, 50);
+  //   }
+  // }, [gameState.players.length]);
 
   return (
     <div className="w-full h-full pb-4 flex flex-col">
@@ -152,7 +153,6 @@ export function GameBoard() {
         <div className="flex-1  overflow-hidden justify-center items-center">
           {/* Game Content */}
           <div className="overflow-auto w-full max-w-[48em] mx-auto">
-            Lobby State
             {gameState.status === "lobby" && (
               <LobbyView
                 gameState={gameState}
@@ -249,10 +249,6 @@ export function GameBoard() {
                         username: currentPlayer.name,
                       }}
                       isLeader={currentPlayer.id === gameState.currentLeaderId}
-                      gameState={gameState}
-                      round={gameState.round}
-                      cardsRemaining={getDeckStatus().remaining}
-                      totalCards={getDeckStatus().total}
                       powerUps={
                         gameState.players.find(
                           (p) => p.id === gameState.currentPlayerId
@@ -266,7 +262,7 @@ export function GameBoard() {
                 {/* Lobby Header */}
                 <GameTrickCard
                   gameState={gameState}
-                  currentPlayer={currentPlayer}
+                  currentPlayer={currentPlayer || gameState.players[0]}
                 />
               </div>
             )}

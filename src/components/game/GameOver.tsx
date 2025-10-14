@@ -3,13 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Trophy } from "lucide-react";
 import { Button } from "../ui/button";
 import { GameState } from "@/types/game";
+import { Checkbox } from "../ui/checkbox";
 
 interface GameOverProps {
   gameState: GameState;
-  reset: () => void;
+  reset: (shufflePlayers?: boolean) => void;
 }
 
 const GameOver = ({ gameState, reset }: GameOverProps) => {
+  const [shouldShuffle, setShouldShuffle] = React.useState(false);
   return (
     <div className="max-w-2xl mx-auto text-center">
       <Card>
@@ -75,7 +77,22 @@ const GameOver = ({ gameState, reset }: GameOverProps) => {
               })()}
             </div>
           </div>
-          <Button onClick={reset} className="w-full">
+          <div
+            className="flex items-center gap-2 justify-center p-3 border select-none border-border/5 cursor-pointer hover:bg-accent/40 rounded"
+            onClick={() => setShouldShuffle(!shouldShuffle)}
+          >
+            <Checkbox
+              checked={shouldShuffle}
+              id="shouldShuffle"
+              className="cursor-pointer"
+            />
+            Shuffle Players?
+          </div>
+          <Button
+            size={"lg"}
+            onClick={() => reset(shouldShuffle)}
+            className="w-full cursor-pointer"
+          >
             Play Again
           </Button>
         </CardContent>

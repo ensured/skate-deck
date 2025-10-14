@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Play, Pause, Download } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";

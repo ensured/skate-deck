@@ -6,7 +6,6 @@ import {
   Check,
   Lock,
   Play,
-  Shuffle,
   Trash2,
   UserPlus,
   Users2,
@@ -14,11 +13,10 @@ import {
 } from "lucide-react";
 import { BookOpen } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
-import { GameState, Player } from "@/types/game";
+import { GameState } from "@/types/game";
 import HowToPlayDialog from "./HowToPlayDialog";
 import { RefObject } from "react";
-import { Checkbox } from "@radix-ui/react-checkbox";
-import { Label } from "../ui/label";
+import { Player } from "@/types/player";
 
 type LobbyViewProps = {
   gameState: GameState;

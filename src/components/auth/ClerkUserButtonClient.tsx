@@ -2,7 +2,7 @@
 
 import { UserButton } from "@clerk/nextjs";
 import { useTheme } from "next-themes";
-import { dark, neobrutalism, shadesOfPurple } from "@clerk/themes";
+import { dark } from "@clerk/themes";
 import { useEffect, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
 

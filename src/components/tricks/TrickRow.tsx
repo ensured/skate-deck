@@ -25,7 +25,7 @@ export const TrickRow = ({ trick }: { trick: Trick }) => {
   const difficulty = trick.difficulty as Difficulty;
   const { bg, text } = difficultyColors[difficulty];
 
-  const { width, height } = useWindowSize();
+  const { width } = useWindowSize();
 
   return (
     <tr className="hover:bg-accent border-border border-t w-full ">

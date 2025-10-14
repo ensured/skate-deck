@@ -1,5 +1,3 @@
-import { GameState, SkillCard } from "@/types/game";
-import trickCards, { TrickCard } from "@/types/tricks";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 

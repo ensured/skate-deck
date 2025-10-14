@@ -11,7 +11,7 @@ import {
 } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Shield, Zap, ListChecks } from "lucide-react";
-import { SkillCard, SkillCardType } from "@/types/game";
+import { Powerup, PowerupType } from "@/types/powerups";
 import { TrickCard as TrickCardType } from "@/types/tricks";
 
 // Simple card component to display trick options
@@ -43,8 +43,8 @@ const TrickOptionCard = ({
 interface PowerUpsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  powerUps: SkillCard[];
-  onUsePowerUp: (powerUp: SkillCard, selectedTrick?: TrickCardType) => void;
+  powerUps: Powerup[];
+  onUsePowerUp: (powerUp: Powerup, selectedTrick?: TrickCardType) => void;
   peekNextCards: (count: number) => TrickCard[];
   selectedTrickProp?: TrickCardType;
 }
@@ -96,7 +96,7 @@ export function PowerUpsDialog({
   }, [selectedTrickProp]);
 
   const handleUsePowerUp = useCallback(
-    (powerUp: SkillCard) => {
+    (powerUp: Powerup) => {
       if (powerUp.type === "choose_trick") {
         setShowTrickSelection(true);
       } else {
@@ -123,7 +123,7 @@ export function PowerUpsDialog({
     }
   }, [selectedTrick, powerUps, onUsePowerUp, onOpenChange]);
 
-  const getPowerUpIcon = (type: SkillCardType) => {
+  const getPowerUpIcon = (type: PowerupType) => {
     switch (type) {
       case "shield":
         return <Shield className="h-5 w-5 text-blue-600 dark:text-blue-300" />;
@@ -136,7 +136,7 @@ export function PowerUpsDialog({
     }
   };
 
-  const getPowerUpBgColor = (type: SkillCardType) => {
+  const getPowerUpBgColor = (type: PowerupType) => {
     switch (type) {
       case "shield":
         return "bg-blue-100 dark:bg-blue-900";
@@ -147,7 +147,7 @@ export function PowerUpsDialog({
     }
   };
 
-  const groupPowerUps = (powerUps: SkillCard[]) => {
+  const groupPowerUps = (powerUps: Powerup[]) => {
     const grouped = powerUps.reduce((acc, powerUp) => {
       if (!acc[powerUp.type]) {
         acc[powerUp.type] = {
@@ -159,7 +159,7 @@ export function PowerUpsDialog({
         acc[powerUp.type].count += 1;
       }
       return acc;
-    }, {} as Record<string, SkillCard & { count: number }>);
+    }, {} as Record<string, Powerup & { count: number }>);
 
     return Object.values(grouped);
   };

@@ -3,7 +3,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
 import { RecycleIcon, RefreshCw, Settings } from "lucide-react";
 import { useState } from "react";
 import { useWindowSize } from "@uidotdev/usehooks";
-import { useGame } from "@/hooks/useGame";
 import {
   Dialog,
   DialogContent,
@@ -12,14 +11,15 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import { Label } from "../ui/label";
+import { GameState } from "@/types/game";
 
 interface GameControlsSheetProps {
-  gameState: any;
-  isLobbyConfirmOpen: any;
-  setIsLobbyConfirmOpen: any;
-  reset: any;
-  updatePowerUpChance: any;
-  handleNewGame: any;
+  gameState: GameState;
+  isLobbyConfirmOpen: boolean;
+  setIsLobbyConfirmOpen: (open: boolean) => void;
+  reset: (shufflePlayers?: boolean) => void;
+  updatePowerUpChance: (chance: number) => void;
+  handleNewGame: () => void;
 }
 
 const GameControlsSheet = ({

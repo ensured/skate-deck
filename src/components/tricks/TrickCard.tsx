@@ -10,9 +10,8 @@ import { ClerkUser } from "@/types/user";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { PowerUpsDialog } from "../game/PowerUpsDialog";
-import { SkillCard } from "@/types/game";
+import { Powerup } from "@/types/powerups";
 import { TrickCard as TrickCardType } from "@/types/tricks";
-import { GameState } from "@/types/game";
 
 // First, update the TrickCardProps interface to include the shield functionality
 interface TrickCardProps {
@@ -28,17 +27,12 @@ interface TrickCardProps {
   currentPlayer: string;
   user: ClerkUser;
   isLeader: boolean;
-  gameState?: GameState;
-  round?: number;
-  cardsRemaining?: number;
-  totalCards?: number;
-  powerUps?: SkillCard[]; // Add power-ups array to props
+  powerUps?: Powerup[]; // Add power-ups array to props
   peekNextCards?: (count: number) => TrickCardType[];
   selectedTrick?: TrickCardType;
 }
 
 export function TrickCard({
-  gameState,
   trickName,
   onResult,
   className,
@@ -78,7 +72,7 @@ export function TrickCard({
   };
 
   return (
-    <div className={cn("w-full  relative px-4", className)}>
+    <div className={cn("w-full  relative px-4 select-none", className)}>
       <AnimatePresence mode="wait">
         <motion.div
           key={trickName}
@@ -115,7 +109,7 @@ export function TrickCard({
                 damping: 15,
                 mass: 0.4,
               },
-              scale: 0.995,
+              scale: 1.01,
             }}
           >
             {/* Card Header */}

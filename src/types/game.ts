@@ -1,3 +1,4 @@
+import { Player } from "./player";
 import { TrickCard } from "./tricks";
 import { ClerkUser } from "./user";
 
@@ -8,34 +9,6 @@ export type GameStatus =
   | "lobby" // Game is in the lobby
   | "active" // Game is in progress
   | "ended"; // Game has ended
-
-export type PowerupType = "shield" | "choose_trick";
-
-export interface Powerup {
-  id: string;
-  type: PowerupType;
-  name: string;
-  description: string;
-  trickOptions?: TrickCard[]; // Available trick options for the Trick Selector power-up
-  onUse: (
-    gameState: GameState,
-    playerId: number,
-    selectedTrick?: TrickCard
-  ) => GameState;
-}
-
-export interface Player {
-  id: number;
-  name: string;
-  letters: number;
-  isEliminated: boolean;
-  isCreator: boolean;
-  isLeader: boolean;
-  score: number;
-  inventory: {
-    powerups: Powerup[];
-  };
-}
 
 export interface GameState {
   gameCreator: ClerkUser | null;

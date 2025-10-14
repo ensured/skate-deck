@@ -2,17 +2,12 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import useUser from "./useUser";
 import { TrickCard, trickCards } from "@/types/tricks";
-import {
-  GameState,
-  Player,
-  GameStatus,
-  Powerup,
-  PowerupType,
-} from "@/types/game";
+import { GameState, GameStatus } from "@/types/game";
 import { toast } from "sonner";
 import { shuffleArray } from "@/lib/utils";
-import { chooseTrick, shield } from "../types/powerups";
+import { chooseTrick, Powerup, shield } from "../types/powerups";
 import { startingPowerups } from "../types/powerups";
+import { Player } from "@/types/player";
 
 export const useGame = () => {
   const { clerkUser, isLoaded: isClerkUserLoaded } = useUser();

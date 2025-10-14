@@ -1,4 +1,3 @@
-import { Powerup } from "./game";
 import trickCards, { TrickCard } from "./tricks";
 import { GameState } from "./game";
 import { shuffleArray } from "@/lib/utils";
@@ -76,5 +75,20 @@ export const shield: Powerup = {
     };
   },
 };
+
+export type PowerupType = "shield" | "choose_trick";
+
+export interface Powerup {
+  id: string;
+  type: PowerupType;
+  name: string;
+  description: string;
+  trickOptions?: TrickCard[]; // Available trick options for the Trick Selector power-up
+  onUse: (
+    gameState: GameState,
+    playerId: number,
+    selectedTrick?: TrickCard
+  ) => GameState;
+}
 
 export const startingPowerups = [shield, chooseTrick];

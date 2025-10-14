@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { GameState } from "@/types/game";
+import { Player } from "@/types/player";
 import { Crown, Trophy, Zap } from "lucide-react";
 import { Card } from "../ui/card";
 
@@ -8,7 +9,7 @@ const GameStatusBar = ({
   currentPlayer,
 }: {
   gameState: GameState;
-  currentPlayer: any;
+  currentPlayer: Player;
 }) => {
   return (
     <div className="w-full flex-shrink-0">
@@ -117,7 +118,7 @@ const GameStatusBar = ({
                     <motion.div
                       key={`current-${player.id}`}
                       initial={{
-                        scale: 0.97,
+                        scale: 1,
                         opacity: 0.8,
                         y: 4,
                         rotate: -0.5,
