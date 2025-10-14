@@ -985,102 +985,73 @@ export const useGame = () => {
         return prev;
       }
 
-      // Check if we should grant a shield (if player has less than 2)
-      if (
-        player.inventory.skillCards.filter((card) => card.type === "shield")
-          .length < 2
-      ) {
-        const shieldCard: SkillCard = {
-          id: `shield-${Date.now()}-${playerId}`,
-          type: "shield",
-          name: "Shield",
-          description: "Prevents a letter on your next failed trick",
-          onUse: (gameState: GameState, playerId: number) => ({
-            ...gameState,
-            players: gameState.players.map((p) =>
-              p.id === playerId
-                ? {
-                    ...p,
-                    inventory: {
-                      ...p.inventory,
-                      skillCards: p.inventory.skillCards.filter(
-                        (c) => c.type !== "shield"
-                      ),
-                    },
-                  }
-                : p
-            ),
-          }),
-        };
-
-        return {
-          ...prev,
-          players: prev.players.map((p) =>
+      const shieldCard: SkillCard = {
+        id: `shield-${Date.now()}-${playerId}`,
+        type: "shield",
+        name: "Shield",
+        description: "Prevents a letter on your next failed trick",
+        onUse: (gameState: GameState, playerId: number) => ({
+          ...gameState,
+          players: gameState.players.map((p) =>
             p.id === playerId
               ? {
                   ...p,
                   inventory: {
                     ...p.inventory,
-                    skillCards: [...p.inventory.skillCards, shieldCard],
+                    skillCards: p.inventory.skillCards.filter(
+                      (c) => c.type !== "shield"
+                    ),
                   },
                 }
               : p
           ),
-          newPowerUp: { playerId, card: shieldCard },
-          gameLog: [
-            ...prev.gameLog,
-            `🛡️ ${player.name} received a Shield card!`,
-          ],
-        };
-      } else if (
-        player.inventory.skillCards.filter(
-          (card) => card.type === "choose_trick"
-        ).length < 2
-      ) {
-        const chooseTrickCard: SkillCard = {
-          id: `choose_trick-${Date.now()}-${playerId}`,
-          type: "choose_trick",
-          name: "Choose Trick",
-          description: "Choose a trick to play on your next turn",
-          onUse: (gameState: GameState, playerId: number) => ({
-            ...gameState,
-            players: gameState.players.map((p) =>
-              p.id === playerId
-                ? {
-                    ...p,
-                    inventory: {
-                      ...p.inventory,
-                      skillCards: p.inventory.skillCards.filter(
-                        (c) => c.type !== "choose_trick"
-                      ),
-                    },
-                  }
-                : p
-            ),
-          }),
-        };
+        }),
+      };
 
-        return {
-          ...prev,
-          players: prev.players.map((p) =>
+      const chooseTrickCard: SkillCard = {
+        id: `choose_trick-${Date.now()}-${playerId}`,
+        type: "choose_trick",
+        name: "Choose Trick",
+        description: "Choose a trick to play on your next turn",
+        onUse: (gameState: GameState, playerId: number) => ({
+          ...gameState,
+          players: gameState.players.map((p) =>
             p.id === playerId
               ? {
                   ...p,
                   inventory: {
                     ...p.inventory,
-                    skillCards: [...p.inventory.skillCards, chooseTrickCard],
+                    skillCards: p.inventory.skillCards.filter(
+                      (c) => c.type !== "choose_trick"
+                    ),
                   },
                 }
               : p
           ),
-          gameLog: [
-            ...prev.gameLog,
-            `🎯 ${player.name} received a Choose Trick card!`,
-          ],
-        };
-      }
+        }),
+      };
 
-      return prev;
+      const randomCard = Math.random() < 0.5 ? shieldCard : chooseTrickCard;
+
+      return {
+        ...prev,
+        players: prev.players.map((p) =>
+          p.id === playerId
+            ? {
+                ...p,
+                inventory: {
+                  ...p.inventory,
+                  skillCards: [...p.inventory.skillCards, randomCard],
+                },
+              }
+            : p
+        ),
+        newPowerUp: { playerId, card: randomCard },
+        gameLog: [
+          ...prev.gameLog,
+          `🛡️ ${player.name} received a ${randomCard.name} card!`,
+        ],
+      };
     });
   }, []);
 
