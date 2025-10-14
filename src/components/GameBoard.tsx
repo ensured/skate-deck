@@ -286,11 +286,6 @@ const GameBoard = () => {
                                 <div className="flex font-medium">
                                   {player.name}
                                 </div>
-                                <div className="flex font-medium mt-1">
-                                  {player.isCreator && (
-                                    <Crown className=" text-purple-500 bg-purple-500/10 rounded-full p-1" />
-                                  )}
-                                </div>
                               </div>
                               <div className="flex items-center gap-2">
                                 <Button
@@ -446,9 +441,18 @@ const GameBoard = () => {
                           <div className="flex items-start justify-between h-full gap-1 relative">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-2">
-                                {player.isLeader && (
-                                  <Crown className="!size-4.5 text-purple-500 flex-shrink-0" />
+                                {currentPlayer?.id === player.id && (
+                                  <div className="flex items-center gap-1 text-xs  font-bold">
+                                    <Crown
+                                      className={`size-4.5 ${
+                                        player.isCreator
+                                          ? " text-green-500/95"
+                                          : ""
+                                      } flex-shrink-0`}
+                                    />
+                                  </div>
                                 )}
+
                                 <span
                                   className={`font-medium truncate ${
                                     player.isEliminated
@@ -462,7 +466,7 @@ const GameBoard = () => {
                                       initial={{ opacity: 0, y: 10 }}
                                       animate={{ opacity: 1, y: 0 }}
                                       transition={{
-                                        duration: 0.44,
+                                        duration: 0.6,
                                         delay:
                                           player.name
                                             .split("")
@@ -480,7 +484,7 @@ const GameBoard = () => {
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{
-                                              duration: 0.44,
+                                              duration: 0.6,
                                               delay: index * 0.09,
                                             }}
                                           >

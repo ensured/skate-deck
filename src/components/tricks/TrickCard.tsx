@@ -105,24 +105,6 @@ export function TrickCard({
           }}
           className="relative"
         >
-          {gameState?.players
-            .find((p) => p.id === gameState.currentPlayerId)
-            ?.inventory.skillCards.find((c) => c.type === "shield") && (
-            <div className="animate-fade-in shadow-lg flex w-full justify-center items-center p-1">
-              {
-                gameState.players.find(
-                  (p) => p.id === gameState.currentPlayerId
-                )?.name
-              }
-              received a{" "}
-              {
-                gameState.players
-                  .find((p) => p.id === gameState.currentPlayerId)
-                  ?.inventory.skillCards.find((c) => c.type === "shield")?.name
-              }
-            </div>
-          )}
-
           <motion.div
             className="relative w-full h-full "
             initial={false}
@@ -267,7 +249,7 @@ export function TrickCard({
                                 ease: "easeInOut",
                                 times: [0, 0.7, 1],
                               }}
-                              className="font-bold absolute top-1/2 left-[calc(50%+1.9rem)] transform -translate-x-1/2 -translate-y-1/2 animate-[pulse_4.44s_ease-in-out_infinite]"
+                              className="font-bold text-xs sm:text-sm absolute top-1/2 left-[calc(50%+1.6rem)] transform -translate-x-1/2 -translate-y-1/2 animate-[pulse_4.44s_ease-in-out_infinite]"
                             >
                               +{points}
                             </motion.span>
