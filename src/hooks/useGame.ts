@@ -74,7 +74,7 @@ export const useGame = () => {
         id: "shield",
         type: "shield",
         name: "Shield",
-        description: "Protect yourself from getting a letter on your next miss",
+        description: "Shield yourself for this round and draw a new trick",
         onUse: (gameState: GameState, playerId: number) => {
           return {
             ...gameState,
