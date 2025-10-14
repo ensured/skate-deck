@@ -10,7 +10,9 @@ import {
   SkillCardType,
 } from "@/types/game";
 import { toast } from "sonner";
-import { chooseTrickCard, shieldCard, shuffleArray } from "@/lib/utils";
+import { shuffleArray } from "@/lib/utils";
+import { chooseTrickSkill, shieldSkill } from "../types/skills";
+import { startingSkillCards } from "../types/skills";
 
 export const useGame = () => {
   const { clerkUser, isLoaded: isClerkUserLoaded } = useUser();
@@ -193,10 +195,7 @@ export const useGame = () => {
             isLeader: true,
             score: 0,
             inventory: {
-              skillCards: [
-                { ...shieldCard, id: `shield-${Date.now()}` },
-                { ...chooseTrickCard, id: `choose_trick-${Date.now()}` },
-              ],
+              skillCards: [...startingSkillCards],
             },
           },
         ],
@@ -363,9 +362,9 @@ export const useGame = () => {
             skillCards: [
               shieldCard,
               {
-                id: `choose_trick-${Date.now()}-${prev.players.length + 1}`,
+                id: `choose_trick`,
                 type: "choose_trick",
-                name: "Choose Trick",
+                name: "Choose New Trick",
                 description:
                   "Look at the next 3 tricks and choose one to attempt",
                 onUse: (gameState, playerId, selectedTrick?: TrickCard) => {
@@ -543,7 +542,6 @@ export const useGame = () => {
       winner: undefined,
       trickOptions: undefined,
       currentRoundTurns: 0,
-      // Keep players but reset their game state
       players: prev.players.map((player) => ({
         ...player,
         letters: 0,
@@ -551,7 +549,7 @@ export const useGame = () => {
         score: 0,
         inventory: {
           ...player.inventory,
-          skillCards: [],
+          skillCards: [], // Clear all power-ups
         },
       })),
     }));
@@ -565,13 +563,16 @@ export const useGame = () => {
     const shuffledDeck = initializeDeck();
 
     setGameState((prev) => {
-      // Reset ALL players back to initial state
       const resetPlayers = prev.players.map((player, index) => ({
         ...player,
         letters: 0,
-        score: 0,
         isEliminated: false,
-        isLeader: index === 0, // First player becomes leader
+        isLeader: index === 0,
+        score: 0,
+        inventory: {
+          ...player.inventory,
+          skillCards: [...startingSkillCards],
+        },
       }));
 
       const resetState = {
@@ -581,7 +582,7 @@ export const useGame = () => {
         currentPlayerId: resetPlayers[0]?.id || 0,
         currentLeaderId: resetPlayers[0]?.id || 0,
         currentTurnIndex: 0,
-        currentTrick: shuffledDeck[0], // Use the first card from initialized deck
+        currentTrick: shuffledDeck[0],
         discardedTricks: [],
         round: 1,
         leaderConsecutiveWins: 0,
@@ -676,6 +677,7 @@ export const useGame = () => {
               p.id === prev.currentPlayerId
                 ? {
                     ...p,
+                    // remove shield card from inventory
                     inventory: {
                       ...p.inventory,
                       skillCards: p.inventory.skillCards.filter(
@@ -696,22 +698,27 @@ export const useGame = () => {
           (p) => p.id === prev.currentPlayerId
         );
 
-        if (currentPlayerIdx !== -1) {
-          const nextPlayerIdx =
-            (currentPlayerIdx + 1) % activePlayersList.length;
-          const nextPlayer = activePlayersList[nextPlayerIdx];
+        const newTrick = deck[0];
+        const updatedDeck = deck.slice(1);
+        setDeck(updatedDeck);
 
-          return {
-            ...updatedState,
-            currentPlayerId: nextPlayer.id,
-            gameLog: [
-              ...updatedState.gameLog,
-              `🔄 Turn passed to ${nextPlayer.name}`,
-            ],
-          };
-        }
+        // Calculate next player
+        const nextPlayerIdx = (currentPlayerIdx + 1) % activePlayersList.length;
+        const nextPlayerId = activePlayersList[nextPlayerIdx].id;
 
-        return updatedState;
+        return {
+          ...updatedState,
+          currentPlayerId: nextPlayerId,
+          currentTrick: newTrick,
+          currentRoundTurns:
+            (prev.currentRoundTurns + 1) % activePlayersList.length,
+          gameLog: [
+            ...updatedState.gameLog,
+            `🛡️ ${currentPlayer?.name} used a Shield!`,
+            `🔄 New trick: ${newTrick.name}`,
+            `👤 ${activePlayersList[nextPlayerIdx].name}'s turn`,
+          ],
+        };
       });
       return;
     }
@@ -985,53 +992,7 @@ export const useGame = () => {
         return prev;
       }
 
-      const shieldCard: SkillCard = {
-        id: `shield-${Date.now()}-${playerId}`,
-        type: "shield",
-        name: "Shield",
-        description: "Prevents a letter on your next failed trick",
-        onUse: (gameState: GameState, playerId: number) => ({
-          ...gameState,
-          players: gameState.players.map((p) =>
-            p.id === playerId
-              ? {
-                  ...p,
-                  inventory: {
-                    ...p.inventory,
-                    skillCards: p.inventory.skillCards.filter(
-                      (c) => c.type !== "shield"
-                    ),
-                  },
-                }
-              : p
-          ),
-        }),
-      };
-
-      const chooseTrickCard: SkillCard = {
-        id: `choose_trick-${Date.now()}-${playerId}`,
-        type: "choose_trick",
-        name: "Choose Trick",
-        description: "Choose a trick to play on your next turn",
-        onUse: (gameState: GameState, playerId: number) => ({
-          ...gameState,
-          players: gameState.players.map((p) =>
-            p.id === playerId
-              ? {
-                  ...p,
-                  inventory: {
-                    ...p.inventory,
-                    skillCards: p.inventory.skillCards.filter(
-                      (c) => c.type !== "choose_trick"
-                    ),
-                  },
-                }
-              : p
-          ),
-        }),
-      };
-
-      const randomCard = Math.random() < 0.5 ? shieldCard : chooseTrickCard;
+      const randomCard = Math.random() < 0.5 ? shieldSkill : chooseTrickSkill;
 
       return {
         ...prev,
@@ -1102,7 +1063,9 @@ export const useGame = () => {
 
         setDeck(shuffledDeck.slice(1));
 
-        chanceGrantPowerUp(playersToUse[0]?.id);
+        for (const player of playersToUse) {
+          chanceGrantPowerUp(player.id);
+        }
 
         return newState;
       });

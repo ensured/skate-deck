@@ -9,7 +9,7 @@ import { difficultyColors } from "@/types/tricks";
 import { ClerkUser } from "@/types/user";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import { PowerUpsDialog } from "../PowerUpsDialog";
+import { PowerUpsDialog } from "../game/PowerUpsDialog";
 import { SkillCard } from "@/types/game";
 import { TrickCard as TrickCardType } from "@/types/tricks";
 import { GameState } from "@/types/game";

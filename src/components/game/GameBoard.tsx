@@ -3,19 +3,19 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useGame } from "@/hooks/useGame";
 import { useDOMProtection } from "@/hooks/useDOMProtection";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
-import { Label } from "./ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Badge } from "./ui/badge";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import { Label } from "../ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Badge } from "../ui/badge";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "./ui/dialog";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet";
+} from "../ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
 import {
   Crown,
   Trash2,
@@ -32,15 +32,17 @@ import {
   ArrowDown,
   Zap,
 } from "lucide-react";
-import { TrickCard } from "./tricks/TrickCard";
+import { useRouter } from "next/navigation";
+import { PowerUpNotification } from "../tricks/PowerUpNotification";
+import { TrickCard } from "../tricks/TrickCard";
 import { TrickCard as TrickCardType } from "@/types/tricks";
 import HowToPlayDialog from "./HowToPlayDialog";
-import { Checkbox } from "./ui/checkbox";
-import { Skeleton } from "./ui/skeleton";
+import { Checkbox } from "../ui/checkbox";
+import { Skeleton } from "../ui/skeleton";
 import { useWindowSize } from "@uidotdev/usehooks";
 import { motion, AnimatePresence } from "framer-motion";
 
-const GameBoard = () => {
+export function GameBoard() {
   const {
     addPlayer,
     removePlayer,
@@ -56,6 +58,11 @@ const GameBoard = () => {
     toggleShufflePlayers,
     updatePowerUpChance,
   } = useGame();
+
+  const [powerUpNotifications, setPowerUpNotifications] = useState<{
+    playerName: string;
+    powerUps: string[];
+  } | null>(null);
 
   const { width } = useWindowSize();
 
@@ -440,19 +447,7 @@ const GameBoard = () => {
                         const cardContent = (
                           <div className="flex items-start justify-between h-full gap-1 relative">
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-2">
-                                {currentPlayer?.id === player.id && (
-                                  <div className="flex items-center gap-1 text-xs  font-bold">
-                                    <Crown
-                                      className={`size-4.5 ${
-                                        player.isCreator
-                                          ? " text-green-500/95"
-                                          : ""
-                                      } flex-shrink-0`}
-                                    />
-                                  </div>
-                                )}
-
+                              <div className="flex items-center gap-1.5 mb-2">
                                 <span
                                   className={`font-medium truncate ${
                                     player.isEliminated
@@ -475,6 +470,7 @@ const GameBoard = () => {
                                               0
                                             ) / 2, // Slightly faster than trick name
                                       }}
+                                      className="flex-shrink-0"
                                     >
                                       {player.name
                                         .split("")
@@ -484,9 +480,14 @@ const GameBoard = () => {
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{
-                                              duration: 0.6,
+                                              duration: 0.7,
                                               delay: index * 0.09,
                                             }}
+                                            className={`${
+                                              player.isCreator
+                                                ? "underline decoration-purple-500"
+                                                : ""
+                                            }`}
                                           >
                                             {letter}
                                           </motion.span>
@@ -496,19 +497,25 @@ const GameBoard = () => {
                                     player.name
                                   )}
                                 </span>
+                                {currentPlayer?.id === player.id && (
+                                  <div className="flex items-center gap-1 text-xs border-r pr-1.5 font-bold">
+                                    <Crown className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
+                                  </div>
+                                )}
+
                                 {player.inventory.skillCards.length > 0 && (
                                   <div className="flex gap-1 items-center text-xs sm:text-sm">
-                                    <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600 dark:text-yellow-400" />
+                                    <Zap className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
                                     {player.inventory.skillCards.length}
                                   </div>
                                 )}
                               </div>
-                              <div className="flex items-center gap-1 mb-1 w-full">
-                                <div className="flex gap-1 flex-1">
+                              <div className="flex items-center gap-0.5 mb-1 w-full">
+                                <div className="flex gap-0.5 flex-1">
                                   {"SKATE".split("").map((letter, index) => (
                                     <div
                                       key={index}
-                                      className={`flex-1 min-w-0 text-center font-medium text-sm border rounded px-1 ${
+                                      className={`flex-1 min-w-0 text-center font-medium text-sm border rounded px-0.5 sm:px-1 md:px-1.5 lg:px-2 ${
                                         player.letters > index
                                           ? "text-red-500/90 border-red-200 dark:text-red-300/90 dark:border-red-800/60 bg-red-100/70 dark:bg-red-900/20"
                                           : "border-border"
@@ -889,6 +896,4 @@ const GameBoard = () => {
       )}
     </div>
   );
-};
-
-export default GameBoard;
+}

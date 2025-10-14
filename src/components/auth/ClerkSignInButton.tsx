@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { SignInButton } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import { useTheme } from "next-themes";

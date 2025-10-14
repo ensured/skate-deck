@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 import { toast } from "sonner";
 import { createUser, getUserByClerkId } from "@/actions/actions";
 import { Loader2, CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Skeleton } from "./ui/skeleton";
+import { Skeleton } from "../ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function CreateUsername({ userId }: { userId: string }) {

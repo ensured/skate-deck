@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
-import { CreateUsername } from "../components/CreateUsername";
+import { CreateUsername } from "../components/auth/CreateUsername";
 import { getUserByClerkId } from "@/actions/actions";
-import GameBoard from "@/components/GameBoard";
+import { GameBoard } from "@/components/game/GameBoard";
 import { UserButton } from "@clerk/nextjs";
 
 export default async function Home() {

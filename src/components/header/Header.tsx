@@ -2,8 +2,8 @@
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { NavLinks } from "./NavLinks";
 import { ThemeToggle } from "./ThemeToggle";
-import ClerkSignInButton from "./ClerkSignInButton";
-import ClerkUserButtonClient from "./ClerkUserButtonClient";
+import ClerkSignInButton from "../auth/ClerkSignInButton";
+import ClerkUserButtonClient from "../auth/ClerkUserButtonClient";
 
 export async function Header() {
   return (

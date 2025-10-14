@@ -8,8 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "./ui/dialog";
-import { Button } from "./ui/button";
+} from "../ui/dialog";
+import { Button } from "../ui/button";
 import { Shield, Zap, ListChecks } from "lucide-react";
 import { SkillCard, SkillCardType } from "@/types/game";
 import { TrickCard as TrickCardType } from "@/types/tricks";
@@ -147,6 +147,23 @@ export function PowerUpsDialog({
     }
   };
 
+  const groupPowerUps = (powerUps: SkillCard[]) => {
+    const grouped = powerUps.reduce((acc, powerUp) => {
+      if (!acc[powerUp.type]) {
+        acc[powerUp.type] = {
+          ...powerUp,
+          count: 1,
+          id: powerUp.type, // Use type as ID since we're grouping by type
+        };
+      } else {
+        acc[powerUp.type].count += 1;
+      }
+      return acc;
+    }, {} as Record<string, SkillCard & { count: number }>);
+
+    return Object.values(grouped);
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -161,9 +178,9 @@ export function PowerUpsDialog({
               </p>
             ) : (
               <div className="grid gap-3">
-                {powerUps.map((powerUp) => (
+                {groupPowerUps(powerUps).map((powerUp) => (
                   <div
-                    key={powerUp.id}
+                    key={powerUp.type} // Use type as key since it's unique per group
                     className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
@@ -175,19 +192,23 @@ export function PowerUpsDialog({
                         {getPowerUpIcon(powerUp.type)}
                       </div>
                       <div>
-                        <h4 className="font-medium">{powerUp.name}</h4>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-medium">{powerUp.name}</h4>
+                          {powerUp.count > 1 && (
+                            <span className="text-xs bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center">
+                              {powerUp.count}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                           {powerUp.description}
                         </p>
                       </div>
                     </div>
                     <Button
+                      variant="outline"
                       size="sm"
                       onClick={() => handleUsePowerUp(powerUp)}
-                      className="ml-4 cursor-pointer"
-                      variant={
-                        powerUp.type === "shield" ? "default" : "outline"
-                      }
                     >
                       Use
                     </Button>

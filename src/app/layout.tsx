@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "next-themes";
-import { Header } from "@/components/Header";
+import { Header } from "@/components/header/Header";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
 import { FloatingActionButton } from "@/components/ui/FloatingActionButton";
