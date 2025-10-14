@@ -10,95 +10,7 @@ import {
   SkillCardType,
 } from "@/types/game";
 import { toast } from "sonner";
-
-export type { TrickCard };
-
-const shieldCard: SkillCard = {
-  id: "shield",
-  type: "shield",
-  name: "Shield",
-  description: "Protect yourself from getting a letter on your next miss",
-  onUse: (gameState: GameState, playerId: number) => {
-    return {
-      ...gameState,
-      players: gameState.players.map((p) =>
-        p.id === playerId
-          ? {
-              ...p,
-              inventory: {
-                ...p.inventory,
-                skillCards: p.inventory.skillCards.map((c) =>
-                  c.id === "shield" ? { ...c, id: `${c.id}-${Date.now()}` } : c
-                ),
-              },
-            }
-          : p
-      ),
-      gameLog: [
-        ...gameState.gameLog,
-        `🛡️ ${
-          gameState.players.find((p) => p.id === playerId)?.name
-        } activated a Shield!`,
-      ],
-    };
-  },
-};
-
-const chooseTrickCard: SkillCard = {
-  id: "choose_trick",
-  type: "choose_trick",
-  name: "Trick Selector",
-  description: "Choose 1 of the next 3 cards in the deck",
-  onUse: (
-    gameState: GameState,
-    playerId: number,
-    selectedTrick?: TrickCard
-  ) => {
-    if (selectedTrick) {
-      return {
-        ...gameState,
-        currentTrick: selectedTrick,
-        gameLog: [
-          ...gameState.gameLog,
-          `🎲 ${
-            gameState.players.find((p) => p.id === playerId)?.name
-          } selected a new trick!`,
-        ],
-        trickOptions: undefined,
-      };
-    }
-
-    const availableTricks = trickCards.filter(
-      (trick) => trick.id !== gameState.currentTrick?.id
-    );
-
-    const shuffled = shuffleArray([...availableTricks]);
-    const trickOptions = shuffled.slice(0, 3);
-
-    const newTrick = trickOptions[0];
-
-    return {
-      ...gameState,
-      currentTrick: newTrick,
-      trickOptions,
-      gameLog: [
-        ...gameState.gameLog,
-        `🎲 ${
-          gameState.players.find((p) => p.id === playerId)?.name
-        } used Trick Selector!`,
-      ],
-    };
-  },
-};
-
-const shuffleArray = <T>(array: T[]): T[] => {
-  const newArray = [...array];
-  for (let i = newArray.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-  }
-  return newArray;
-};
+import { chooseTrickCard, shieldCard, shuffleArray } from "@/lib/utils";
 
 export const useGame = () => {
   const { clerkUser, isLoaded: isClerkUserLoaded } = useUser();
@@ -171,7 +83,7 @@ export const useGame = () => {
                     inventory: {
                       ...p.inventory,
                       skillCards: p.inventory.skillCards.filter(
-                        (c) => c.id !== "shield"
+                        (c) => c.type !== "shield"
                       ),
                     },
                   }
@@ -232,7 +144,9 @@ export const useGame = () => {
       },
     ],
     []
-  ); // Empty dependency array since skillCards doesn't depend on any props or state
+  );
+
+  // Add shield card to initial player inventory
 
   const [gameState, setGameState] = useState<GameState>({
     gameCreator: null,
@@ -249,8 +163,6 @@ export const useGame = () => {
     roundComplete: false,
     currentAttempts: {},
     totalDeckSize: 0,
-    skillCardsInPlay: skillCards,
-    currentTrickSetterId: null,
     currentRoundTurns: 0,
     settings: {
       powerUpChance: 0.05,
@@ -288,7 +200,6 @@ export const useGame = () => {
             },
           },
         ],
-        skillCardsInPlay: [shieldCard, chooseTrickCard],
       }));
     }
   }, [clerkUser, isClerkUserLoaded]);
@@ -434,38 +345,9 @@ export const useGame = () => {
           score: 0,
         };
 
-        const shieldCard: SkillCard = {
+        const shieldCard = {
+          ...skillCards.find((card) => card.type === "shield")!,
           id: `shield-${Date.now()}-${prev.players.length + 1}`,
-          type: "shield",
-          name: "Shield",
-          description:
-            "Protect yourself from getting a letter on your next miss",
-          onUse: (gameState: GameState, playerId: number) => {
-            return {
-              ...gameState,
-              players: gameState.players.map((p) =>
-                p.id === playerId
-                  ? {
-                      ...p,
-                      inventory: {
-                        ...p.inventory,
-                        skillCards: p.inventory.skillCards.map((c) =>
-                          c.id === "shield"
-                            ? { ...c, id: `${c.id}-${Date.now()}` }
-                            : c
-                        ),
-                      },
-                    }
-                  : p
-              ),
-              gameLog: [
-                ...gameState.gameLog,
-                `🛡️ ${
-                  gameState.players.find((p) => p.id === playerId)?.name
-                } activated a Shield!`,
-              ],
-            };
-          },
         };
 
         const updatedPlayer: Player = {
@@ -660,7 +542,6 @@ export const useGame = () => {
       currentAttempts: {},
       winner: undefined,
       trickOptions: undefined,
-      currentTrickSetterId: null,
       currentRoundTurns: 0,
       // Keep players but reset their game state
       players: prev.players.map((player) => ({
@@ -883,11 +764,29 @@ export const useGame = () => {
         }
       }
 
-      const newTrick = drawCard();
-
-      const newRound = gameState.round + 1;
-
       const shouldRotateOnMiss = gameState.currentLeaderId === currentPlayer.id;
+      const activePlayers = gameState.players.filter((p) => !p.isEliminated);
+      const currentRoundTurns = gameState.currentRoundTurns + 1;
+      const isEndOfRound = currentRoundTurns >= activePlayers.length;
+      const newRound = isEndOfRound ? gameState.round + 1 : gameState.round;
+
+      // Get a new trick if:
+      // 1. The leader misses their own trick, OR
+      // 2. We're at the end of the round
+      const shouldGetNewTrick = shouldRotateOnMiss || isEndOfRound;
+
+      let newTrick = gameState.currentTrick;
+      if (shouldGetNewTrick) {
+        newTrick = drawCard() || gameState.currentTrick;
+        if (!newTrick) {
+          const newDeck = initializeDeck();
+          newTrick = newDeck[0];
+          setDeck(newDeck.slice(1));
+        }
+      }
+
+      // Reset round turns if we're starting a new round
+      const newRoundTurns = isEndOfRound ? 0 : currentRoundTurns;
 
       const updatedPlayers = gameState.players.map((p) =>
         p.id === currentPlayer.id
@@ -901,16 +800,18 @@ export const useGame = () => {
       setGameState((prev) => ({
         ...prev,
         players: updatedPlayers,
-        discardedTricks: prev.currentTrick
-          ? [...prev.discardedTricks, prev.currentTrick]
-          : prev.discardedTricks,
+        discardedTricks:
+          shouldGetNewTrick && prev.currentTrick
+            ? [...prev.discardedTricks, prev.currentTrick]
+            : prev.discardedTricks,
         currentTrick: newTrick || prev.currentTrick,
         currentPlayerId: nextPlayer.id,
         currentTurnIndex: nextIndex,
         round: newRound,
+        currentRoundTurns: newRoundTurns,
         leaderConsecutiveWins: shouldRotateOnMiss
-          ? 0
-          : prev.leaderConsecutiveWins,
+          ? 0 // Reset consecutive wins only when leader misses
+          : prev.leaderConsecutiveWins, // Keep the current streak otherwise
         gameLog: [
           ...prev.gameLog,
           `❌ ${currentPlayer.name} missed the ${
@@ -956,11 +857,9 @@ export const useGame = () => {
           gameState.leaderConsecutiveWins >= 3);
 
       let newTrick = gameState.currentTrick;
-      let newTrickSetterId = gameState.currentTrickSetterId;
 
       if (shouldGetNewTrick) {
         newTrick = drawCard() || gameState.currentTrick;
-        newTrickSetterId = currentPlayer.id;
 
         if (!newTrick) {
           const newDeck = initializeDeck();
@@ -984,7 +883,6 @@ export const useGame = () => {
           round: newRound,
           currentRoundTurns: isEndOfRound ? 0 : currentRoundTurns,
           currentTrick: newTrick,
-          currentTrickSetterId: newTrickSetterId,
           leaderConsecutiveWins:
             gameState.currentLeaderId === currentPlayer.id
               ? gameState.leaderConsecutiveWins + 1
@@ -1092,7 +990,6 @@ export const useGame = () => {
         player.inventory.skillCards.filter((card) => card.type === "shield")
           .length < 2
       ) {
-        // Create a unique ID with timestamp to ensure re-render and animation trigger
         const shieldCard: SkillCard = {
           id: `shield-${Date.now()}-${playerId}`,
           type: "shield",
@@ -1107,7 +1004,7 @@ export const useGame = () => {
                     inventory: {
                       ...p.inventory,
                       skillCards: p.inventory.skillCards.filter(
-                        (c) => c.id !== "shield"
+                        (c) => c.type !== "shield"
                       ),
                     },
                   }
@@ -1129,14 +1026,13 @@ export const useGame = () => {
                 }
               : p
           ),
+          newPowerUp: { playerId, card: shieldCard },
           gameLog: [
             ...prev.gameLog,
             `🛡️ ${player.name} received a Shield card!`,
           ],
         };
-      }
-      // Then check for choose_trick (only if shield wasn't granted)
-      else if (
+      } else if (
         player.inventory.skillCards.filter(
           (card) => card.type === "choose_trick"
         ).length < 2
@@ -1154,10 +1050,8 @@ export const useGame = () => {
                     ...p,
                     inventory: {
                       ...p.inventory,
-                      skillCards: p.inventory.skillCards.map((c) =>
-                        c.id === "choose_trick"
-                          ? { ...c, id: `${c.id}-${Date.now()}` }
-                          : c
+                      skillCards: p.inventory.skillCards.filter(
+                        (c) => c.type !== "choose_trick"
                       ),
                     },
                   }

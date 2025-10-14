@@ -3,7 +3,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useGame } from "@/hooks/useGame";
 import { useDOMProtection } from "@/hooks/useDOMProtection";
-import { CreateUsername } from "./CreateUsername";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
@@ -31,13 +30,15 @@ import {
   UserPlus,
   Play,
   ArrowDown,
+  Zap,
 } from "lucide-react";
 import { TrickCard } from "./tricks/TrickCard";
-import { TrickCard as TrickCardType } from "@/hooks/useGame";
+import { TrickCard as TrickCardType } from "@/types/tricks";
 import HowToPlayDialog from "./HowToPlayDialog";
 import { Checkbox } from "./ui/checkbox";
 import { Skeleton } from "./ui/skeleton";
 import { useWindowSize } from "@uidotdev/usehooks";
+import { motion, AnimatePresence } from "framer-motion";
 
 const GameBoard = () => {
   const {
@@ -419,7 +420,7 @@ const GameBoard = () => {
                       username: currentPlayer.name,
                     }}
                     isLeader={currentPlayer.id === gameState.currentLeaderId}
-                    gameStatus={gameState.status}
+                    gameState={gameState}
                     round={gameState.round}
                     cardsRemaining={getDeckStatus().remaining}
                     totalCards={getDeckStatus().total}
@@ -438,72 +439,168 @@ const GameBoard = () => {
             {gameState.status === "active" && (
               <div className="w-full flex-shrink-0">
                 <div className="p-4">
-                  <div className="border border-border-border/10 shadow-md sm:p-4 p-2 lg:p-6 grid grid-cols-2 sm:grid-cols-2 gap-2 max-h-48 lg:max-h-none overflow-y-auto rounded-xl">
-                    {gameState.players.map((player) => (
-                      <Card
-                        key={player.id}
-                        className={`p-2 h-18 transition-all duration-200 ${
-                          player.isEliminated
-                            ? "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-60"
-                            : player.id === gameState.currentPlayerId
-                            ? "shadow-md ring-1 ring-green-500 border-green-500 bg-green-100 dark:bg-green-800/30 dark:border-green-800"
-                            : "bg-background border-gray-200 dark:border-gray-700 hover:shadow-sm"
-                        }`}
-                      >
-                        <div className="flex items-start justify-between h-full gap-1 relative">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1 mb-2">
-                              {player.isLeader && (
-                                <Crown className="!size-4.5 text-purple-500 flex-shrink-0" />
-                              )}
-
-                              <span
-                                className={` font-medium truncate ${
-                                  player.isEliminated
-                                    ? "line-through text-muted-foreground"
-                                    : ""
-                                }`}
-                              >
-                                {player.name}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1 mb-1 w-full ">
-                              <div className="flex gap-1 flex-1 ">
-                                {"SKATE".split("").map((letter, index) => (
-                                  <div
-                                    key={index}
-                                    className={`flex-1 min-w-0 text-center font-medium text-sm border rounded px-1 ${
-                                      player.letters > index
-                                        ? "text-red-500/90 border-red-200 dark:text-red-300/90 dark:border-red-800/60 bg-red-100/70 dark:bg-red-900/20"
-                                        : "border-border"
-                                    }`}
-                                  >
-                                    {letter}
-                                  </div>
-                                ))}
-                              </div>
-                              {player.id === gameState.currentLeaderId &&
-                                gameState.leaderConsecutiveWins > 0 && (
-                                  <div className="absolute right-0 text-sm text-orange-600 dark:text-orange-400 font-medium">
-                                    🔥{gameState.leaderConsecutiveWins}
+                  <AnimatePresence>
+                    <div className="border border-border-border/10 shadow-md sm:p-4 p-2 lg:p-6 grid grid-cols-2 sm:grid-cols-2 gap-2 max-h-48 lg:max-h-none overflow-y-auto rounded-xl">
+                      {gameState.players.map((player) => {
+                        const cardContent = (
+                          <div className="flex items-start justify-between h-full gap-1 relative">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2">
+                                {player.isLeader && (
+                                  <Crown className="!size-4.5 text-purple-500 flex-shrink-0" />
+                                )}
+                                <span
+                                  className={`font-medium truncate ${
+                                    player.isEliminated
+                                      ? "line-through text-muted-foreground"
+                                      : ""
+                                  }`}
+                                >
+                                  {currentPlayer?.id === player.id ? (
+                                    <motion.span
+                                      key={player.name}
+                                      initial={{ opacity: 0, y: 10 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      transition={{
+                                        duration: 0.44,
+                                        delay:
+                                          player.name
+                                            .split("")
+                                            .reduce(
+                                              (acc, _, i) => acc + 0.02,
+                                              0
+                                            ) / 2, // Slightly faster than trick name
+                                      }}
+                                    >
+                                      {player.name
+                                        .split("")
+                                        .map((letter, index) => (
+                                          <motion.span
+                                            key={index}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{
+                                              duration: 0.44,
+                                              delay: index * 0.09,
+                                            }}
+                                          >
+                                            {letter}
+                                          </motion.span>
+                                        ))}
+                                    </motion.span>
+                                  ) : (
+                                    player.name
+                                  )}
+                                </span>
+                                {player.inventory.skillCards.length > 0 && (
+                                  <div className="flex gap-1 items-center text-xs sm:text-sm">
+                                    <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600 dark:text-yellow-400" />
+                                    {player.inventory.skillCards.length}
                                   </div>
                                 )}
+                              </div>
+                              <div className="flex items-center gap-1 mb-1 w-full">
+                                <div className="flex gap-1 flex-1">
+                                  {"SKATE".split("").map((letter, index) => (
+                                    <div
+                                      key={index}
+                                      className={`flex-1 min-w-0 text-center font-medium text-sm border rounded px-1 ${
+                                        player.letters > index
+                                          ? "text-red-500/90 border-red-200 dark:text-red-300/90 dark:border-red-800/60 bg-red-100/70 dark:bg-red-900/20"
+                                          : "border-border"
+                                      }`}
+                                    >
+                                      {letter}
+                                    </div>
+                                  ))}
+                                </div>
+                                {player.id === gameState.currentLeaderId &&
+                                  gameState.leaderConsecutiveWins > 0 && (
+                                    <div className="absolute right-0 text-sm text-orange-600 dark:text-orange-400 font-medium">
+                                      🔥{gameState.leaderConsecutiveWins}
+                                    </div>
+                                  )}
+                              </div>
+                            </div>
+                            <div className="flex flex-col items-end justify-between h-full flex-shrink-0 ml-2">
+                              <div className="flex items-center gap-1">
+                                <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
+                                <span className="text-xs sm:text-sm md:text-base font-medium">
+                                  {player.score}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                          <div className="flex flex-col items-end justify-between h-full flex-shrink-0 ml-2">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-600 dark:text-gray-400">
-                                Score:
-                              </span>
-                              <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
-                                {player.score}
-                              </span>
-                            </div>
+                        );
+
+                        return (
+                          <div key={player.id}>
+                            {player.id === gameState.currentPlayerId ? (
+                              <motion.div
+                                key={`current-${player.id}`}
+                                initial={{
+                                  scale: 0.97,
+                                  opacity: 0.8,
+                                  y: 4,
+                                  rotate: -0.5,
+                                  transition: {
+                                    duration: 0.5,
+                                    ease: "easeOut",
+                                  },
+                                }}
+                                animate={{
+                                  scale: 1,
+                                  opacity: 1,
+                                  y: 0,
+                                  rotate: 0,
+                                  boxShadow:
+                                    "0 8px 24px -6px rgba(0, 0, 0, 0.12)",
+                                  transition: {
+                                    duration: 0.5,
+                                    ease: "easeOut",
+                                  },
+                                }}
+                                whileHover={{
+                                  y: -2,
+                                  scale: 1.02,
+                                  boxShadow:
+                                    "0 12px 30px -8px rgba(0, 0, 0, 0.15)",
+                                  transition: {
+                                    duration: 0.5,
+                                    ease: "easeOut",
+                                  },
+                                }}
+                                whileTap={{
+                                  scale: 0.98,
+                                  boxShadow:
+                                    "0 4px 12px -3px rgba(0, 0, 0, 0.1)",
+                                  transition: {
+                                    duration: 0.5,
+                                    ease: "easeOut",
+                                  },
+                                }}
+                                className="relative z-10"
+                              >
+                                <Card className="p-2 h-18 shadow-md ring-1 ring-green-500 border-green-500 bg-green-100 dark:bg-green-800/30 dark:border-green-800">
+                                  {cardContent}
+                                </Card>
+                              </motion.div>
+                            ) : (
+                              <Card
+                                className={`p-2 h-18  ${
+                                  player.isEliminated
+                                    ? "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-60"
+                                    : "bg-background border-gray-200 dark:border-gray-700 hover:shadow-sm"
+                                }`}
+                              >
+                                {cardContent}
+                              </Card>
+                            )}
                           </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  </AnimatePresence>
                 </div>
               </div>
             )}

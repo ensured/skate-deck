@@ -8,10 +8,11 @@ import { cn } from "@/lib/utils";
 import { difficultyColors } from "@/types/tricks";
 import { ClerkUser } from "@/types/user";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { PowerUpsDialog } from "../PowerUpsDialog";
 import { SkillCard } from "@/types/game";
 import { TrickCard as TrickCardType } from "@/types/tricks";
+import { GameState } from "@/types/game";
 
 // First, update the TrickCardProps interface to include the shield functionality
 interface TrickCardProps {
@@ -27,7 +28,7 @@ interface TrickCardProps {
   currentPlayer: string;
   user: ClerkUser;
   isLeader: boolean;
-  gameStatus?: "lobby" | "active" | "ended";
+  gameState?: GameState;
   round?: number;
   cardsRemaining?: number;
   totalCards?: number;
@@ -37,6 +38,7 @@ interface TrickCardProps {
 }
 
 export function TrickCard({
+  gameState,
   trickName,
   onResult,
   className,
@@ -51,60 +53,6 @@ export function TrickCard({
   const [showButtons, setShowButtons] = useState(false);
   const [showPoints, setShowPoints] = useState(false);
   const [showPowerUps, setShowPowerUps] = useState(false);
-  const [powerUpPulse, setPowerUpPulse] = useState(false);
-  const [newPowerUp, setNewPowerUp] = useState<SkillCard | null>(null);
-  const prevPowerUpsLength = useRef(powerUps.length);
-  const powerUpTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Helper function to get power-up display name and icon
-  const getPowerUpInfo = (type: string) => {
-    switch (type) {
-      case "shield":
-        return { name: "Shield", icon: "🛡️" };
-      case "choose_trick":
-        return { name: "Choose Trick", icon: "🎯" };
-      case "reroll":
-        return { name: "Reroll", icon: "🔄" };
-      default:
-        return { name: type, icon: "✨" };
-    }
-  };
-
-  useEffect(() => {
-    if (powerUps.length > prevPowerUpsLength.current) {
-      // Find the new power-up that was just added
-      const addedPowerUp = powerUps.find(
-        (_, index) => index >= prevPowerUpsLength.current
-      );
-
-      if (addedPowerUp) {
-        setNewPowerUp(addedPowerUp);
-
-        // Show the new power-up for 1.5 seconds
-        powerUpTimeoutRef.current = setTimeout(() => {
-          setNewPowerUp(null);
-          // Then show the pulse animation on the power-up count
-          setPowerUpPulse(true);
-          const timer = setTimeout(() => setPowerUpPulse(false), 1000);
-          return () => clearTimeout(timer);
-        }, 1500);
-      }
-    } else if (powerUps.length < prevPowerUpsLength.current) {
-      // If a power-up was used, just show the pulse
-      setPowerUpPulse(true);
-      const timer = setTimeout(() => setPowerUpPulse(false), 1000);
-      return () => clearTimeout(timer);
-    }
-
-    prevPowerUpsLength.current = powerUps.length;
-
-    return () => {
-      if (powerUpTimeoutRef.current) {
-        clearTimeout(powerUpTimeoutRef.current);
-        powerUpTimeoutRef.current = null;
-      }
-    };
-  }, [powerUps.length]);
 
   useEffect(() => {
     const buttonTimer = setTimeout(() => {
@@ -157,26 +105,23 @@ export function TrickCard({
           }}
           className="relative"
         >
-          {/* New Power-up Notification */}
-          <AnimatePresence>
-            {newPowerUp && (
-              <motion.div
-                initial={{ opacity: 0, y: -20, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -20, scale: 0.9 }}
-                className="absolute -top-2 left-1/2 transform -translate-x-1/2 -translate-y-full z-10"
-              >
-                <div className="bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 whitespace-nowrap">
-                  <span className="text-sm">
-                    {getPowerUpInfo(newPowerUp.type).icon}
-                  </span>
-                  <span>New: {getPowerUpInfo(newPowerUp.type).name}!</span>
-                  <span className="text-xs opacity-80">+1</span>
-                </div>
-                <div className="absolute bottom-0 left-1/2 w-2 h-2 bg-purple-500 transform -translate-x-1/2 translate-y-1/2 rotate-45"></div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {gameState?.players
+            .find((p) => p.id === gameState.currentPlayerId)
+            ?.inventory.skillCards.find((c) => c.type === "shield") && (
+            <div className="animate-fade-in shadow-lg flex w-full justify-center items-center p-1">
+              {
+                gameState.players.find(
+                  (p) => p.id === gameState.currentPlayerId
+                )?.name
+              }
+              received a{" "}
+              {
+                gameState.players
+                  .find((p) => p.id === gameState.currentPlayerId)
+                  ?.inventory.skillCards.find((c) => c.type === "shield")?.name
+              }
+            </div>
+          )}
 
           <motion.div
             className="relative w-full h-full "
@@ -292,9 +237,7 @@ export function TrickCard({
               )}
 
               {/* Card Footer */}
-              <div className="relative z-10 px-5 pb-5 pt-2">
-                <div className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent my-2"></div>
-
+              <div className="relative z-10 px-5 pb-5 pt-6">
                 <div className="flex items-center justify-center gap-4 mt-3">
                   {showButtons ? (
                     <>
@@ -306,7 +249,7 @@ export function TrickCard({
                             "relative w-full h-12 text-sm font-medium text-white shadow-md hover:shadow-lg transform transition-all duration-300 cursor-pointer",
                             "bg-gradient-to-r from-green-500 to-green-600 dark:from-green-600 dark:to-green-700",
                             "hover:from-green-600 hover:to-green-700 dark:hover:from-green-700 dark:hover:to-green-800",
-                            "active:scale-[0.98] active:shadow-inner"
+                            " active:shadow-inner"
                           )}
                           onClick={() => handleButtonClick("landed")}
                         >
@@ -316,15 +259,15 @@ export function TrickCard({
                               initial={{ opacity: 0, scale: 0 }}
                               animate={{
                                 opacity: 0.95,
-                                scale: [0, 1.5, 1],
+                                scale: [0, 1.2, 1],
                               }}
-                              exit={{ opacity: 0, scale: 0.7 }}
+                              exit={{ opacity: 1, scale: 1 }}
                               transition={{
                                 duration: 0.5,
                                 ease: "easeInOut",
                                 times: [0, 0.7, 1],
                               }}
-                              className="font-bold absolute top-1/2 left-[calc(50%+1.9rem)] transform -translate-x-1/2 -translate-y-1/2 animate-[pulse_2.22s_ease-in-out_infinite]"
+                              className="font-bold absolute top-1/2 left-[calc(50%+1.9rem)] transform -translate-x-1/2 -translate-y-1/2 animate-[pulse_4.44s_ease-in-out_infinite]"
                             >
                               +{points}
                             </motion.span>
@@ -342,7 +285,7 @@ export function TrickCard({
                         >
                           <Zap
                             className={`h-5 w-5 transition-all duration-200 ${
-                              powerUpPulse
+                              powerUps.length > 0
                                 ? "text-primary scale-110"
                                 : "text-muted-foreground group-hover:text-primary"
                             }`}
@@ -352,19 +295,20 @@ export function TrickCard({
                               key={`powerup-${powerUps.length}`}
                               initial={{ scale: 0, opacity: 0 }}
                               animate={{
-                                scale: powerUpPulse ? [1, 1.5, 1] : 1,
+                                scale: powerUps.length > 0 ? [1, 1.6, 1] : 1,
                                 opacity: 1,
-                                rotate: powerUpPulse ? [0, 10, -10, 0] : 0,
-                                y: powerUpPulse ? [0, -5, 0] : 0,
+                                rotate:
+                                  powerUps.length > 0 ? [0, 10, -10, 0] : 0,
+                                y: powerUps.length > 0 ? [0, -5, 0] : 0,
                               }}
                               transition={{
-                                duration: 0.6,
+                                duration: 0.8,
                                 ease: "easeOut",
-                                scale: { duration: 0.6 },
-                                rotate: { duration: 0.6 },
-                                y: { duration: 0.6 },
+                                scale: { duration: 0.8 },
+                                rotate: { duration: 0.8 },
+                                y: { duration: 0.8 },
                               }}
-                              className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold ring-2 ring-background"
+                              className="absolute animate-[pulse_1.15s_ease-in-out_infinite] -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold ring-2 ring-background"
                             >
                               {powerUps.length}
                             </motion.span>

@@ -16,8 +16,12 @@ export interface SkillCard {
   type: SkillCardType;
   name: string;
   description: string;
-  trickOptions?: TrickCard[]; // For Trick Selector card
-  onUse: (gameState: GameState, playerId: number, selectedTrick?: TrickCard) => GameState;
+  trickOptions?: TrickCard[]; // Available trick options for the Trick Selector power-up
+  onUse: (
+    gameState: GameState,
+    playerId: number,
+    selectedTrick?: TrickCard
+  ) => GameState;
 }
 
 export interface Player {
@@ -48,10 +52,10 @@ export interface GameState {
   leaderConsecutiveWins: number; // Number of consecutive wins by the current leader
   gameLog: string[]; // Log of game events for UI display
   totalDeckSize?: number; // Total number of cards in the deck at start
-  winner?: Player; // The winner of the game, if any
-  skillCardsInPlay: SkillCard[]; // Available skill cards in the game
   trickOptions?: TrickCard[]; // Available trick options for the Trick Selector power-up
-  currentTrickSetterId: number | null; // ID of the player who set the current trick
+  showPowerUpDialog?: boolean; // Controls visibility of power-up dialog
+  selectedTrick?: TrickCard; // Currently selected trick (for power-ups)
+  winner?: Player; // The winner of the game, if any
   currentRoundTurns: number; // Number of turns taken in the current round
   settings: {
     powerUpChance: number; // 0 to 1 (0% to 100%), chance to get a power-up when landing a trick
