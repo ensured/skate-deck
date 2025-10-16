@@ -8,7 +8,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Info } from "lucide-react";
 import { useWindowSize } from "@uidotdev/usehooks";
 
 export type Difficulty = "Beginner" | "Intermediate" | "Advanced" | "Pro";
@@ -29,22 +28,21 @@ export const TrickRow = ({ trick }: { trick: Trick }) => {
 
   return (
     <tr className="hover:bg-accent border-border border-t w-full ">
-      <td className="px-4 py-3 font-medium ">
+      <td className="py-1.5 font-medium ">
         <div className="flex items-center w-full ">
           <Dialog>
-            <DialogTrigger asChild>
+            <DialogTrigger asChild className="!px-3">
               <Button
                 variant="ghost"
                 size={"sm"}
-                className="cursor-pointer w-full dark:hover:!bg-background/30 hover:!bg-background hover:border hover:border-border/40"
+                className="flex mx-1 justify-start cursor-pointer  dark:hover:!bg-background/30 hover:!bg-background "
                 aria-label="View description"
               >
                 <span className="text-lg">
-                  {width && width < 640 && trick.name.length > 15
-                    ? `${trick.name.slice(0, 15)}...`
+                  {width && width < 640 && trick.name.length > 22
+                    ? `${trick.name.slice(0, 22)}...`
                     : trick.name}
                 </span>
-                <Info className="h-4 w-4 text-muted-foreground" />
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
@@ -58,17 +56,19 @@ export const TrickRow = ({ trick }: { trick: Trick }) => {
           </Dialog>
         </div>
       </td>
-      <td className="px-4 py-3">
-        <div className="flex justify-center">
+      <td className="py-1.5">
+        <div className="flex justify-center ">
           <Badge
-            className={`${bg} ${text} hover:${bg} hover:opacity-90`}
+            className={`${bg} ${text} hover:${bg} hover:opacity-90 `}
             variant="secondary"
           >
             {trick.difficulty}
           </Badge>
         </div>
       </td>
-      <td className="px-4 py-3 text-right font-medium">{trick.points} pts</td>
+      <td className="py-1.5 pr-4.5 text-right font-medium">
+        {trick.points} pts
+      </td>
     </tr>
   );
 };
