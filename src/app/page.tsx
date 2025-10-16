@@ -14,7 +14,6 @@ export default async function Home() {
           <h1 className="text-2xl font-bold mb-4">
             Please sign in to continue
           </h1>
-          <UserButton />
           <p>You need to be signed in to access the game.</p>
         </div>
       </div>
