@@ -66,11 +66,50 @@ const LobbyView = ({
   removePlayer,
   updatePlayerName,
 }: LobbyViewProps) => {
+  const [editingPlayerId, setEditingPlayerId] = useState<number | null>(null);
+  const [editingName, setEditingName] = useState<string>("");
+  const editingInputRef = useRef<HTMLInputElement>(null);
   const [newPlayerNameInput, setNewPlayerNameInput] = useState("");
   const [isChangeUsernameDialogOpen, setIsChangeUsernameDialogOpen] =
     useState(false);
   const newPlayerNameInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
+
+  const handleStartEdit = (player: Player) => {
+    setEditingPlayerId(player.id);
+    setEditingName(player.name);
+    setTimeout(() => editingInputRef.current?.focus(), 0);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingPlayerId && editingName.trim()) {
+      const trimmedName = editingName.trim();
+      if (trimmedName.length < 3) {
+        toast.error("Player name must be at least 3 characters", {
+          position: "top-center",
+          duration: 5000,
+        });
+        return;
+      }
+      const existingPlayer = gameState.players.find(
+        (player) =>
+          player.name.toLowerCase() === trimmedName.toLowerCase() &&
+          player.id !== editingPlayerId
+      );
+      if (existingPlayer) {
+        toast.error("Player name already exists");
+        return;
+      }
+      updatePlayerName(editingPlayerId, trimmedName);
+    }
+    setEditingPlayerId(null);
+    setEditingName("");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPlayerId(null);
+    setEditingName("");
+  };
 
   const handleChangeUsername = async (clerkId: string) => {
     setLoading(true);
@@ -207,7 +246,35 @@ const LobbyView = ({
                 <div key={idx} className="border-b border-border">
                   <div className="flex items-center justify-between py-0.5 px-2 w-full ">
                     <div className="flex items-center gap-1.5">
-                      <div className="flex font-medium">{player.name}</div>
+                      {editingPlayerId === player.id && !player.isCreator ? (
+                        <Input
+                          ref={editingInputRef}
+                          value={editingName}
+                          onChange={(e) =>
+                            setEditingName(
+                              e.target.value.replace(/[^a-zA-Z0-9]/g, "")
+                            )
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              handleSaveEdit();
+                            } else if (e.key === "Escape") {
+                              handleCancelEdit();
+                            }
+                          }}
+                          onBlur={handleSaveEdit}
+                          className="h-7 text-sm font-medium"
+                          maxLength={20}
+                          autoFocus
+                        />
+                      ) : (
+                        <div
+                          className="flex font-medium cursor-pointer hover:bg-accent/50 rounded px-1 py-0.5 transition-colors"
+                          onClick={() => handleStartEdit(player)}
+                        >
+                          {player.name}
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       {player.isCreator && (

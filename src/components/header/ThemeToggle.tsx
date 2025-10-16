@@ -23,7 +23,7 @@ export function ThemeToggle() {
         className="w-10 h-10"
         aria-label="Toggle theme"
       >
-        <Skeleton className="!h-9 !w-9" />
+        <Skeleton className="!h-9 !w-9 " />
       </Button>
     );
   }
@@ -33,13 +33,13 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="w-10 h-10 cursor-pointer hover:text-primary/85"
+      className="w-10 h-10 cursor-pointer !text-primary hover:!text-primary/40"
       aria-label="Toggle theme"
     >
       {theme === "light" ? (
-        <MoonIcon className="!h-6 !w-6" />
+        <MoonIcon className="!h-5.5 !w-5.5 !text-primary !hover:text-primary/40" />
       ) : (
-        <SunIcon className="!h-6 !w-6" />
+        <SunIcon className="!h-5.5 !w-5.5 !text-primary !hover:text-primary/40" />
       )}
     </Button>
   );

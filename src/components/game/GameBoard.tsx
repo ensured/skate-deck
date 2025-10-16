@@ -1,5 +1,5 @@
 "use client";
-
+import { toast } from "sonner";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useGame } from "@/hooks/useGame";
 import { useDOMProtection } from "@/hooks/useDOMProtection";
@@ -14,7 +14,7 @@ import { domProtectionConfig } from "@/types/dom-protection";
 
 export function GameBoard() {
   const {
-    addPlayer,
+    addPlayerToGame,
     removePlayer,
     startGame,
     handlePlayerAction,
@@ -28,6 +28,10 @@ export function GameBoard() {
     toggleShufflePlayers,
     updatePowerUpChance,
     updatePlayerName,
+    // Tip system
+    currentTip,
+    showTip,
+    dismissTip,
   } = useGame();
 
   const nameRef = useRef<HTMLInputElement>(null);
@@ -50,7 +54,7 @@ export function GameBoard() {
   );
 
   const handleAddPlayer = () => {
-    addPlayer(name);
+    addPlayerToGame(name);
     setName("");
     nameRef.current?.focus();
   };
@@ -74,6 +78,18 @@ export function GameBoard() {
       nameRef.current?.focus();
     }
   }, [clerkUser]);
+
+  // Show tip toast notification
+  useEffect(() => {
+    if (showTip && currentTip) {
+      toast(currentTip, {
+        position: "bottom-center",
+        duration: 5000, // Show for 5 seconds
+        onDismiss: dismissTip,
+        onAutoClose: dismissTip,
+      });
+    }
+  }, [showTip, currentTip, dismissTip]);
 
   // // for dev testing
   // useEffect(() => {
