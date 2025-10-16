@@ -4,7 +4,6 @@ import { Input } from "../ui/input";
 import {
   ArrowDown,
   Check,
-  Loader2,
   Lock,
   Play,
   Trash2,
@@ -16,7 +15,7 @@ import { BookOpen } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
 import { GameState } from "@/types/game";
 import HowToPlayDialog from "./HowToPlayDialog";
-import { RefObject, useRef } from "react";
+import { RefObject } from "react";
 import { Player } from "@/types/player";
 import {
   Dialog,

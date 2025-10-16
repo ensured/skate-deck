@@ -9,10 +9,8 @@ import LobbyView from "./LobbyView";
 import GameOver from "./GameOver";
 import GameControlsSheet from "./GameControlsSheet";
 import InGamePlayerCards from "./InGamePlayerCards";
-import InGameHeader from "./InGameHeader";
 import { AnimatePresence, motion } from "framer-motion";
 import { domProtectionConfig } from "@/types/dom-protection";
-import TimeSinceStarted from "./TimeSinceStarted";
 
 export function GameBoard() {
   const {

@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { GameState } from "@/types/game";
 import { Player } from "@/types/player";
-import { Crown, Info, Trophy, Zap } from "lucide-react";
+import { Crown, Trophy, Zap } from "lucide-react";
 import { Card } from "../ui/card";
 import {
   Dialog,
