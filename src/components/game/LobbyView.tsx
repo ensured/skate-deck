@@ -219,7 +219,7 @@ const LobbyView = ({
                             <Button
                               size="sm"
                               variant={"ghost"}
-                              className="cursor-pointer border !border-border/50 hover:border-primary/50 transition-all"
+                              className="cursor-pointer h-7 text-xs sm:text-sm border !border-border/50 hover:border-primary/50 transition-all"
                             >
                               Change Username
                             </Button>

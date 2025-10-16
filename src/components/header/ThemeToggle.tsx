@@ -1,6 +1,6 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
+import { MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
@@ -23,7 +23,7 @@ export function ThemeToggle() {
         className="w-10 h-10"
         aria-label="Toggle theme"
       >
-        <Skeleton className="sm:size-6 size-5" />
+        <Skeleton className="!h-9 !w-9" />
       </Button>
     );
   }
@@ -37,9 +37,9 @@ export function ThemeToggle() {
       aria-label="Toggle theme"
     >
       {theme === "light" ? (
-        <Moon className="sm:size-5 size-4.5" />
+        <MoonIcon className="!h-6 !w-6" />
       ) : (
-        <Sun className="sm:size-5 size-4.5" />
+        <SunIcon className="!h-6 !w-6" />
       )}
     </Button>
   );

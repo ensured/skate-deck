@@ -14,7 +14,7 @@ export async function Header() {
           <NavLinks />
         </nav>
         <div className="flex-1 flex justify-end">
-          <nav className="flex items-center gap-2">
+          <nav className="flex items-center gap-1.5">
             <SignedIn>
               <Button variant="ghost" size="icon" className="w-10 h-10">
                 <ClerkUserButtonClient />
