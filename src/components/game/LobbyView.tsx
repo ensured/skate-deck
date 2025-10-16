@@ -100,6 +100,16 @@ const LobbyView = ({
             icon: <X className="w-4.5 h-4.5 text-red-500" />,
           });
         }
+
+        if (result.error.includes("Username already taken")) {
+          toast.error("Username already taken", {
+            description: result.error,
+            duration: 5000,
+            icon: <X className="w-4.5 h-4.5 text-red-500" />,
+          });
+        }
+
+        setIsChangeUsernameDialogOpen(false);
       }
     } catch (error) {
       // Handle any unexpected errors
