@@ -120,7 +120,7 @@ const LobbyView = ({
     }
   };
   return (
-    <div className="max-w-lg mx-auto animate-fade-in py-8 px-2">
+    <div className="max-w-lg mx-auto animate-fade-in py-8 px-2 select-none">
       <Card className="border border-primary/15 shadow-lg">
         <CardHeader className="bg-gradient-to-r from-primary/5 to-background border-b items-center pt-8">
           <div className="flex justify-between items-center gap-2">
@@ -295,6 +295,7 @@ const LobbyView = ({
                         onClick={(e) => {
                           e.stopPropagation();
                           removePlayer(player.id);
+                          nameRef.current?.focus();
                         }}
                         disabled={
                           gameState.players.length <= 1 || player.isCreator

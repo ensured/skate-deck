@@ -4,7 +4,7 @@ import { Player } from "@/types/player";
 import { Crown, Trophy, Zap } from "lucide-react";
 import { Card } from "../ui/card";
 
-const GameStatusBar = ({
+const InGamePlayerCards = ({
   gameState,
   currentPlayer,
 }: {
@@ -184,4 +184,4 @@ const GameStatusBar = ({
   );
 };
 
-export default GameStatusBar;
+export default InGamePlayerCards;
