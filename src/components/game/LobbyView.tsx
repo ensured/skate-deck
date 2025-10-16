@@ -69,7 +69,9 @@ const LobbyView = ({
   const [editingPlayerId, setEditingPlayerId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState<string>("");
   const editingInputRef = useRef<HTMLInputElement>(null);
-  const [newPlayerNameInput, setNewPlayerNameInput] = useState("");
+  const [newPlayerNameInput, setNewPlayerNameInput] = useState(
+    gameState.players[0].name
+  );
   const [isChangeUsernameDialogOpen, setIsChangeUsernameDialogOpen] =
     useState(false);
   const newPlayerNameInputRef = useRef<HTMLInputElement>(null);
@@ -295,7 +297,7 @@ const LobbyView = ({
                             <DialogHeader>
                               <DialogTitle>Change Username</DialogTitle>
                               <DialogDescription>
-                                Enter your new username to change it.
+                                Enter your new username.
                               </DialogDescription>
                             </DialogHeader>
                             <div className="grid gap-4 py-4">
