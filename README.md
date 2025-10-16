@@ -1,67 +1,75 @@
-# G.R.I.N.D - Game Rules
+# G.R.I.N.D
 
-## Overview
+## A FFA Elimination Game
 
-A trick-taking game where players take turns as leaders and followers, performing tricks to avoid collecting letters from the word "G.R.I.N.D". The last player remaining wins!
+---
 
-## Setup
+## 🎮 Quick Start
 
-- **Players**: 2+ players
-- **Cards**: 98 unique trick cards
-- **Game Word**: G.R.I.N.D (5 letters = 5 strikes to elimination)
-- **Initial Leader**: Player 0
+### 1. Leader's Turn
 
-## Card Deck
+Each player takes turns being the Leader
 
-- 98 unique trick cards of varying difficulties
-- Deck is shuffled initially using Fisher-Yates algorithm
-- Cards are drawn sequentially until deck is empty
-- if no cards left, it reinitializes a new shuffled deck
+### 2. Draw & Attempt
 
-## Gameplay
+Leader draws a trick card and attempts it
 
-### Turn Structure
+### 3. Follow the Leader
 
-Each round consists of:
-1. Leader draws and attempts a trick
-2. All other players attempt the same trick in turn order
-3. Round ends when all players have attempted the trick
+Other players must attempt the trick in order
 
-**Round increments when:**
-- Any player misses a trick (new card drawn, new round starts)
-- All players complete the leader's trick (round ends, leadership may rotate)
+### 4. Miss a Trick?
 
-### Leader's Role
+Get a letter (G-R-I-N-D)
 
-- **Leader draws a card** and sets the trick for all players to attempt
-- **Successful attempt**: Leader gets +1 to consecutive streak
-- **Failed attempt**: Leader gets a letter from "G.R.I.N.D" and leadership passes immediately
+### 5. 5 Strikes
 
-**Leadership Rotation:**
-- **Leader fails**: Leadership passes immediately to next player
-- **Leader succeeds 3 times**: Leadership passes after current round ends (all players attempt the trick)
-- **Rotation is automatic** - happens without player input
+Collect all 5 letters and you're out!
 
-### Followers' Turns
+### 🏆 Victory!
 
-- **Must attempt the leader's trick** in turn order
-- **Success**: No penalty, earn points for the trick
-- **Failure**: Receive a letter from "G.R.I.N.D"
+Be the last player standing to win!
 
-### Elimination & Letters
+---
 
-**Letter System:**
-- Each miss gives 1 letter: G → R → I → N → D
-- Progress shown as "Player got letter 'R' (2/5)"
-- Visual indicators show current letter progress
+## 👑 Leader's Turn
 
-**Elimination:**
-- Players are eliminated when they collect all 5 letters (G.R.I.N.D)
-- Game ends immediately when only 1 player remains
-- Eliminated players are removed from gameplay
+**✓ Land the trick:** Stay as leader  
+**✗ Miss the trick:** Get a letter & pass leader role
 
-### Winning
+After 3 successful trick landings, leader role passes to next player
 
-- **Last remaining player wins**
-- Game ends automatically when only 1 active player remains
-- Cannot be a tie game
+---
+
+## 🛹 Other Players
+
+**✓ Match the trick:** Stay in the game  
+**✗ Miss the trick:** Get a letter (G-R-I-N-D)
+
+5 letters and you're out of the game
+
+---
+
+## 🏆 Winning
+
+### Elimination
+
+Each miss gives you a letter:
+
+```
+G → R → I → N → D
+```
+
+Collect all 5 and you're out!
+
+### Victory
+
+Be the last player remaining without collecting all 5 letters to win the game!
+
+---
+
+## 📋 Game Details
+
+- **Players:** 2+ players
+- **Cards:** 98 unique trick cards
+- **Deck:** Auto-shuffles when empty (Fisher-Yates algorithm)

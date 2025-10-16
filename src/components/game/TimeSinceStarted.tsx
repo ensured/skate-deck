@@ -42,7 +42,7 @@ const TimeSinceStarted = ({ startTime }: { startTime: Date }) => {
       <motion.span
         key={`hours-${hours}`} // Triggers animation when hours change
         initial={{ scale: 1 }}
-        animate={{ scale: [1, 1.01, 1] }}
+        animate={{ scale: [1, 1.06, 1] }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
         {hours}:
@@ -50,7 +50,7 @@ const TimeSinceStarted = ({ startTime }: { startTime: Date }) => {
       <motion.span
         key={`minutes-${minutes}`} // Triggers animation when minutes change
         initial={{ scale: 1 }}
-        animate={{ scale: [1, 1.01, 1] }}
+        animate={{ scale: [1, 1.06, 1] }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
         {minutes}:
@@ -58,7 +58,7 @@ const TimeSinceStarted = ({ startTime }: { startTime: Date }) => {
       <motion.span
         key={`seconds-${seconds}`} // Triggers animation when seconds change
         initial={{ scale: 1 }}
-        animate={{ scale: [1, 1.01, 1] }}
+        animate={{ scale: [1, 1.06, 1] }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
         {seconds}
