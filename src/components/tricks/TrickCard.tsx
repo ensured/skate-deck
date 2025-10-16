@@ -286,7 +286,7 @@ export function TrickCard({
                               gameState.equipmentMalfunction ? "text-red-500" : ""
                             }`}
                           />
-                          {powerUps.length > 0 && !gameState.equipmentMalfunction && (
+                          {powerUps.length > 0 && (
                             <motion.span
                               key={`powerup-${powerUps.length}`}
                               initial={{ scale: 0, opacity: 0 }}
@@ -304,7 +304,11 @@ export function TrickCard({
                                 rotate: { duration: 0.8 },
                                 y: { duration: 0.8 },
                               }}
-                              className="absolute animate-[pulse_1.15s_ease-in-out_infinite] -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold ring-2 ring-background"
+                              className={`absolute ${
+                                !gameState.equipmentMalfunction
+                                  ? "animate-[pulse_1.15s_ease-in-out_infinite]"
+                                  : ""
+                              } -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold ring-2 ring-background`}
                             >
                               {powerUps.length}
                             </motion.span>
@@ -313,7 +317,7 @@ export function TrickCard({
                             <motion.div
                               initial={{ scale: 0, opacity: 0 }}
                               animate={{ scale: 1, opacity: 1 }}
-                              className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold"
+                              className="absolute -top-1 -left-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold"
                             >
                               ⚠️
                             </motion.div>
