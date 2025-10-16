@@ -4,6 +4,7 @@ import { Input } from "../ui/input";
 import {
   ArrowDown,
   Check,
+  Loader2,
   Lock,
   Play,
   Trash2,
@@ -15,8 +16,22 @@ import { BookOpen } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
 import { GameState } from "@/types/game";
 import HowToPlayDialog from "./HowToPlayDialog";
-import { RefObject } from "react";
+import { RefObject, useRef } from "react";
 import { Player } from "@/types/player";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import { Label } from "../ui/label";
+import { changeUsername } from "@/actions/actions";
+import { useState } from "react";
+import { toast } from "sonner";
 
 type LobbyViewProps = {
   gameState: GameState;
@@ -34,6 +49,8 @@ type LobbyViewProps = {
   scrolledAtTop: boolean;
   setScrolledAtTop: (value: boolean) => void;
   removePlayer: (playerId: number) => void;
+  setGameState: (gameState: GameState) => void;
+  updatePlayerName: (id: number, name: string) => void;
 };
 
 const LobbyView = ({
@@ -52,7 +69,50 @@ const LobbyView = ({
   scrolledAtTop,
   setScrolledAtTop,
   removePlayer,
+  setGameState,
+  updatePlayerName,
 }: LobbyViewProps) => {
+  const [newPlayerName, setNewPlayerName] = useState("");
+  const [isChangeUsernameDialogOpen, setIsChangeUsernameDialogOpen] =
+    useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleChangeUsername = async (oldName: string) => {
+    setLoading(true);
+    try {
+      const result = await changeUsername(oldName, newPlayerName);
+
+      if (result.success) {
+        toast.success("Username changed successfully");
+        updatePlayerName(gameState.currentPlayerId, newPlayerName);
+        setIsChangeUsernameDialogOpen(false);
+      } else if (result.error) {
+        toast.error("Error", {
+          description: result.error,
+          duration: 5000,
+        });
+
+        // If it's a rate limit error, show a more prominent message
+        if (result.error.includes("Rate limit exceeded")) {
+          toast.error("Too Many Requests", {
+            description: result.error,
+            duration: 5000,
+            icon: <X className="w-4.5 h-4.5 text-red-500" />,
+          });
+        }
+      }
+    } catch (error) {
+      // Handle any unexpected errors
+      const errorMessage =
+        error instanceof Error ? error.message : "An unexpected error occurred";
+      toast.error("Error", {
+        description: errorMessage,
+        duration: 5000,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="max-w-lg mx-auto animate-fade-in py-8 px-2">
       <Card className="border border-primary/15 shadow-lg">
@@ -162,6 +222,61 @@ const LobbyView = ({
                       <div className="flex font-medium">{player.name}</div>
                     </div>
                     <div className="flex items-center gap-2">
+                      {player.isCreator && (
+                        <Dialog
+                          onOpenChange={setIsChangeUsernameDialogOpen}
+                          open={isChangeUsernameDialogOpen}
+                        >
+                          <DialogTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant={"ghost"}
+                              className="cursor-pointer border !border-border/50 hover:border-primary/50 transition-all"
+                            >
+                              Change Username
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Change Username</DialogTitle>
+                              <DialogDescription>
+                                Enter your new username to change it.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="grid gap-4 py-4">
+                              <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="username">New Username</Label>
+                                <Input
+                                  id="username"
+                                  type="text"
+                                  value={newPlayerName}
+                                  onChange={(e) =>
+                                    setNewPlayerName(e.target.value)
+                                  }
+                                />
+                              </div>
+                            </div>
+                            <DialogFooter className="relative">
+                              <DialogClose asChild>
+                                <Button variant="outline">Cancel</Button>
+                              </DialogClose>
+                              <Button
+                                onClick={() =>
+                                  handleChangeUsername(player.name)
+                                }
+                                disabled={
+                                  loading ||
+                                  newPlayerName === player.name ||
+                                  newPlayerName.trim() === "" ||
+                                  newPlayerName.length < 3
+                                }
+                              >
+                                Save changes{" "}
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      )}
                       <Button
                         variant={"ghost"}
                         size="icon"

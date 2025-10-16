@@ -329,6 +329,18 @@ export const useGame = () => {
     [gameState.players]
   );
 
+  const updatePlayerName = useCallback((id: number, name: string) => {
+    setGameState((prev) => {
+      const updatedPlayers = prev.players.map((p) =>
+        p.id === id ? { ...p, name } : p
+      );
+      return {
+        ...prev,
+        players: updatedPlayers,
+      };
+    });
+  }, []);
+
   const removePlayer = useCallback((id: number) => {
     setGameState((prev) => {
       const playerToRemove = prev.players.find((p) => p.id === id);
@@ -997,6 +1009,7 @@ export const useGame = () => {
     updateChooseTrickChance,
     chanceGrantPowerUp,
     updatePowerUpChance,
+    updatePlayerName,
   } as const;
 };
 

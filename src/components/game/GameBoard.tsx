@@ -35,6 +35,8 @@ export function GameBoard() {
     shufflePlayers,
     toggleShufflePlayers,
     updatePowerUpChance,
+    setGameState,
+    updatePlayerName,
   } = useGame();
 
   // All hooks must be called at the top level, before any conditional returns
@@ -170,6 +172,8 @@ export function GameBoard() {
                 scrolledAtTop={scrolledAtTop}
                 setScrolledAtTop={setScrolledAtTop}
                 startGame={startGame}
+                setGameState={setGameState}
+                updatePlayerName={updatePlayerName}
               />
             )}
             {gameState.status === "active" && (
