@@ -1,6 +1,5 @@
 import { Player } from "./player";
 import { TrickCard } from "./tricks";
-import { ClerkUser } from "./user";
 
 export type PlayerStatus =
   | "active" // Player is in the game
@@ -11,7 +10,6 @@ export type GameStatus =
   | "ended"; // Game has ended
 
 export interface GameState {
-  gameCreator: ClerkUser | null;
   startTime: Date | null;
   endTime: Date | null;
   players: Player[];
@@ -21,15 +19,14 @@ export interface GameState {
   currentTurnIndex: number; // Index in turnOrder for current player
   currentTrick: TrickCard | undefined; // The current trick being attempted
   discardedTricks: TrickCard[]; // Used tricks
-  round: number; // Current round number
-  roundComplete: boolean;
+  totalRounds: number; // Total number of rounds
   currentAttempts: Record<string, boolean>;
   leaderConsecutiveWins: number; // Number of consecutive wins by the current leader
   gameLog: string[]; // Log of game events for UI display
-  totalDeckSize?: number; // Total number of cards in the deck at start
+  totalDeckSize?: number; // Total number of cards in the deck
   trickOptions?: TrickCard[]; // Available trick options for the Trick Selector power-up
   showPowerUpDialog?: boolean; // Controls visibility of power-up dialog
-  selectedTrick?: TrickCard; // Currently selected trick (for power-ups)
+  selectedTrick?: TrickCard;
   winner?: Player; // The winner of the game, if any
   currentRoundTurns: number; // Number of turns taken in the current round
   settings: {

@@ -1,5 +1,4 @@
 export type ClerkUser = {
-  id: string;
   clerkId: string;
   username: string;
 };

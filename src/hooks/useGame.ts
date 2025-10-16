@@ -10,6 +10,15 @@ import { startingPowerups } from "../types/powerups";
 import { Player } from "@/types/player";
 import { getRandomTip } from "@/types/tips";
 
+// Game constants
+const MAX_LETTERS = 5; // S.K.A.T.E
+const TIP_INTERVAL_SECONDS = 60; // Show tips every 60 seconds
+const MAX_PLAYERS = 16;
+const MIN_PLAYER_NAME_LENGTH = 2;
+const MAX_PLAYER_NAME_LENGTH = 20;
+const LEADER_WIN_THRESHOLD = 3;
+const SHIELD_CHANCE = 0.5; // 50% chance for shield when granting powerup
+
 export const useGame = () => {
   const { clerkUser, isLoaded: isClerkUserLoaded } = useUser();
   const [deck, setDeck] = useState<TrickCard[]>([]);
@@ -60,20 +69,18 @@ export const useGame = () => {
   }, [deck, reshuffleDeckIfNeeded]);
 
   const [gameState, setGameState] = useState<GameState>({
-    gameCreator: null,
-    status: "lobby",
+    endTime: null,
     players: [],
+    status: "lobby",
     currentLeaderId: 0,
     currentPlayerId: 0,
     currentTurnIndex: 0,
     currentTrick: undefined,
     discardedTricks: [],
-    round: 1,
+    totalRounds: 1,
     leaderConsecutiveWins: 0,
     gameLog: [],
     startTime: null,
-    endTime: null,
-    roundComplete: false,
     currentAttempts: {},
     totalDeckSize: 0,
     currentRoundTurns: 0,
@@ -126,7 +133,7 @@ export const useGame = () => {
       tipTimerRef.current = setInterval(() => {
         setCurrentTip(getRandomTip());
         setShowTip(true);
-      }, 69696.969);
+      }, TIP_INTERVAL_SECONDS * 1000);
     }
 
     return () => {
@@ -156,16 +163,16 @@ export const useGame = () => {
         return;
       }
 
-      if (trimmedName.length < 2) {
+      if (trimmedName.length < MIN_PLAYER_NAME_LENGTH) {
         toast.error("Player name must be at least 2 characters");
         return;
       }
-      if (trimmedName.length > 20) {
+      if (trimmedName.length > MAX_PLAYER_NAME_LENGTH) {
         toast.error("Player name cannot exceed 20 characters");
         return;
       }
 
-      if (gameState.players.length >= 16) {
+      if (gameState.players.length >= MAX_PLAYERS) {
         toast.error("Maximum of 16 players allowed");
         return;
       }
@@ -320,7 +327,7 @@ export const useGame = () => {
 
     // Check if we should rotate leadership (e.g., after 3 wins)
     const shouldRotate =
-      gameState.leaderConsecutiveWins >= 3 &&
+      gameState.leaderConsecutiveWins >= LEADER_WIN_THRESHOLD &&
       currentPlayer.id === gameState.currentLeaderId;
 
     if (shouldRotate) {
@@ -343,7 +350,6 @@ export const useGame = () => {
       round: 1,
       leaderConsecutiveWins: 0,
       gameLog: ["🔄 New game started - players remain in the lobby"],
-      roundComplete: false,
       currentAttempts: {},
       winner: undefined,
       startTime: null,
@@ -395,7 +401,6 @@ export const useGame = () => {
         round: 1,
         leaderConsecutiveWins: 0,
         gameLog: ["🔄 Game reset - all players and scores have been reset!"],
-        roundComplete: false,
         currentAttempts: {},
       };
 
@@ -561,7 +566,7 @@ export const useGame = () => {
         return prev;
       }
 
-      const randomCard = Math.random() < 0.5 ? shield : chooseTrick;
+      const randomCard = Math.random() < SHIELD_CHANCE ? shield : chooseTrick;
 
       return {
         ...prev,
@@ -588,7 +593,6 @@ export const useGame = () => {
   const handleMissedAction = useCallback(() => {
     // Get current state values before any updates
     const currentGameState = gameState;
-    const currentDeck = deck;
 
     const currentPlayer = currentGameState.players
       .filter((p) => !p.isEliminated)
@@ -598,7 +602,7 @@ export const useGame = () => {
 
     const currentLetters = currentPlayer.letters || 0;
     const newLetters = currentLetters + 1;
-    const isEliminated = newLetters >= 5; // G.R.I.N.D = 5 letters
+    const isEliminated = newLetters >= MAX_LETTERS; // G.R.I.N.D = 5 letters
 
     const activePlayersBeforeMiss = currentGameState.players.filter(
       (p) => !p.isEliminated
@@ -639,8 +643,8 @@ export const useGame = () => {
     const currentRoundTurns = currentGameState.currentRoundTurns + 1;
     const isEndOfRound = currentRoundTurns >= activePlayers.length;
     const newRound = isEndOfRound
-      ? currentGameState.round + 1
-      : currentGameState.round;
+      ? currentGameState.totalRounds + 1
+      : currentGameState.totalRounds;
 
     // Get a new trick if:
     // 1. The leader misses their own trick, OR
@@ -685,7 +689,7 @@ export const useGame = () => {
       currentTrick: newTrick || currentGameState.currentTrick,
       currentPlayerId: nextPlayer.id,
       currentTurnIndex: nextIndex,
-      round: newRound,
+      totalRounds: newRound,
       currentRoundTurns: newRoundTurns,
       leaderConsecutiveWins: shouldRotateOnMiss
         ? 0 // Reset consecutive wins only when leader misses
@@ -747,14 +751,14 @@ export const useGame = () => {
     );
     const isEndOfRound = currentRoundTurns >= activePlayers.length;
 
-    const newRound = isEndOfRound
-      ? currentGameState.round + 1
-      : currentGameState.round;
+    const roundsCount = isEndOfRound
+      ? currentGameState.totalRounds + 1
+      : currentGameState.totalRounds;
 
     const shouldGetNewTrick =
       isEndOfRound ||
       (currentGameState.currentLeaderId === currentGameState.currentPlayerId &&
-        currentGameState.leaderConsecutiveWins >= 3);
+        currentGameState.leaderConsecutiveWins >= LEADER_WIN_THRESHOLD);
 
     let newTrick = currentGameState.currentTrick;
 
@@ -787,7 +791,7 @@ export const useGame = () => {
             }
           : p
       ),
-      round: newRound,
+      totalRounds: roundsCount,
       currentRoundTurns: isEndOfRound ? 0 : currentRoundTurns,
       currentTrick: newTrick,
       leaderConsecutiveWins:
@@ -939,7 +943,6 @@ export const useGame = () => {
             } players! First player is ${playersToUse[0]?.name || "unknown"}.`,
             shouldShuffle ? "🔀 Players were shuffled randomly!" : "",
           ].filter(Boolean),
-          roundComplete: false,
           currentAttempts: {},
         };
 

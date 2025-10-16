@@ -152,7 +152,6 @@ export function GameBoard() {
                           description={gameState.currentTrick.description}
                           currentPlayer={currentPlayer.name}
                           user={{
-                            id: currentPlayer.id.toString(),
                             clerkId: currentPlayer.id.toString(),
                             username: currentPlayer.name,
                           }}
