@@ -31,7 +31,7 @@ const HowToPlayDialog = ({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div className="bg-muted/10 p-2 rounded-lg border border-muted/20">
                   <div className="font-medium text-sm text-primary/90">
-                    1. Leader's Turn
+                    1. Leader&#39;s Turn
                   </div>
                   <p className="text-xs sm:text-sm">
                     Each player takes turns being the <strong>Leader</strong>
@@ -66,7 +66,7 @@ const HowToPlayDialog = ({
                     5. 5 Strikes
                   </div>
                   <p className="text-xs sm:text-sm">
-                    Collect all 5 letters and you're out!
+                    Collect all 5 letters and you&#39;re out!
                   </p>
                 </div>
                 <div className="dark:bg-emerald-500/40 bg-emerald-500/40 p-2 rounded-lg border border-emerald-700 dark:border-emerald-300">
@@ -83,7 +83,7 @@ const HowToPlayDialog = ({
               {/* Leader's Turn */}
               <div className="bg-muted/10 p-3 rounded-lg border border-muted/20">
                 <DialogTitle className="font-semibold text-sm sm:text-base text-primary mb-1">
-                  👑 Leader's Turn
+                  👑 Leader&#39;s Turn
                 </DialogTitle>
                 <ul className="space-y-1.5 text-sm">
                   <li className="flex items-start gap-1.5">
@@ -116,7 +116,7 @@ const HowToPlayDialog = ({
                     <span>Miss the trick: Get a letter (S-K-A-T-E)</span>
                   </li>
                   <li className="text-xs text-muted-foreground mt-1">
-                    5 letters and you're out of the game
+                    5 letters and you&#39;re out of the game
                   </li>
                 </ul>
               </div>
@@ -143,7 +143,7 @@ const HowToPlayDialog = ({
                           </span>
                         ))}
                       </div>
-                      <p>Collect all 5 and you're out!</p>
+                      <p>Collect all 5 and you&#39;re out!</p>
                     </div>
                   </div>
                   <div>
