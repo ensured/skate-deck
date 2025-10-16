@@ -247,11 +247,6 @@ export const useGame = () => {
           score: 0,
         };
 
-        const shieldCard = {
-          ...powerups.find((card) => card.type === "shield")!,
-          id: `shield-${Date.now()}-${prev.players.length + 1}`,
-        };
-
         const updatedPlayer: Player = {
           ...newPlayer,
           id: prev.players.length + 1, // Simple numeric ID
@@ -262,54 +257,7 @@ export const useGame = () => {
           isCreator: prev.players.length === 0, // First player is creator
           letters: newPlayer.letters || 0,
           inventory: {
-            powerups: [
-              shieldCard,
-              {
-                id: `choose_trick`,
-                type: "choose_trick",
-                name: "Choose New Trick",
-                description:
-                  "Look at the next 3 tricks and choose one to attempt",
-                onUse: (gameState, playerId, selectedTrick?: TrickCard) => {
-                  const player = gameState.players.find(
-                    (p) => p.id === playerId
-                  );
-                  if (!player) return gameState;
-
-                  if (!selectedTrick) {
-                    return {
-                      ...gameState,
-                      message: `❌ No trick was selected.`,
-                    };
-                  }
-
-                  const cardId = `choose_trick-${Date.now()}-${playerId}`;
-                  const newState = {
-                    ...gameState,
-                    currentTrick: selectedTrick,
-                    message: `🎲 ${player.name} used Choose Trick! New trick: ${selectedTrick.name}`,
-                    // Remove the used card
-                    players: gameState.players.map((p) =>
-                      p.id === playerId
-                        ? {
-                            ...p,
-                            inventory: {
-                              ...p.inventory,
-                              powerups: p.inventory.powerups.filter(
-                                (card) =>
-                                  !card.id.startsWith("choose_trick") ||
-                                  card.id === cardId
-                              ),
-                            },
-                          }
-                        : p
-                    ),
-                  };
-
-                  return newState;
-                },
-              },
-            ],
+            powerups: [shield, chooseTrick],
           },
         };
 
@@ -464,7 +412,7 @@ export const useGame = () => {
         score: 0,
         inventory: {
           ...player.inventory,
-          skillCards: [], // Clear all power-ups
+          powerups: [], // Clear all power-ups
         },
       })),
     }));
