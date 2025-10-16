@@ -12,6 +12,7 @@ import InGamePlayerCards from "./InGamePlayerCards";
 import InGameHeader from "./InGameHeader";
 import { AnimatePresence, motion } from "framer-motion";
 import { domProtectionConfig } from "@/types/dom-protection";
+import TimeSinceStarted from "./TimeSinceStarted";
 
 export function GameBoard() {
   const {
@@ -125,11 +126,6 @@ export function GameBoard() {
                 )}
                 {gameState.status === "active" && (
                   <div>
-                    <InGameHeader
-                      gameState={gameState}
-                      getDeckStatus={getDeckStatus}
-                    />
-
                     <div className="w-full">
                       {/* Current Trick - Centered */}
                       {gameState.currentTrick && currentPlayer && (
@@ -148,6 +144,8 @@ export function GameBoard() {
                             clerkId: currentPlayer.id.toString(),
                             username: currentPlayer.name,
                           }}
+                          gameState={gameState}
+                          getDeckStatus={getDeckStatus}
                           isLeader={
                             currentPlayer.id === gameState.currentLeaderId
                           }

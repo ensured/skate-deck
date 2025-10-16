@@ -12,6 +12,8 @@ export type GameStatus =
 
 export interface GameState {
   gameCreator: ClerkUser | null;
+  startTime: Date | null;
+  endTime: Date | null;
   players: Player[];
   status: GameStatus;
   currentLeaderId: number;

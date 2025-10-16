@@ -12,6 +12,9 @@ import { useState, useEffect } from "react";
 import { PowerUpsDialog } from "../game/PowerUpsDialog";
 import { Powerup } from "@/types/powerups";
 import { TrickCard as TrickCardType } from "@/types/tricks";
+import InGameHeader from "../game/InGameHeader";
+import { GameState } from "@/types/game";
+import TimeSinceStarted from "../game/TimeSinceStarted";
 
 // First, update the TrickCardProps interface to include the shield functionality
 interface TrickCardProps {
@@ -30,10 +33,14 @@ interface TrickCardProps {
   powerUps?: Powerup[]; // Add power-ups array to props
   peekNextCards?: (count: number) => TrickCardType[];
   selectedTrick?: TrickCardType;
+  gameState: GameState;
+  getDeckStatus: () => { remaining: number; total?: number };
 }
 
 export function TrickCard({
   trickName,
+  gameState,
+  getDeckStatus,
   onResult,
   className,
   difficulty,
@@ -72,7 +79,7 @@ export function TrickCard({
   };
 
   return (
-    <div className={cn("w-full  relative px-4 select-none", className)}>
+    <div className={cn("w-full relative px-4 select-none", className)}>
       <AnimatePresence mode="wait">
         <motion.div
           key={trickName}
@@ -109,16 +116,20 @@ export function TrickCard({
                 damping: 15,
                 mass: 0.4,
               },
-              scale: 1.01,
             }}
           >
             {/* Card Header */}
-            <div className="relative z-10 px-6 py-5">
+            <div className="relative z-10 px-6 flex flex-col gap-4">
+              <InGameHeader
+                gameState={gameState}
+                getDeckStatus={getDeckStatus}
+              />
+
               {/* Player Info */}
-              <div className="mb-2">
+              <div className="mb-2 ">
                 <motion.div
                   key={`turn-${currentPlayer}`}
-                  className="font-mono font-bold uppercase tracking-wider text-muted-foreground"
+                  className="font-mono font-bold uppercase tracking-wider text-muted-foreground flex gap-2 justify-between w-full"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{
                     opacity: 1,
@@ -133,6 +144,7 @@ export function TrickCard({
                   exit={{ opacity: 0, y: -10 }}
                 >
                   {currentPlayer}&#39;s Turn
+                  <TimeSinceStarted startTime={gameState.startTime!} />
                 </motion.div>
 
                 {/* Trick Name with Animated Underline */}
@@ -155,6 +167,7 @@ export function TrickCard({
                       </motion.span>
                     ))}
                   </h3>
+
                   <motion.div
                     className={`h-0.5 absolute bottom-0 left-0 ${
                       difficulty === "Beginner"
@@ -317,10 +330,10 @@ export function TrickCard({
                 </div>
               </div>
               {/* Card Corner Decorations */}
-              <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-gray-300 dark:border-gray-600 rounded-tl-lg"></div>
-              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-gray-300 dark:border-gray-600 rounded-tr-lg"></div>
-              <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-gray-300 dark:border-gray-600 rounded-bl-lg"></div>
-              <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-gray-300 dark:border-gray-600 rounded-br-lg"></div>
+              <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-gray-300/10 dark:border-gray-600/10 rounded-tl-lg"></div>
+              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-gray-300/10 dark:border-gray-600/10 rounded-tr-lg"></div>
+              <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-gray-300/10 dark:border-gray-600/10 rounded-bl-lg"></div>
+              <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-gray-300/10 dark:border-gray-600/10 rounded-br-lg"></div>
             </div>
           </motion.div>
         </motion.div>
