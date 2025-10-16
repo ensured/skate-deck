@@ -1,8 +1,20 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { GameState } from "@/types/game";
 import { Player } from "@/types/player";
-import { Crown, Trophy, Zap } from "lucide-react";
+import { Crown, Info, Trophy, Zap } from "lucide-react";
 import { Card } from "../ui/card";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import { Button } from "../ui/button";
+import { useState } from "react";
 
 const InGamePlayerCards = ({
   gameState,
@@ -11,11 +23,20 @@ const InGamePlayerCards = ({
   gameState: GameState;
   currentPlayer: Player;
 }) => {
+  const [open, setOpen] = useState(false);
+
+  const handleOpenChange = (open: boolean) => {
+    setOpen(open);
+    setTimeout(() => {
+      setOpen(false);
+    }, 3000);
+  };
+
   return (
     <div className="w-full flex-shrink-0">
-      <div className="p-3.5">
+      <div className="p-2">
         <AnimatePresence>
-          <div className="border border-border-border/10 shadow-md sm:p-4 p-2 lg:p-6 grid grid-cols-2 sm:grid-cols-2 gap-2 max-h-48 lg:max-h-none overflow-y-auto rounded-xl">
+          <div className="border border-border/60  shadow-md sm:p-3 p-1 grid grid-cols-2 sm:grid-cols-2 gap-2 max-h-96 lg:max-h-none overflow-y-auto rounded-xl">
             {gameState.players.map((player) => {
               const cardContent = (
                 <div className="flex items-start justify-between h-full gap-1 relative">
@@ -72,10 +93,27 @@ const InGamePlayerCards = ({
                       )}
 
                       {player.inventory.powerups.length > 0 && (
-                        <div className="flex gap-1 items-center text-xs sm:text-sm">
-                          <Zap className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
-                          {player.inventory.powerups.length}
-                        </div>
+                        <Dialog open={open} onOpenChange={handleOpenChange}>
+                          <DialogTrigger asChild>
+                            <div className="flex gap-1 items-center text-xs sm:text-sm cursor-pointer">
+                              <Zap className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
+                              {player.inventory.powerups.length}
+                            </div>
+                          </DialogTrigger>
+                          <DialogContent className="">
+                            <DialogHeader>
+                              <DialogTitle>Powerups</DialogTitle>
+                              <DialogDescription>
+                                These are the powerups you have collected.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                              <DialogClose asChild>
+                                <Button>Close</Button>
+                              </DialogClose>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
                       )}
                     </div>
                     <div className="flex items-center gap-0.5 mb-1 w-full">
@@ -157,7 +195,7 @@ const InGamePlayerCards = ({
                           ease: "easeOut",
                         },
                       }}
-                      className="relative z-10 cursor-pointer"
+                      className="relative z-10"
                     >
                       <Card className="p-2 h-18 shadow-md ring-1 ring-green-500 border-green-500 bg-green-100 dark:bg-green-800/30 dark:border-green-800">
                         {cardContent}

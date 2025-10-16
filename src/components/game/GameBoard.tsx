@@ -78,13 +78,13 @@ export function GameBoard() {
   }, [clerkUser]);
 
   // for dev testing
-  // useEffect(() => {
-  //   if (gameState.players.length < 16 && clerkUser) {
-  //     setTimeout(() => {
-  //       setName("p" + (gameState.players.length + 1));
-  //     }, 50);
-  //   }
-  // }, [gameState.players.length]);
+  useEffect(() => {
+    if (gameState.players.length < 16 && clerkUser) {
+      setTimeout(() => {
+        setName("p" + (gameState.players.length + 1));
+      }, 50);
+    }
+  }, [gameState.players.length]);
 
   return (
     <div className="w-full h-full pb-4 flex flex-col">
