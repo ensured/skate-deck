@@ -101,9 +101,9 @@ const InGamePlayerCards = ({
                         )}
                     </div>
                   </div>
-                  <div className="flex flex-col items-end justify-between h-full flex-shrink-0 ml-2">
-                    <div className="flex items-center gap-1">
-                      <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
+                  <div className="flex flex-col items-end justify-between h-full flex-shrink-0 ml-2 mt-1">
+                    <div className="flex items-center gap-0.5">
+                      <Trophy className="w-3 h-3 lg:w-5 lg:h-5" />
                       <span className="text-xs sm:text-sm md:text-base font-medium">
                         {player.score}
                       </span>

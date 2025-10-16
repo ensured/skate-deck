@@ -101,7 +101,7 @@ export function GameBoard() {
           }}
           className="w-full h-full"
         >
-          <div className="pt-6 px-2 flex flex-col lg:flex-row overflow-hidden">
+          <div className="pt-6  flex flex-col lg:flex-row overflow-hidden">
             <div className="flex-1  overflow-hidden justify-center items-center">
               <div className="overflow-auto w-full max-w-[48em] mx-auto">
                 {gameState.status === "lobby" && (

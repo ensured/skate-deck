@@ -19,16 +19,32 @@ const InGameHeader = ({
 }) => {
   return (
     <div className="flex flex-wrap justify-center items-center gap-2 -mb-1">
-      <Badge variant="default" className="text-sm">
+      <Badge
+        variant="outline"
+        className="text-sm"
+        style={{
+          fontSize: "0.75rem",
+        }}
+      >
         Players ({gameState.players.length})
       </Badge>
-      <Badge variant="default" className="text-sm">
-        Status: {gameState.status.toUpperCase()}
-      </Badge>
-      <Badge variant="default" className="text-sm">
+
+      <Badge
+        variant="outline"
+        className="text-sm"
+        style={{
+          fontSize: "0.75rem",
+        }}
+      >
         Round {gameState.round}
       </Badge>
-      <Badge variant="default" className="text-sm">
+      <Badge
+        variant="outline"
+        className="text-xs"
+        style={{
+          fontSize: "0.75rem",
+        }}
+      >
         {getDeckStatus().remaining}/{getDeckStatus().total} cards
       </Badge>
       <Dialog>
@@ -36,16 +52,16 @@ const InGameHeader = ({
           <Button
             variant="outline"
             size="sm"
-            className="h-7 gap-1 text-sm !bg-accent/95"
+            className="h-5 gap-1 text-[0.75rem] !bg-accent/20"
           >
-            <ScrollText className="h-3.5 w-3.5" />
+            <ScrollText className="!h-[0.84rem] !w-[0.84rem]" />
             Log ({gameState.gameLog.length})
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ScrollText className="h-5 w-5" />
+            <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <ScrollText className="h-6 w-6 sm:h-7 sm:w-7" />
               Game Log
             </DialogTitle>
           </DialogHeader>
@@ -63,7 +79,7 @@ const InGameHeader = ({
               gameState.gameLog.slice(-50).map((log, index) => (
                 <div
                   key={index}
-                  className="text-sm p-3 bg-muted/50 rounded-lg border hover:bg-muted transition-colors"
+                  className="text-sm p-3 bg-muted/20 rounded-lg border hover:bg-accent/70 transition-all duration-100"
                 >
                   {log}
                 </div>
