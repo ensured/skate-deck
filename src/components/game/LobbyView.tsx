@@ -42,14 +42,12 @@ type LobbyViewProps = {
   playerRef: RefObject<HTMLDivElement | null>;
   name: string;
   setName: (name: string) => void;
-  isGameStarting: boolean;
   handleAddPlayer: () => void;
   shufflePlayers: boolean;
   toggleShufflePlayers: () => void;
   scrolledAtTop: boolean;
   setScrolledAtTop: (value: boolean) => void;
   removePlayer: (playerId: number) => void;
-  setGameState: (gameState: GameState) => void;
   updatePlayerName: (id: number, name: string) => void;
 };
 
@@ -62,14 +60,12 @@ const LobbyView = ({
   playerRef,
   name,
   setName,
-  isGameStarting,
   handleAddPlayer,
   shufflePlayers,
   toggleShufflePlayers,
   scrolledAtTop,
   setScrolledAtTop,
   removePlayer,
-  setGameState,
   updatePlayerName,
 }: LobbyViewProps) => {
   const [newPlayerName, setNewPlayerName] = useState("");
@@ -267,13 +263,14 @@ const LobbyView = ({
                               </div>
                             </div>
                             <DialogFooter className="relative">
-                              <DialogClose asChild>
+                              <DialogClose asChild className="cursor-pointer">
                                 <Button variant="outline">Cancel</Button>
                               </DialogClose>
                               <Button
                                 onClick={() =>
                                   handleChangeUsername(player.name)
                                 }
+                                className="cursor-pointer"
                                 disabled={
                                   loading ||
                                   newPlayerName === player.name ||

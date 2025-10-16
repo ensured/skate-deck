@@ -164,7 +164,6 @@ export function GameBoard() {
                 playerRef={playerRef}
                 name={name}
                 setName={setName}
-                isGameStarting={gameState.status === "lobby"}
                 handleAddPlayer={handleAddPlayer}
                 removePlayer={removePlayer}
                 shufflePlayers={shufflePlayers}
@@ -172,7 +171,6 @@ export function GameBoard() {
                 scrolledAtTop={scrolledAtTop}
                 setScrolledAtTop={setScrolledAtTop}
                 startGame={startGame}
-                setGameState={setGameState}
                 updatePlayerName={updatePlayerName}
               />
             )}
