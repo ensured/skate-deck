@@ -29,6 +29,7 @@ export interface GameState {
   selectedTrick?: TrickCard;
   winner?: Player; // The winner of the game, if any
   currentRoundTurns: number; // Number of turns taken in the current round
+  equipmentMalfunction: boolean; // Whether equipment malfunction is active for the current turn
   settings: {
     powerUpChance: number; // 0 to 1 (0% to 100%), chance to get a power-up when landing a trick
   };

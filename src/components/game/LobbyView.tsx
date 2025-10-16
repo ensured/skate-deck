@@ -70,7 +70,7 @@ const LobbyView = ({
   const [editingName, setEditingName] = useState<string>("");
   const editingInputRef = useRef<HTMLInputElement>(null);
   const [newPlayerNameInput, setNewPlayerNameInput] = useState(
-    gameState.players[0].name
+    (gameState.players[0] && gameState.players[0].name) || ""
   );
   const [isChangeUsernameDialogOpen, setIsChangeUsernameDialogOpen] =
     useState(false);

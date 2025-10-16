@@ -1,7 +1,7 @@
 "use client";
 import { useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
-import { ClerkUser } from "@/types/user";
+import { ClerkUser } from "@/types/clerkUser";
 import { getUserByClerkId } from "@/actions/actions";
 
 const useUser = () => {

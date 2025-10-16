@@ -6,7 +6,7 @@ import { Badge } from "../ui/badge";
 import { Check, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { difficultyColors } from "@/types/tricks";
-import { ClerkUser } from "@/types/user";
+import { ClerkUser } from "@/types/clerkUser";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { PowerUpsDialog } from "../game/PowerUpsDialog";
@@ -269,17 +269,24 @@ export function TrickCard({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="cursor-pointer relative h-12 w-12 rounded-full bg-background border border-border shadow-sm hover:bg-accent hover:text-accent-foreground transition-colors group"
-                          onClick={() => setShowPowerUps(true)}
+                          className={`cursor-pointer relative h-12 w-12 rounded-full shadow-sm transition-colors group ${
+                            gameState.equipmentMalfunction
+                              ? "bg-red-100 border-red-300 dark:bg-red-900/20 dark:border-red-800 opacity-50 cursor-not-allowed"
+                              : "bg-background border-border hover:bg-accent hover:text-accent-foreground"
+                          }`}
+                          onClick={() => !gameState.equipmentMalfunction && setShowPowerUps(true)}
+                          disabled={gameState.equipmentMalfunction}
                         >
                           <Zap
                             className={`h-5 w-5 transition-all duration-200 ${
                               powerUps.length > 0
                                 ? "text-primary scale-110"
                                 : "text-muted-foreground group-hover:text-primary"
+                            } ${
+                              gameState.equipmentMalfunction ? "text-red-500" : ""
                             }`}
                           />
-                          {powerUps.length > 0 && (
+                          {powerUps.length > 0 && !gameState.equipmentMalfunction && (
                             <motion.span
                               key={`powerup-${powerUps.length}`}
                               initial={{ scale: 0, opacity: 0 }}
@@ -301,6 +308,15 @@ export function TrickCard({
                             >
                               {powerUps.length}
                             </motion.span>
+                          )}
+                          {gameState.equipmentMalfunction && (
+                            <motion.div
+                              initial={{ scale: 0, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold"
+                            >
+                              ⚠️
+                            </motion.div>
                           )}
                         </Button>
                       </div>

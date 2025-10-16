@@ -84,6 +84,7 @@ export const useGame = () => {
     currentAttempts: {},
     totalDeckSize: 0,
     currentRoundTurns: 0,
+    equipmentMalfunction: false,
     settings: {
       powerUpChance: 0.05,
     },
@@ -678,6 +679,8 @@ export const useGame = () => {
     const nextIndex = (currentIndex + 1) % activePlayers.length;
     const nextPlayer = activePlayers[nextIndex];
 
+    const malfunctionChance = Math.random() < 0.05;
+
     // Prepare all state updates
     const newGameState = {
       ...currentGameState,
@@ -694,6 +697,7 @@ export const useGame = () => {
       leaderConsecutiveWins: shouldRotateOnMiss
         ? 0 // Reset consecutive wins only when leader misses
         : currentGameState.leaderConsecutiveWins, // Keep the current streak otherwise
+      equipmentMalfunction: malfunctionChance,
       gameLog: [
         ...currentGameState.gameLog,
         `❌ ${currentPlayer.name} missed the ${
@@ -705,6 +709,11 @@ export const useGame = () => {
             ? ` - ${currentPlayer.name} is ELIMINATED with a score of ${currentPlayer.score}! 👋`
             : ""
         }`,
+        ...(malfunctionChance
+          ? [
+              `⚠️ Equipment malfunction! Skill cards are disabled for this turn.`,
+            ]
+          : []),
       ],
     };
 
@@ -775,14 +784,30 @@ export const useGame = () => {
     const currentIndex = activePlayers.findIndex(
       (p) => p.id === currentGameState.currentPlayerId
     );
-    const nextIndex = (currentIndex + 1) % activePlayers.length;
-    const nextPlayer = activePlayers[nextIndex];
+    const nextPlayerIndex = (currentIndex + 1) % activePlayers.length;
+    const nextPlayer = activePlayers[nextPlayerIndex];
+
+    const maxLettersAmongPlayers = Math.max(
+      ...currentGameState.players.map((p) => p.letters)
+    );
+    const playersNotWithMostLetters = currentGameState.players.filter(
+      (p) => p.letters < maxLettersAmongPlayers
+    );
+    const isCurrentPlayerEligibleForMalfunction =
+      playersNotWithMostLetters.some(
+        (p) => p.id === currentGameState.currentPlayerId
+      );
+
+    // players with the most letters have a 20% chance of not being able to use any powerups while all other players have a 5% chance
+    const malfunctionTriggerChance = isCurrentPlayerEligibleForMalfunction
+      ? Math.random() < 0.05
+      : Math.random() < 0.2;
 
     // Prepare all state updates
     const newGameState = {
       ...currentGameState,
       currentPlayerId: nextPlayer.id,
-      currentTurnIndex: nextIndex,
+      currentTurnIndex: nextPlayerIndex,
       players: currentGameState.players.map((p) =>
         p.id === currentGameState.currentPlayerId
           ? {
@@ -798,6 +823,22 @@ export const useGame = () => {
         currentGameState.currentLeaderId === currentGameState.currentPlayerId
           ? currentGameState.leaderConsecutiveWins + 1
           : currentGameState.leaderConsecutiveWins,
+      equipmentMalfunction: malfunctionTriggerChance,
+      gameLog: [
+        ...currentGameState.gameLog,
+        `🎉 ${
+          currentGameState.players.find(
+            (p) => p.id === currentGameState.currentPlayerId
+          )?.name
+        } landed the ${
+          currentGameState.currentTrick?.name || "trick"
+        } and earned ${currentGameState.currentTrick?.points || 0} points!`,
+        ...(malfunctionTriggerChance
+          ? [
+              `⚠️ Equipment malfunction! Skill cards are disabled for this turn.`,
+            ]
+          : []),
+      ],
     };
 
     // Update state first
