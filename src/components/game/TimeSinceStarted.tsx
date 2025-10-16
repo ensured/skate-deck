@@ -7,9 +7,17 @@ const TimeSinceStarted = ({ startTime }: { startTime: Date }) => {
   const [timeSinceStarted, setTimeSinceStarted] = useState(0);
 
   useEffect(() => {
+    // Initialize the time when startTime changes
+    setTimeSinceStarted(Date.now() - startTime.getTime());
+
     const interval = setInterval(() => {
-      setTimeSinceStarted(Date.now() - startTime.getTime());
+      setTimeSinceStarted(prevTime => {
+        // Calculate the time that has passed since the last update
+        const elapsed = Date.now() - startTime.getTime();
+        return elapsed;
+      });
     }, 1000);
+
     return () => clearInterval(interval);
   }, [startTime]);
 
