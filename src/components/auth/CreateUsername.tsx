@@ -75,7 +75,6 @@ export function CreateUsername({ userId }: { userId: string }) {
         }, 3000);
       }
     } catch (err) {
-      console.error("Error creating user:", err);
       setError("An error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -86,17 +85,6 @@ export function CreateUsername({ userId }: { userId: string }) {
     return (
       <div className="w-full max-w-md p-6 mx-auto mt-10 border rounded-lg">
         <Skeleton className="h-[12.4rem] w-full rounded-lg" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="w-full max-w-md p-6 mx-auto mt-10 border rounded-lg">
-        <div className="mb-6 text-center">
-          <p className="text-red-500 mb-4">{error}</p>
-          <Button onClick={() => router.push("/")}>Try Again</Button>
-        </div>
       </div>
     );
   }
@@ -118,11 +106,15 @@ export function CreateUsername({ userId }: { userId: string }) {
                 type="text"
                 placeholder="Enter your username"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) =>
+                  setUsername(e.target.value.replace(/[^a-zA-Z0-9]/g, ""))
+                }
                 disabled={isLoading || isSubmitting || isSuccess}
                 className="w-full"
               />
             </div>
+
+            {error && <p className="text-red-500 text-sm">{error}</p>}
 
             <Button
               type="submit"
@@ -138,51 +130,87 @@ export function CreateUsername({ userId }: { userId: string }) {
       ) : (
         <AnimatePresence>
           <motion.div
-            initial={{ opacity: 0, y: 0 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="w-full max-w-md p-6 mx-auto mt-10 border rounded-lg text-center bg-card text-card-foreground"
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{
+              duration: 0.6,
+              ease: [0.25, 0.46, 0.45, 0.94], // Custom easing for smooth entrance
+            }}
+            className="w-full max-w-md p-8 mx-auto mt-10 border rounded-2xl bg-gradient-to-br from-primary/5 via-background to-purple-500/5 shadow-2xl backdrop-blur-sm"
           >
+            {/* Success Icon */}
             <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
               transition={{
                 delay: 0.2,
                 type: "spring",
                 stiffness: 200,
-                damping: 10,
+                damping: 15,
+                mass: 0.8,
               }}
-              className="flex justify-center mb-4"
+              className="flex justify-center mb-6"
             >
-              <div className="w-12 h-12 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center ">
-                <CheckCircle className="w-6 h-6 animate-pulse" />
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+                  <CheckCircle className="w-8 h-8 text-white" />
+                </div>
+                {/* Pulsing ring effect */}
+                <motion.div
+                  initial={{ scale: 1, opacity: 0.8 }}
+                  animate={{
+                    scale: [1, 1.4, 1],
+                    opacity: [0.8, 0, 0.8],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                  className="absolute inset-0 rounded-full bg-green-400/30"
+                />
               </div>
             </motion.div>
-            <motion.h2
-              initial={{ y: 10, opacity: 0 }}
+
+            {/* Welcome Message */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.22 }}
-              className="text-xl font-semibold text-foreground mb-2"
+              transition={{
+                delay: 0.4,
+                duration: 0.5,
+                ease: "easeOut",
+              }}
+              className="text-center space-y-2"
             >
-              Welcome, {username}!
-            </motion.h2>
-            <motion.p
-              initial={{ y: 10, opacity: 0 }}
+              <motion.h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                Welcome, {username}!
+              </motion.h2>
+              <motion.p
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.6, duration: 0.4 }}
+                className="text-muted-foreground"
+              >
+                Your username has been created successfully!
+              </motion.p>
+            </motion.div>
+
+            {/* Loading indicator */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.25 }}
-              className="text-primary mb-6"
+              transition={{
+                delay: 1.2,
+                duration: 0.5,
+                ease: "easeOut",
+              }}
+              className="flex justify-center items-center mt-6 space-x-2 text-primary/70"
             >
-              Your username has been created successfully!
-            </motion.p>
-            <motion.p
-              initial={{ y: 0, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 1.11 }}
-              className="text-primary flex items-center justify-center "
-            >
-              <Loader2 className="animate-spin text-muted" />
-            </motion.p>
+              <Loader2 className="animate-spin w-4 h-4" />
+              <span className="text-sm">Redirecting to game...</span>
+            </motion.div>
           </motion.div>
         </AnimatePresence>
       )}

@@ -20,7 +20,7 @@ export function ThemeToggle() {
       <Button
         variant="ghost"
         size="icon"
-        className="w-10 h-10 cursor-pointer"
+        className="w-10 h-10"
         aria-label="Toggle theme"
       >
         <Skeleton className="sm:size-6 size-5" />
@@ -33,7 +33,7 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="w-10 h-10 cursor-pointer"
+      className="w-10 h-10 cursor-pointer hover:text-primary/85"
       aria-label="Toggle theme"
     >
       {theme === "light" ? (

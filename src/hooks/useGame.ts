@@ -103,6 +103,7 @@ export const useGame = () => {
         players: [
           {
             id: 0,
+            clerkId: clerkUser.clerkId,
             name: clerkUser.username,
             letters: 0,
             isEliminated: false,

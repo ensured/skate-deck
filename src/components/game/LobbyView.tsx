@@ -31,6 +31,7 @@ import { Label } from "../ui/label";
 import { changeUsername } from "@/actions/actions";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useRef } from "react";
 
 type LobbyViewProps = {
   gameState: GameState;
@@ -38,7 +39,6 @@ type LobbyViewProps = {
   isHowToPlayOpen: boolean;
   setIsHowToPlayOpen: (open: boolean) => void;
   nameRef: RefObject<HTMLInputElement | null>;
-  playerRef: RefObject<HTMLDivElement | null>;
   name: string;
   setName: (name: string) => void;
   handleAddPlayer: () => void;
@@ -56,7 +56,6 @@ const LobbyView = ({
   isHowToPlayOpen,
   setIsHowToPlayOpen,
   nameRef,
-  playerRef,
   name,
   setName,
   handleAddPlayer,
@@ -67,55 +66,42 @@ const LobbyView = ({
   removePlayer,
   updatePlayerName,
 }: LobbyViewProps) => {
-  const [newPlayerName, setNewPlayerName] = useState("");
+  const [newPlayerNameInput, setNewPlayerNameInput] = useState("");
   const [isChangeUsernameDialogOpen, setIsChangeUsernameDialogOpen] =
     useState(false);
+  const newPlayerNameInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleChangeUsername = async (oldName: string) => {
+  const handleChangeUsername = async (clerkId: string) => {
     setLoading(true);
     try {
-      const result = await changeUsername(oldName, newPlayerName);
+      const result = await changeUsername(clerkId, newPlayerNameInput);
 
-      if (result.success) {
+      if (result?.success) {
         toast.success("Username changed successfully");
-        updatePlayerName(gameState.currentPlayerId, newPlayerName);
+        updatePlayerName(gameState.currentPlayerId, newPlayerNameInput);
         setIsChangeUsernameDialogOpen(false);
-      } else if (result.error) {
-        toast.error("Error", {
-          description: result.error,
+      } else if (result?.error) {
+        const toastDescription = result?.error.includes("exceeded")
+          ? ``
+          : `${result.remaining} Remaining Attempt${
+              result.remaining === 1 ? "" : "s"
+            }`;
+        toast.error(result.error, {
+          description: toastDescription,
           duration: 5000,
         });
-
-        // If it's a rate limit error, show a more prominent message
-        if (result.error.includes("Rate limit exceeded")) {
-          toast.error("Too Many Requests", {
-            description: result.error,
-            duration: 5000,
-            icon: <X className="w-4.5 h-4.5 text-red-500" />,
-          });
-        }
-
-        if (result.error.includes("Username already taken")) {
-          toast.error("Username already taken", {
-            description: result.error,
-            duration: 5000,
-            icon: <X className="w-4.5 h-4.5 text-red-500" />,
-          });
-        }
-
-        setIsChangeUsernameDialogOpen(false);
       }
     } catch (error) {
       // Handle any unexpected errors
       const errorMessage =
         error instanceof Error ? error.message : "An unexpected error occurred";
-      toast.error("Error", {
-        description: errorMessage,
+      toast.error(errorMessage, {
         duration: 5000,
       });
     } finally {
       setLoading(false);
+      newPlayerNameInputRef.current?.focus();
     }
   };
   return (
@@ -163,7 +149,9 @@ const LobbyView = ({
                 ref={nameRef}
                 placeholder="Enter player name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) =>
+                  setName(e.target.value.replace(/[^a-zA-Z0-9]/g, ""))
+                }
                 onKeyDown={(e) => e.key === "Enter" && handleAddPlayer()}
                 className=" text-base"
                 maxLength={20}
@@ -214,14 +202,9 @@ const LobbyView = ({
                 const target = e.target as HTMLDivElement;
                 setScrolledAtTop(target.scrollTop === 0);
               }}
-              ref={playerRef}
             >
-              {gameState.players.map((player) => (
-                <div
-                  key={player.id}
-                  ref={playerRef}
-                  className="border-b border-border"
-                >
+              {gameState.players.map((player, idx) => (
+                <div key={idx} className="border-b border-border">
                   <div className="flex items-center justify-between py-0.5 px-2 w-full ">
                     <div className="flex items-center gap-1.5">
                       <div className="flex font-medium">{player.name}</div>
@@ -249,15 +232,22 @@ const LobbyView = ({
                               </DialogDescription>
                             </DialogHeader>
                             <div className="grid gap-4 py-4">
-                              <div className="grid grid-cols-4 items-center gap-4">
+                              <div className="flex flex-col items-center gap-4">
                                 <Label htmlFor="username">New Username</Label>
                                 <Input
                                   id="username"
                                   type="text"
-                                  value={newPlayerName}
+                                  ref={newPlayerNameInputRef}
+                                  value={newPlayerNameInput}
                                   onChange={(e) =>
-                                    setNewPlayerName(e.target.value)
+                                    setNewPlayerNameInput(
+                                      e.target.value.replace(
+                                        /[^a-zA-Z0-9]/g,
+                                        ""
+                                      )
+                                    )
                                   }
+                                  className="max-w-[20rem]"
                                 />
                               </div>
                             </div>
@@ -267,14 +257,14 @@ const LobbyView = ({
                               </DialogClose>
                               <Button
                                 onClick={() =>
-                                  handleChangeUsername(player.name)
+                                  handleChangeUsername(player.clerkId!)
                                 }
                                 className="cursor-pointer"
                                 disabled={
                                   loading ||
-                                  newPlayerName === player.name ||
-                                  newPlayerName.trim() === "" ||
-                                  newPlayerName.length < 3
+                                  newPlayerNameInput === player.name ||
+                                  newPlayerNameInput.trim() === "" ||
+                                  newPlayerNameInput.length < 3
                                 }
                               >
                                 Save changes{" "}

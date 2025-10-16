@@ -2,6 +2,20 @@
 import { prisma } from "@/db";
 import { headers } from "next/headers";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { formatDistance, subDays } from "date-fns";
+
+export const isUsernameTaken = async (username: string) => {
+  const existingUsers = await prisma.user.findMany({
+    where: {
+      username: {
+        equals: username,
+        mode: "insensitive",
+      },
+    },
+  });
+
+  return existingUsers.length > 0;
+};
 
 export const getUserByClerkId = async (clerkId: string) => {
   const user = await prisma.user.findUnique({
@@ -14,16 +28,11 @@ export const getUserByClerkId = async (clerkId: string) => {
 
 export const createUser = async (clerkId: string, username: string) => {
   try {
-    // Check if username is already taken
-    const existingUser = await prisma.user.findUnique({
-      where: { username },
-    });
-
-    if (existingUser) {
+    const isNameTaken = await isUsernameTaken(username);
+    if (isNameTaken) {
       return { success: false, error: "Username already taken" };
     }
 
-    // Create new user
     const user = await prisma.user.create({
       data: {
         clerkId,
@@ -41,52 +50,60 @@ export const createUser = async (clerkId: string, username: string) => {
   }
 };
 
-export const isUsernameTaken = async (username: string) => {
-  const existingUser = await prisma.user.findUnique({
-    where: {
-      username: username,
-    },
-  });
-  return existingUser !== null;
-};
-
-export const changeUsername = async (oldUsername: string, username: string) => {
+export const changeUsername = async (clerkId: string, username: string) => {
   try {
     const headersList = await headers();
     const ip = (headersList.get("x-forwarded-for") || "127.0.0.1")
       .split(",")[0]
       .trim();
 
-    // Check rate limit
     const rateLimit = checkRateLimit(ip);
     if (!rateLimit.allowed) {
-      const resetTime = new Date(rateLimit.reset).toLocaleTimeString();
-      return { 
-        success: false, 
-        error: `Rate limit exceeded. Try again after ${resetTime}.`,
-        remaining: rateLimit.remaining 
+      return {
+        success: false,
+        error: `Rate limit exceeded. Try again ${formatDistance(
+          rateLimit.reset,
+          new Date(),
+          { addSuffix: true }
+        )}.`,
+        remaining: rateLimit.remaining,
       };
     }
 
-    // Check if username is already taken
     const existingUser = await prisma.user.findUnique({
-      where: { username },
+      where: { clerkId: clerkId },
     });
 
     if (existingUser) {
-      return { success: false, error: "Username already taken", remaining: rateLimit.remaining };
+      const conflictingUsers = await prisma.user.findMany({
+        where: {
+          username: {
+            equals: username,
+            mode: "insensitive",
+          },
+          clerkId: {
+            not: clerkId,
+          },
+        },
+      });
+
+      if (conflictingUsers.length > 0) {
+        return {
+          success: false,
+          error: "Username already taken",
+          remaining: rateLimit.remaining,
+        };
+      }
     }
 
-    // Update username
     const user = await prisma.user.update({
       where: {
-        username: oldUsername,
+        clerkId: clerkId,
       },
       data: {
-        username,
+        username: username,
       },
     });
-
     return { success: true, user, remaining: rateLimit.remaining };
   } catch (error) {
     console.error(error);

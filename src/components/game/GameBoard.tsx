@@ -31,7 +31,6 @@ export function GameBoard() {
   } = useGame();
 
   const nameRef = useRef<HTMLInputElement>(null);
-  const playerRef = useRef(null);
 
   const [name, setName] = useState("");
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false);
@@ -109,7 +108,6 @@ export function GameBoard() {
                     isHowToPlayOpen={isHowToPlayOpen}
                     setIsHowToPlayOpen={setIsHowToPlayOpen}
                     nameRef={nameRef}
-                    playerRef={playerRef}
                     name={name}
                     setName={setName}
                     handleAddPlayer={handleAddPlayer}
