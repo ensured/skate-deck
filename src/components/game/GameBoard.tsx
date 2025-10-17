@@ -151,10 +151,6 @@ export function GameBoard() {
                           points={gameState.currentTrick.points}
                           description={gameState.currentTrick.description}
                           currentPlayer={currentPlayer.name}
-                          user={{
-                            clerkId: currentPlayer.id.toString(),
-                            username: currentPlayer.name,
-                          }}
                           gameState={gameState}
                           getDeckStatus={getDeckStatus}
                           isLeader={

@@ -6,7 +6,6 @@ import { Badge } from "../ui/badge";
 import { Check, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { difficultyColors } from "@/types/tricks";
-import { ClerkUser } from "@/types/clerkUser";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { PowerUpsDialog } from "../game/PowerUpsDialog";
@@ -28,7 +27,6 @@ interface TrickCardProps {
   points: number;
   description: string;
   currentPlayer: string;
-  user: ClerkUser;
   isLeader: boolean;
   powerUps?: Powerup[]; // Add power-ups array to props
   peekNextCards?: (count: number) => TrickCardType[];
@@ -274,7 +272,10 @@ export function TrickCard({
                               ? "bg-red-100 border-red-300 dark:bg-red-900/20 dark:border-red-800 opacity-50 cursor-not-allowed"
                               : "bg-background border-border hover:bg-accent hover:text-accent-foreground"
                           }`}
-                          onClick={() => !gameState.equipmentMalfunction && setShowPowerUps(true)}
+                          onClick={() =>
+                            !gameState.equipmentMalfunction &&
+                            setShowPowerUps(true)
+                          }
                           disabled={gameState.equipmentMalfunction}
                         >
                           <Zap
@@ -283,7 +284,9 @@ export function TrickCard({
                                 ? "text-primary scale-110"
                                 : "text-muted-foreground group-hover:text-primary"
                             } ${
-                              gameState.equipmentMalfunction ? "text-red-500" : ""
+                              gameState.equipmentMalfunction
+                                ? "text-red-500"
+                                : ""
                             }`}
                           />
                           {powerUps.length > 0 && (
