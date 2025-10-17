@@ -36,7 +36,7 @@ const InGameHeader = ({
           fontSize: "0.75rem",
         }}
       >
-        Round {gameState.round}
+        Round {gameState.totalRounds}
       </Badge>
       <Badge
         variant="outline"

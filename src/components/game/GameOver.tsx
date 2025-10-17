@@ -22,8 +22,8 @@ const GameOver = ({ gameState, reset }: GameOverProps) => {
           <div className="mb-4 flex flex-col items-center gap-1.5">
             <Trophy className="w-8 h-8 sm:w-12 sm:h-12 mx-auto text-purple-500 mb-2" />
             <p className="text-base sm:text-lg font-medium mb-3">
-              {gameState.winner?.name || "Unknown"} won in {gameState.round}{" "}
-              Rounds!
+              {gameState.winner?.name || "Unknown"} won in{" "}
+              {gameState.totalRounds} rounds!
             </p>
 
             {/* Show scores of all other players */}

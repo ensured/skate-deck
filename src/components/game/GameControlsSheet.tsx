@@ -83,7 +83,7 @@ const GameControlsSheet = ({
             {/* 
                 Power-up Chance Control (only shows at the beginning of the game until the first player makes a game action) 
                 */}
-            {gameState.round <= 1 &&
+            {gameState.totalRounds <= 1 &&
               gameState.currentPlayerId === gameState.players[0].id && (
                 <div className=" grid grid-cols-2 gap-1 items-center border border-border/95 rounded-md p-4">
                   <div className="flex items-center justify-between col-span-1 p-2">
