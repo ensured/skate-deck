@@ -18,12 +18,18 @@ export const isUsernameTaken = async (username: string) => {
 };
 
 export const getUserByClerkId = async (clerkId: string) => {
-  const user = await prisma.user.findUnique({
-    where: {
-      clerkId: clerkId,
-    },
-  });
-  return user;
+  console.log("Getting user by clerkId:", clerkId);
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        clerkId: clerkId,
+      },
+    });
+    return user;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 };
 
 export const createUser = async (clerkId: string, username: string) => {
