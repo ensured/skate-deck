@@ -1,6 +1,5 @@
 "use client";
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
-import useUser from "./useUser";
 import { TrickCard, trickCards } from "@/types/tricks";
 import { GameState, GameStatus } from "@/types/game";
 import { toast } from "sonner";
@@ -9,6 +8,7 @@ import { chooseTrick, Powerup, shield } from "../types/powerups";
 import { startingPowerups } from "../types/powerups";
 import { Player } from "@/types/player";
 import { getRandomTip } from "@/types/tips";
+import useClerkUser from "./useUser";
 
 // Game constants
 const MAX_LETTERS = 5; // S.K.A.T.E
@@ -16,11 +16,11 @@ const TIP_INTERVAL_SECONDS = 60; // Show tips every 60 seconds
 const MAX_PLAYERS = 16;
 const MIN_PLAYER_NAME_LENGTH = 2;
 const MAX_PLAYER_NAME_LENGTH = 20;
-const LEADER_WIN_THRESHOLD = 3;
+const MAX_CONSECUTIVE_WINS_AS_LEADER = 3;
 const SHIELD_CHANCE = 0.5; // 50% chance for shield when granting powerup
 
 export const useGame = () => {
-  const { clerkUser, isLoaded: isClerkUserLoaded } = useUser();
+  const { clerkUser, isClerkUserLoaded } = useClerkUser();
   const [deck, setDeck] = useState<TrickCard[]>([]);
 
   const initializeDeck = useCallback(() => {
@@ -328,7 +328,7 @@ export const useGame = () => {
 
     // Check if we should rotate leadership (e.g., after 3 wins)
     const shouldRotate =
-      gameState.leaderConsecutiveWins >= LEADER_WIN_THRESHOLD &&
+      gameState.leaderConsecutiveWins >= MAX_CONSECUTIVE_WINS_AS_LEADER &&
       currentPlayer.id === gameState.currentLeaderId;
 
     if (shouldRotate) {
@@ -767,8 +767,8 @@ export const useGame = () => {
     const shouldGetNewTrick =
       isEndOfRound ||
       (currentGameState.currentLeaderId === currentGameState.currentPlayerId &&
-        currentGameState.leaderConsecutiveWins >= LEADER_WIN_THRESHOLD);
-
+        currentGameState.leaderConsecutiveWins >=
+          MAX_CONSECUTIVE_WINS_AS_LEADER);
     let newTrick = currentGameState.currentTrick;
 
     if (shouldGetNewTrick) {

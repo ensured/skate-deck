@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { ClerkUser } from "@/types/clerkUser";
 import { getUserByClerkId } from "@/actions/actions";
 
-const useUser = () => {
-  const { userId, isLoaded } = useAuth();
+const useClerkUser = () => {
+  const { userId, isLoaded: isClerkUserLoaded } = useAuth();
   const [clerkUser, setUser] = useState<ClerkUser | null>(null);
 
   useEffect(() => {
@@ -17,9 +17,9 @@ const useUser = () => {
       }
     };
     fetchUser();
-  }, [isLoaded, userId]);
+  }, [isClerkUserLoaded, userId]);
 
-  return { clerkUser, isLoaded };
+  return { clerkUser, isClerkUserLoaded };
 };
 
-export default useUser;
+export default useClerkUser;
