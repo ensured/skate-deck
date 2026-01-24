@@ -43,11 +43,10 @@ const InGamePlayerCards = ({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-2">
                       <span
-                        className={`font-medium truncate ${
-                          player.isEliminated
+                        className={`font-medium truncate ${player.isEliminated
                             ? "line-through text-muted-foreground"
                             : ""
-                        }`}
+                          }`}
                       >
                         {currentPlayer?.id === player.id ? (
                           <motion.span
@@ -72,11 +71,6 @@ const InGamePlayerCards = ({
                                   duration: 0.7,
                                   delay: index * 0.09,
                                 }}
-                                className={`${
-                                  player.isCreator
-                                    ? "underline decoration-purple-500"
-                                    : ""
-                                }`}
                               >
                                 {letter}
                               </motion.span>
@@ -121,11 +115,10 @@ const InGamePlayerCards = ({
                         {"SKATE".split("").map((letter, index) => (
                           <div
                             key={index}
-                            className={`flex-1 min-w-0 text-center font-medium text-sm border rounded px-0.5 sm:px-1 md:px-1.5 lg:px-2 ${
-                              player.letters > index
+                            className={`flex-1 min-w-0 text-center font-medium text-sm border rounded px-0.5 sm:px-1 md:px-1.5 lg:px-2 ${player.letters > index
                                 ? "text-red-500/90 border-red-200 dark:text-red-300/90 dark:border-red-800/60 bg-red-100/70 dark:bg-red-900/20"
                                 : "border-border"
-                            }`}
+                              }`}
                           >
                             {letter}
                           </div>
@@ -203,11 +196,10 @@ const InGamePlayerCards = ({
                     </motion.div>
                   ) : (
                     <Card
-                      className={`p-2 h-18 select-none  ${
-                        player.isEliminated
+                      className={`p-2 h-18 select-none  ${player.isEliminated
                           ? "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800 opacity-60"
                           : "bg-background border-gray-200 dark:border-gray-700 hover:shadow-sm"
-                      }`}
+                        }`}
                     >
                       {cardContent}
                     </Card>

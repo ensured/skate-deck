@@ -28,7 +28,6 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import { Label } from "../ui/label";
-import { changeUsername } from "@/actions/actions";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRef } from "react";
@@ -69,13 +68,6 @@ const LobbyView = ({
   const [editingPlayerId, setEditingPlayerId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState<string>("");
   const editingInputRef = useRef<HTMLInputElement>(null);
-  const [newPlayerNameInput, setNewPlayerNameInput] = useState(
-    (gameState.players[0] && gameState.players[0].name) || ""
-  );
-  const [isChangeUsernameDialogOpen, setIsChangeUsernameDialogOpen] =
-    useState(false);
-  const newPlayerNameInputRef = useRef<HTMLInputElement>(null);
-  const [loading, setLoading] = useState(false);
 
   const handleStartEdit = (player: Player) => {
     setEditingPlayerId(player.id);
@@ -86,8 +78,8 @@ const LobbyView = ({
   const handleSaveEdit = () => {
     if (editingPlayerId && editingName.trim()) {
       const trimmedName = editingName.trim();
-      if (trimmedName.length < 3) {
-        toast.error("Player name must be at least 3 characters", {
+      if (trimmedName.length < 1) {
+        toast.error("Player name must be at least 1 character", {
           position: "top-center",
           duration: 5000,
         });
@@ -113,38 +105,6 @@ const LobbyView = ({
     setEditingName("");
   };
 
-  const handleChangeUsername = async (clerkId: string) => {
-    setLoading(true);
-    try {
-      const result = await changeUsername(clerkId, newPlayerNameInput);
-
-      if (result?.success) {
-        toast.success("Username changed successfully");
-        updatePlayerName(gameState.currentPlayerId, newPlayerNameInput);
-        setIsChangeUsernameDialogOpen(false);
-      } else if (result?.error) {
-        const toastDescription = result?.error.includes("exceeded")
-          ? ``
-          : `${result.remaining} Remaining Attempt${
-              result.remaining === 1 ? "" : "s"
-            }`;
-        toast.error(result.error, {
-          description: toastDescription,
-          duration: 5000,
-        });
-      }
-    } catch (error) {
-      // Handle any unexpected errors
-      const errorMessage =
-        error instanceof Error ? error.message : "An unexpected error occurred";
-      toast.error(errorMessage, {
-        duration: 5000,
-      });
-    } finally {
-      setLoading(false);
-      newPlayerNameInputRef.current?.focus();
-    }
-  };
   return (
     <div className="max-w-lg mx-auto animate-fade-in py-8 px-2 select-none">
       <Card className="border border-primary/15 shadow-lg">
@@ -162,8 +122,7 @@ const LobbyView = ({
                   {gameState.players.length === 0 ? (
                     <Skeleton className="h-5 w-26" />
                   ) : (
-                    `${gameState.players.length} player${
-                      gameState.players.length !== 1 ? "s" : ""
+                    `${gameState.players.length} player${gameState.players.length !== 1 ? "s" : ""
                     } in lobby`
                   )}
                 </div>
@@ -247,8 +206,8 @@ const LobbyView = ({
               {gameState.players.map((player, idx) => (
                 <div key={idx} className="border-b border-border">
                   <div className="flex items-center justify-between py-0.5 px-2 w-full ">
-                    <div className="flex items-center gap-1.5">
-                      {editingPlayerId === player.id && !player.isCreator ? (
+                    <div className="flex items-center gap-2">
+                      {editingPlayerId === player.id ? (
                         <Input
                           ref={editingInputRef}
                           value={editingName}
@@ -279,96 +238,22 @@ const LobbyView = ({
                       )}
                     </div>
                     <div className="flex items-center gap-2">
-                      {player.isCreator && (
-                        <Dialog
-                          onOpenChange={setIsChangeUsernameDialogOpen}
-                          open={isChangeUsernameDialogOpen}
-                        >
-                          <DialogTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant={"ghost"}
-                              className="cursor-pointer h-7 text-xs sm:text-sm border !border-border/50 hover:border-primary/50 transition-all"
-                            >
-                              Change Username
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Change Username</DialogTitle>
-                              <DialogDescription>
-                                Enter your new username.
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="grid gap-4 py-4">
-                              <div className="flex flex-col items-center gap-4">
-                                <Label htmlFor="username">New Username</Label>
-                                <Input
-                                  id="username"
-                                  type="text"
-                                  ref={newPlayerNameInputRef}
-                                  value={newPlayerNameInput}
-                                  onChange={(e) =>
-                                    setNewPlayerNameInput(
-                                      e.target.value.replace(
-                                        /[^a-zA-Z0-9]/g,
-                                        ""
-                                      )
-                                    )
-                                  }
-                                  className="max-w-[20rem]"
-                                />
-                              </div>
-                            </div>
-                            <DialogFooter className="relative">
-                              <DialogClose asChild className="cursor-pointer">
-                                <Button variant="outline">Cancel</Button>
-                              </DialogClose>
-                              <Button
-                                onClick={() =>
-                                  handleChangeUsername(player.clerkId!)
-                                }
-                                className="cursor-pointer"
-                                disabled={
-                                  loading ||
-                                  newPlayerNameInput === player.name ||
-                                  newPlayerNameInput.trim() === "" ||
-                                  newPlayerNameInput.length < 3
-                                }
-                              >
-                                Save changes{" "}
-                              </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                      )}
                       <Button
                         variant={"ghost"}
                         size="icon"
-                        className={`transition-all duration-100 ${
-                          player.isCreator
-                            ? "cursor-not-allowed text-black/50 dark:text-white/50"
-                            : "cursor-pointer hover:text-red-400/90 dark:hover:text-red-600/60"
-                        }`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removePlayer(player.id);
+                        className="transition-all duration-100 cursor-pointer hover:text-red-400/90 dark:hover:text-red-600/60"
+                        onClick={() => {
+                          if (player.id !== 0) {
+                            removePlayer(player.id);
+                          } else {
+                            toast.error("Cannot remove the host");
+                          }
                           nameRef.current?.focus();
                         }}
-                        disabled={
-                          gameState.players.length <= 1 || player.isCreator
-                        }
-                        title={
-                          player.isCreator
-                            ? "Cannot remove game owner"
-                            : "Remove player"
-                        }
+                        disabled={gameState.players.length <= 1}
+                        title="Remove player"
                       >
-                        {player.isCreator ? (
-                          <Lock className="w-4 h-4 " />
-                        ) : (
-                          <Trash2 className="w-4 h-4 " />
-                        )}
+                        <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>

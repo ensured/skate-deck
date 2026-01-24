@@ -8,19 +8,19 @@ import { chooseTrick, Powerup, shield } from "../types/powerups";
 import { startingPowerups } from "../types/powerups";
 import { Player } from "@/types/player";
 import { getRandomTip } from "@/types/tips";
-import useClerkUser from "./useUser";
+import useLocalUser from "./useUser";
 
 // Game constants
 const MAX_LETTERS = 5; // S.K.A.T.E
 const TIP_INTERVAL_SECONDS = 60; // Show tips every 60 seconds
 const MAX_PLAYERS = 16;
-const MIN_PLAYER_NAME_LENGTH = 2;
+const MIN_PLAYER_NAME_LENGTH = 1;
 const MAX_PLAYER_NAME_LENGTH = 20;
 const MAX_CONSECUTIVE_WINS_AS_LEADER = 3;
 const SHIELD_CHANCE = 0.5; // 50% chance for shield when granting powerup
 
 export const useGame = () => {
-  const { clerkUser, isClerkUserLoaded } = useClerkUser();
+  const { user, isLoaded } = useLocalUser();
   const [deck, setDeck] = useState<TrickCard[]>([]);
 
   const initializeDeck = useCallback(() => {
@@ -106,17 +106,15 @@ export const useGame = () => {
   }, []);
 
   useEffect(() => {
-    if (isClerkUserLoaded && clerkUser) {
+    if (isLoaded && user) {
       setGameState((prev) => ({
         ...prev,
         players: [
           {
             id: 0,
-            clerkId: clerkUser.clerkId,
-            name: clerkUser.username,
+            name: user.username,
             letters: 0,
             isEliminated: false,
-            isCreator: true,
             isLeader: true,
             score: 0,
             inventory: {
@@ -126,7 +124,7 @@ export const useGame = () => {
         ],
       }));
     }
-  }, [clerkUser, isClerkUserLoaded]);
+  }, [user, isLoaded]);
 
   // Tip system - show tips every 60 seconds
   useEffect(() => {
@@ -165,7 +163,7 @@ export const useGame = () => {
       }
 
       if (trimmedName.length < MIN_PLAYER_NAME_LENGTH) {
-        toast.error("Player name must be at least 2 characters");
+        toast.error("Player name must be at least 1 character");
         return;
       }
       if (trimmedName.length > MAX_PLAYER_NAME_LENGTH) {
@@ -193,7 +191,6 @@ export const useGame = () => {
           name: trimmedName,
           letters: 0,
           isEliminated: false,
-          isCreator: false,
           isLeader: false,
           score: 0,
         };
@@ -205,7 +202,6 @@ export const useGame = () => {
           score: newPlayer.score || 0,
           isEliminated: newPlayer.isEliminated || false,
           isLeader: prev.players.length === 0, // First player is leader
-          isCreator: prev.players.length === 0, // First player is creator
           letters: newPlayer.letters || 0,
           inventory: {
             powerups: [shield, chooseTrick],
@@ -242,12 +238,7 @@ export const useGame = () => {
 
   const removePlayer = useCallback((id: number) => {
     setGameState((prev) => {
-      const playerToRemove = prev.players.find((p) => p.id === id);
-
-      if (playerToRemove?.isCreator) {
-        toast.error("Cannot remove the game owner");
-        return prev;
-      }
+      // No need to check for creator anymore, just remove the player
 
       const updatedPlayers = prev.players.filter((p) => p.id !== id);
       return {
@@ -446,14 +437,14 @@ export const useGame = () => {
           players: currentGameState.players.map((p) =>
             p.id === currentGameState.currentPlayerId
               ? {
-                  ...p,
-                  inventory: {
-                    ...p.inventory,
-                    powerups: p.inventory.powerups.filter(
-                      (card) => card.id !== chooseTrickCard.id
-                    ),
-                  },
-                }
+                ...p,
+                inventory: {
+                  ...p.inventory,
+                  powerups: p.inventory.powerups.filter(
+                    (card) => card.id !== chooseTrickCard.id
+                  ),
+                },
+              }
               : p
           ),
           gameLog: [
@@ -497,14 +488,14 @@ export const useGame = () => {
         players: currentGameState.players.map((p) =>
           p.id === currentGameState.currentPlayerId
             ? {
-                ...p,
-                inventory: {
-                  ...p.inventory,
-                  powerups: p.inventory.powerups.filter(
-                    (c: Powerup) => c.id !== shieldCard.id
-                  ),
-                },
-              }
+              ...p,
+              inventory: {
+                ...p.inventory,
+                powerups: p.inventory.powerups.filter(
+                  (c: Powerup) => c.id !== shieldCard.id
+                ),
+              },
+            }
             : p
         ),
       },
@@ -574,12 +565,12 @@ export const useGame = () => {
         players: prev.players.map((p) =>
           p.id === playerId
             ? {
-                ...p,
-                inventory: {
-                  ...p.inventory,
-                  powerups: [...p.inventory.powerups, randomCard],
-                },
-              }
+              ...p,
+              inventory: {
+                ...p.inventory,
+                powerups: [...p.inventory.powerups, randomCard],
+              },
+            }
             : p
         ),
         newPowerUp: { playerId, card: randomCard },
@@ -700,19 +691,17 @@ export const useGame = () => {
       equipmentMalfunction: malfunctionChance,
       gameLog: [
         ...currentGameState.gameLog,
-        `❌ ${currentPlayer.name} missed the ${
-          currentGameState.currentTrick?.name || "trick"
+        `❌ ${currentPlayer.name} missed the ${currentGameState.currentTrick?.name || "trick"
         } and received letter "${"SKATE".charAt(
           currentLetters
-        )}" (${newLetters}/5)${
-          isEliminated
-            ? ` - ${currentPlayer.name} is ELIMINATED with a score of ${currentPlayer.score}! 👋`
-            : ""
+        )}" (${newLetters}/5)${isEliminated
+          ? ` - ${currentPlayer.name} is ELIMINATED with a score of ${currentPlayer.score}! 👋`
+          : ""
         }`,
         ...(malfunctionChance
           ? [
-              `⚠️ Equipment malfunction! Skill cards are disabled for this turn.`,
-            ]
+            `⚠️ Equipment malfunction! Skill cards are disabled for this turn.`,
+          ]
           : []),
       ],
     };
@@ -731,10 +720,8 @@ export const useGame = () => {
           currentPlayerId: nextLeader.id,
           gameLog: [
             ...prev.gameLog,
-            `🔄 Leadership passed to ${nextLeader.name} because ${
-              currentPlayer.name
-            } couldn't set the ${
-              currentGameState.currentTrick?.name || "trick"
+            `🔄 Leadership passed to ${nextLeader.name} because ${currentPlayer.name
+            } couldn't set the ${currentGameState.currentTrick?.name || "trick"
             }. New leader has ${nextLeader.score} points.`,
           ],
         }));
@@ -768,7 +755,7 @@ export const useGame = () => {
       isEndOfRound ||
       (currentGameState.currentLeaderId === currentGameState.currentPlayerId &&
         currentGameState.leaderConsecutiveWins >=
-          MAX_CONSECUTIVE_WINS_AS_LEADER);
+        MAX_CONSECUTIVE_WINS_AS_LEADER);
     let newTrick = currentGameState.currentTrick;
 
     if (shouldGetNewTrick) {
@@ -811,9 +798,9 @@ export const useGame = () => {
       players: currentGameState.players.map((p) =>
         p.id === currentGameState.currentPlayerId
           ? {
-              ...p,
-              score: p.score + (currentGameState.currentTrick?.points || 0),
-            }
+            ...p,
+            score: p.score + (currentGameState.currentTrick?.points || 0),
+          }
           : p
       ),
       totalRounds: roundsCount,
@@ -826,17 +813,15 @@ export const useGame = () => {
       equipmentMalfunction: malfunctionTriggerChance,
       gameLog: [
         ...currentGameState.gameLog,
-        `🎉 ${
-          currentGameState.players.find(
-            (p) => p.id === currentGameState.currentPlayerId
-          )?.name
-        } landed the ${
-          currentGameState.currentTrick?.name || "trick"
+        `🎉 ${currentGameState.players.find(
+          (p) => p.id === currentGameState.currentPlayerId
+        )?.name
+        } landed the ${currentGameState.currentTrick?.name || "trick"
         } and earned ${currentGameState.currentTrick?.points || 0} points!`,
         ...(malfunctionTriggerChance
           ? [
-              `⚠️ Equipment malfunction! Skill cards are disabled for this turn.`,
-            ]
+            `⚠️ Equipment malfunction! Skill cards are disabled for this turn.`,
+          ]
           : []),
       ],
     };
@@ -897,14 +882,14 @@ export const useGame = () => {
       const updatedPlayers = prev.players.map((p) =>
         p.id === prev.currentPlayerId
           ? {
-              ...p,
-              inventory: {
-                ...p.inventory,
-                powerups: p.inventory.powerups.filter(
-                  (card) => card.type !== "choose_trick"
-                ),
-              },
-            }
+            ...p,
+            inventory: {
+              ...p.inventory,
+              powerups: p.inventory.powerups.filter(
+                (card) => card.type !== "choose_trick"
+              ),
+            },
+          }
           : p
       );
 
@@ -915,8 +900,7 @@ export const useGame = () => {
         players: updatedPlayers,
         gameLog: [
           ...prev.gameLog,
-          `🎲 ${
-            prev.players.find((p) => p.id === prev.currentPlayerId)?.name
+          `🎲 ${prev.players.find((p) => p.id === prev.currentPlayerId)?.name
           } used Choose Trick and selected: ${trick.name}`,
         ],
       };
@@ -979,8 +963,7 @@ export const useGame = () => {
           round: 1,
           leaderConsecutiveWins: 0,
           gameLog: [
-            `🎮 Game started with ${
-              playersToUse.length
+            `🎮 Game started with ${playersToUse.length
             } players! First player is ${playersToUse[0]?.name || "unknown"}.`,
             shouldShuffle ? "🔀 Players were shuffled randomly!" : "",
           ].filter(Boolean),
@@ -1010,8 +993,8 @@ export const useGame = () => {
     reset,
     newGame,
     peekNextCards,
-    isClerkUserLoaded,
-    clerkUser,
+    isLoaded,
+    user,
     shufflePlayers,
     toggleShufflePlayers,
 

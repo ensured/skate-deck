@@ -1,25 +1,42 @@
 "use client";
-import { useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
-import { ClerkUser } from "@/types/clerkUser";
-import { getUserByClerkId } from "@/actions/actions";
+import { LocalUser } from "@/types/localUser";
+import { getLocalUser, createLocalUser } from "@/lib/localStorage";
 
-const useClerkUser = () => {
-  const { userId, isLoaded: isClerkUserLoaded } = useAuth();
-  const [clerkUser, setUser] = useState<ClerkUser | null>(null);
+const useLocalUser = () => {
+  const [user, setUser] = useState<LocalUser | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      if (userId) {
-        const user = await getUserByClerkId(userId);
-        console.log(user);
-        setUser(user);
+    const loadUser = () => {
+      const storedUser = getLocalUser();
+      if (storedUser) {
+        setUser(storedUser);
+      } else {
+        // Create a default user for offline play
+        const defaultUser = createLocalUser("Skater");
+        setUser(defaultUser);
       }
+      setIsLoaded(true);
     };
-    fetchUser();
-  }, [isClerkUserLoaded, userId]);
 
-  return { clerkUser, isClerkUserLoaded };
+    loadUser();
+  }, []);
+
+  const updateUser = (username: string) => {
+    const updatedUser = createLocalUser(username);
+    setUser(updatedUser);
+    return updatedUser;
+  };
+
+  const logout = () => {
+    setUser(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('skate-deck-user');
+    }
+  };
+
+  return { user, isLoaded, updateUser, logout };
 };
 
-export default useClerkUser;
+export default useLocalUser;
