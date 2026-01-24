@@ -19,7 +19,6 @@ export function GameBoard() {
     startGame,
     handlePlayerAction,
     gameState,
-    clerkUser,
     getDeckStatus,
     reset,
     newGame,
@@ -73,11 +72,6 @@ export function GameBoard() {
     (p) => p.id === gameState.currentPlayerId
   );
 
-  useEffect(() => {
-    if (clerkUser) {
-      nameRef.current?.focus();
-    }
-  }, [clerkUser]);
 
   // Show tip toast notification
   useEffect(() => {
