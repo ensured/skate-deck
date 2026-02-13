@@ -13,7 +13,7 @@ export const getLocalUser = (): LocalUser | null => {
     }
 };
 
-export const setLocalUser = (user: LocalUser): void => {
+export const setLocalStorageUser = (user: LocalUser): void => {
     if (typeof window === 'undefined') return;
 
     try {
@@ -30,7 +30,7 @@ export const createLocalUser = (username: string): LocalUser => {
         createdAt: new Date(),
     };
 
-    setLocalUser(user);
+    setLocalStorageUser(user);
     return user;
 };
 

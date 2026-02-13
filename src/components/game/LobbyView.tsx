@@ -76,7 +76,7 @@ const LobbyView = ({
   };
 
   const handleSaveEdit = () => {
-    if (editingPlayerId && editingName.trim()) {
+    if (editingPlayerId !== null && editingName.trim()) {
       const trimmedName = editingName.trim();
       if (trimmedName.length < 1) {
         toast.error("Player name must be at least 1 character", {

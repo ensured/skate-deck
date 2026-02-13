@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { LocalUser } from "@/types/localUser";
-import { getLocalUser, createLocalUser } from "@/lib/localStorage";
+import { getLocalUser, createLocalUser, setLocalStorageUser } from "@/lib/localStorage";
 
 const useLocalUser = () => {
   const [user, setUser] = useState<LocalUser | null>(null);
@@ -26,6 +26,7 @@ const useLocalUser = () => {
   const updateUser = (username: string) => {
     const updatedUser = createLocalUser(username);
     setUser(updatedUser);
+    setLocalStorageUser(updatedUser); // Save to localStorage
     return updatedUser;
   };
 

@@ -224,17 +224,25 @@ export const useGame = () => {
     [gameState.players]
   );
 
+  const { updateUser } = useLocalUser();
+
   const updatePlayerName = useCallback((id: number, name: string) => {
-    setGameState((prev) => {
-      const updatedPlayers = prev.players.map((p) =>
+    setGameState(prev => {
+      // Update the local user's name if this is the first player (host)
+      if (id === 0) {
+        updateUser(name);
+      }
+
+      const updatedPlayers = prev.players.map(p =>
         p.id === id ? { ...p, name } : p
       );
+
       return {
         ...prev,
         players: updatedPlayers,
       };
     });
-  }, []);
+  }, [updateUser]); // Only include updateUser in deps
 
   const removePlayer = useCallback((id: number) => {
     setGameState((prev) => {
