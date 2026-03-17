@@ -171,18 +171,17 @@ const LobbyView = ({
             <div className="flex justify-end gap-1.5 items-center">
               {gameState.players.length > 1 && (
                 <>
-                  <div className="flex items-center gap-2">
+                  <div
+                    className="group flex items-center gap-2 border border-input rounded-md px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer"
+                    onClick={toggleShufflePlayers}
+                  >
                     <Checkbox
                       checked={shufflePlayers}
-                      onCheckedChange={toggleShufflePlayers}
-                      id="shuffle-players"
+                      className="pointer-events-none"
                     />
-                    <label
-                      htmlFor="shuffle-players"
-                      className="text-sm font-medium cursor-pointer select-none"
-                    >
+                    <span className="text-sm font-medium select-none">
                       Shuffle Players
-                    </label>
+                    </span>
                   </div>
                   <div>
                     <Button
