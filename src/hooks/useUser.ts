@@ -14,7 +14,7 @@ const useLocalUser = () => {
         setUser(storedUser);
       } else {
         // Create a default user for offline play
-        const defaultUser = createLocalUser("Skater");
+        const defaultUser = createLocalUser("P1");
         setUser(defaultUser);
       }
       setIsLoaded(true);

@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { Checkbox } from "../ui/checkbox";
 import {
   ArrowDown,
   Check,
@@ -9,7 +10,6 @@ import {
   Trash2,
   UserPlus,
   Users2,
-  X,
 } from "lucide-react";
 import { BookOpen } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
@@ -171,16 +171,18 @@ const LobbyView = ({
             <div className="flex justify-end gap-1.5 items-center">
               {gameState.players.length > 1 && (
                 <>
-                  <div
-                    className={`flex items-center gap-1.5 text-primary cursor-pointer p-2 rounded-md hover:bg-primary/5`}
-                    onClick={toggleShufflePlayers}
-                  >
-                    Shuffle Players
-                    {shufflePlayers ? (
-                      <Check className="w-5 h-5 text-green-500" />
-                    ) : (
-                      <X className="w-5 h-5 text-red-500" />
-                    )}
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={shufflePlayers}
+                      onCheckedChange={toggleShufflePlayers}
+                      id="shuffle-players"
+                    />
+                    <label
+                      htmlFor="shuffle-players"
+                      className="text-sm font-medium cursor-pointer select-none"
+                    >
+                      Shuffle Players
+                    </label>
                   </div>
                   <div>
                     <Button
@@ -205,8 +207,8 @@ const LobbyView = ({
             >
               {gameState.players.map((player, idx) => (
                 <div key={idx} className="border-b border-border">
-                  <div className="flex items-center justify-between py-0.5 px-2 w-full ">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between py-0.5 px-2 w-full">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
                       {editingPlayerId === player.id ? (
                         <Input
                           ref={editingInputRef}
@@ -224,20 +226,20 @@ const LobbyView = ({
                             }
                           }}
                           onBlur={handleSaveEdit}
-                          className="h-7 text-sm font-medium"
+                          className="font-medium border-input bg-background px-1 py-0.5 text-base leading-normal h-auto rounded-md shadow-sm focus:ring-2 focus:ring-ring focus:ring-offset-2"
                           maxLength={20}
                           autoFocus
                         />
                       ) : (
                         <div
-                          className="flex font-medium cursor-pointer hover:bg-accent/50 rounded px-1 py-0.5 transition-colors"
+                          className="flex font-medium cursor-text hover:bg-accent/50 rounded px-1 py-0.5 transition-colors flex-1 min-w-0"
                           onClick={() => handleStartEdit(player)}
                         >
                           {player.name}
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       <Button
                         variant={"ghost"}
                         size="icon"
